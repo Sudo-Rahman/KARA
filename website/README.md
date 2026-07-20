@@ -32,6 +32,46 @@ pnpm audit:lighthouse
 
 L’audit Lighthouse attend un serveur sur `127.0.0.1:4173`. Si Chrome n’est pas détecté automatiquement, définir `CHROME_PATH` vers un exécutable Chromium local.
 
+## Déploiement Docker avec Dokploy
+
+L'image utilise Node.js 26.5.0 sur Alpine 3.24 et pnpm 11.15.1 pour la
+compilation multistage. L'image finale ne contient que le serveur SvelteKit, ses
+dépendances de production et les fichiers compilés. Le processus s'exécute avec
+l'utilisateur non privilégié `node` sur le port `3000`.
+
+Dans Dokploy, sélectionner le type de build `Dockerfile`, puis configurer :
+
+- `Build Path` : `/` (racine du dépôt) ;
+- `Dockerfile Path` : `website/Dockerfile` ;
+- `Docker Context Path` : `website` ;
+- `Docker Build Stage` : laisser vide ;
+- port interne de l'application : `3000`.
+
+Toutes les variables sont exclusivement fournies au conteneur au runtime. Ne
+configurer aucun argument de build. Variables requises :
+
+- `PUBLIC_SITE_URL` ;
+- `PUBLIC_APP_STORE_URL` ;
+- `PUBLIC_GOOGLE_PLAY_URL` ;
+- `PUBLIC_SUPPORT_EMAIL` ;
+- `PUBLIC_LEGAL_NAME` ;
+- `ORIGIN`, avec l'origine HTTPS publique du site.
+
+`METALS_DATA_MANIFEST_URL` reste optionnelle. `HOST`, `PORT`, `NODE_ENV` et
+`SHUTDOWN_TIMEOUT` possèdent déjà des valeurs adaptées dans l'image. Une
+configuration publique manquante ou invalide arrête immédiatement le serveur au
+démarrage, mais n'est pas nécessaire pour construire l'image.
+
+Construction et test local :
+
+```bash
+docker build --tag kara-website ./website
+docker run --rm --publish 3000:3000 \
+  --env-file ./website/.env \
+  --env ORIGIN=http://localhost:3000 \
+  kara-website
+```
+
 ## Routes
 
 - `/` et `/en` : landing page ;

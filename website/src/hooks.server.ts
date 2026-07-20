@@ -1,4 +1,5 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
+import '$lib/config';
 import { startMetalsDataRefresh } from '$lib/server/metals-data/service';
 import { getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';

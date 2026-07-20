@@ -1,4 +1,4 @@
-import { dev } from '$app/environment';
+import { building, dev } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { loadPublicConfig, type PublicConfigSource } from './public';
 
@@ -16,5 +16,5 @@ export {
 
 export const publicConfig = loadPublicConfig(
 	env as PublicConfigSource,
-	dev ? 'development' : 'production'
+	building || dev ? 'development' : 'production'
 );
