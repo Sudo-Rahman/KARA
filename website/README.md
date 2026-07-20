@@ -1,42 +1,43 @@
-# sv
+# Kara — site web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Landing page bilingue de Kara, une application iOS et Android en préparation pour suivre un patrimoine physique en métaux précieux. Le site est construit avec SvelteKit, Svelte 5, Tailwind CSS 4, Paraglide, Three.js et GSAP ScrollTrigger.
 
-## Creating a project
+## Configuration
 
-If you're seeing this, you've probably already done this step. Congrats!
+Copier `.env.example` vers `.env` et remplacer les valeurs d’exemple :
 
-```sh
-# create a new project
-npx sv create my-app
+- `PUBLIC_SITE_URL` : origine canonique publique du site ;
+- `PUBLIC_APP_STORE_URL` : fiche App Store officielle ;
+- `PUBLIC_GOOGLE_PLAY_URL` : fiche Google Play officielle ;
+- `PUBLIC_SUPPORT_EMAIL` : adresse ouverte par les liens `mailto:` ;
+- `PUBLIC_LEGAL_NAME` : nom de l’éditeur du site.
+
+En développement, les valeurs absentes produisent des CTA désactivés et une mention « Bientôt disponible ». Une configuration incomplète ou invalide bloque le build de production.
+
+## Commandes
+
+```bash
+pnpm install
+pnpm dev
+pnpm check
+pnpm test:unit --run
+pnpm test:e2e
+pnpm build
+pnpm preview --host 127.0.0.1 --port 4173
+pnpm audit:lighthouse
 ```
 
-To recreate this project with the same configuration:
+L’audit Lighthouse attend un serveur sur `127.0.0.1:4173`. Si Chrome n’est pas détecté automatiquement, définir `CHROME_PATH` vers un exécutable Chromium local.
 
-```sh
-# recreate this project
-pnpm dlx sv@0.16.3 create --template minimal --types ts --add vitest="usages:unit" sveltekit-adapter="adapter:node" tailwindcss="plugins:none" paraglide="languageTags:fr, en+demo:no" --install pnpm website
-```
+## Routes
 
-## Developing
+- `/` et `/en` : landing page ;
+- `/privacy` et `/en/privacy` : confidentialité ;
+- `/support` et `/en/support` : support et informations pré-lancement ;
+- `/sitemap.xml` et `/robots.txt` : indexation.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Scène et confidentialité
 
-```sh
-npm run dev
+Le contrôleur Three.js expose `mount`, `setProgress`, `resize`, `setQuality` et `destroy`. Les profils `high`, `mobile` et `static` sélectionnent le budget graphique sans changer les chapitres. Le mode statique est utilisé sans WebGL, avec Save-Data ou mouvement réduit.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Le site n’accepte aucun inventaire et n’expose aucun formulaire ou API applicative. Umami est le seul service tiers : sans cookie, respect de Do Not Track, paramètres de recherche exclus, sans replay ni heatmap. Les seuls événements personnalisés sont `download_app_store` et `download_google_play`.
