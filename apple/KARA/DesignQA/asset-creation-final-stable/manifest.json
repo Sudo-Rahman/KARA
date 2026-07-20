@@ -1,0 +1,71 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "C64A6FC9-8439-459A-B343-293CC2D73FFC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-07-saved-home_0_0701A26E-98BD-4D3B-999A-415712CD9990.png",
+        "timestamp" : 1784566493.183
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "5E64460E-D0A9-40D2-8742-F24C4EB93671.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-06-summary_0_FBF440D0-9474-455A-8EDB-8A5AF048D2CF.png",
+        "timestamp" : 1784566489.16
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "7BC220AF-E522-45CA-A2A6-B92B8A293DA8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-05-purchase_0_D0D9A1AA-C4CA-4432-B3FC-88DD9EC545C6.png",
+        "timestamp" : 1784566483.61
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "BBFD0936-BF95-4EFF-B639-9AB3F3407E21.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-04-characteristics_0_4D66D037-F5FC-4B68-909F-08E8859C488C.png",
+        "timestamp" : 1784566467.68
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "1C861FCC-CD04-457A-BB8A-BF1CC332F4BA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-03-classification_0_0D0DF238-255A-463B-A355-28CE48E51279.png",
+        "timestamp" : 1784566463.318
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "811EF5CB-A16B-4F4C-8CCE-0104D5C367F5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-02-invoice_0_A3C373EE-6EDB-4ABC-AA91-7810D16A4E18.png",
+        "timestamp" : 1784566455.556
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "E082F083-EA42-4193-AF1F-09F8EE240B22",
+        "deviceName" : "Lueur iPhone 17 Pro",
+        "exportedFileName" : "FCF59C34-7B0B-4966-B023-3FB2060D5820.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "fr-01-photo_0_5ABDD5E9-0410-4935-8D1D-D7B987BE1945.png",
+        "timestamp" : 1784566451.304
+      }
+    ],
+    "testIdentifier" : "AssetCreationUITests/testFrenchManualFlowSavesAndImmediatelyAppearsAtHome()",
+    "testIdentifierURL" : "test://com.apple.xcode/KARA/KARAUITests/AssetCreationUITests/testFrenchManualFlowSavesAndImmediatelyAppearsAtHome"
+  }
+]

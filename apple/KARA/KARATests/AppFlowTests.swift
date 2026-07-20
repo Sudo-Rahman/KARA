@@ -14,13 +14,13 @@ struct AppFlowTests {
     }
 
     @Test
-    func completedInstallStartsFirstAssetHandoff() {
+    func completedInstallStartsMainApplication() {
         let defaults = makeDefaults()
         defaults.set(true, forKey: AppFlow.completionKey)
 
         let flow = AppFlow(defaults: defaults, arguments: [])
 
-        #expect(flow.destination == .addFirstItem)
+        #expect(flow.destination == .main)
     }
 
     @Test
@@ -44,7 +44,7 @@ struct AppFlowTests {
 
         flow.skipOnboarding()
 
-        #expect(flow.destination == .addFirstItem)
+        #expect(flow.destination == .main)
         #expect(defaults.bool(forKey: AppFlow.completionKey))
     }
 
@@ -61,7 +61,7 @@ struct AppFlowTests {
 
         flow.finishReplay()
 
-        #expect(flow.destination == .addFirstItem)
+        #expect(flow.destination == .main)
         #expect(defaults.bool(forKey: AppFlow.completionKey))
     }
 

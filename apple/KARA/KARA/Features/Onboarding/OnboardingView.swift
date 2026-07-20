@@ -143,52 +143,8 @@ struct OnboardingView: View {
     private var primaryButton: some View {
         Button(action: advance) {
             Text(flowState.step.action)
-                .font(.system(size: 19, weight: .semibold, design: .default))
-                .foregroundStyle(theme.ink)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
-        .background {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.cobalt.opacity(0.16),
-                            Color.black.opacity(0.42),
-                            theme.cobalt.opacity(0.10)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        }
-        .glassEffect(
-            .clear
-                .tint(theme.cobalt.opacity(0.10))
-                .interactive(),
-            in: .capsule
-        )
-        .overlay {
-            Capsule()
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.60),
-                            theme.cobaltBright.opacity(0.58),
-                            Color.white.opacity(0.18)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.1
-                )
-                .allowsHitTesting(false)
-        }
-        .shadow(color: theme.cobaltBright.opacity(0.22), radius: 9, y: 3)
+        .buttonStyle(KaraPrimaryActionButtonStyle())
         .accessibilityIdentifier("onboarding.primary.action")
     }
 
@@ -197,10 +153,7 @@ struct OnboardingView: View {
 
         switch flowState.advance() {
         case let .advanced(next):
-            let animation = reduceMotion
-                ? Animation.easeOut(duration: 0.18)
-                : Animation.spring(duration: 0.65, bounce: 0.12)
-            withAnimation(animation) {
+            withAnimation(KaraMotion.stepTransition(reduceMotion: reduceMotion)) {
                 pageID = next.id
             }
         case .completed:

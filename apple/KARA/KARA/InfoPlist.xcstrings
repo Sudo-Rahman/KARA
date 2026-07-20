@@ -1,0 +1,35 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "KARA"
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA uses the camera to identify an asset and scan its invoice."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA utilise l’appareil photo pour identifier un actif et scanner sa facture."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

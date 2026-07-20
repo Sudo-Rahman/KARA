@@ -5,6 +5,7 @@
 //  Created by sr-71 on 7/18/26.
 //
 
+import SwiftData
 import SwiftUI
 
 struct ContentView: View {
@@ -20,8 +21,8 @@ struct ContentView: View {
                     onFinish: finishOnboarding,
                     onSkip: skipOnboarding
                 )
-            case .addFirstItem:
-                FirstAssetHandoffView(onReplay: flow.replayOnboarding)
+            case .main:
+                AppShellView()
             }
         }
         .background(theme.background)
@@ -58,4 +59,8 @@ struct ContentView: View {
             )
         )
         .environment(KaraTheme())
+        .modelContainer(
+            for: [Asset.self, AssetAttachment.self, SavedSeller.self, StorageLocation.self],
+            inMemory: true
+        )
 }

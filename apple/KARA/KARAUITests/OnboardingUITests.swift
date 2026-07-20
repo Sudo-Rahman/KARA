@@ -21,7 +21,7 @@ final class OnboardingUITests: XCTestCase {
         action.tap()
 
         XCTAssertTrue(
-            app.buttons["handoff.replay"].waitForExistence(timeout: 10)
+            app.buttons["home.add"].waitForExistence(timeout: 10)
         )
     }
 
@@ -53,18 +53,19 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(waitForLabel("Add my first item", on: action))
         action.tap()
         XCTAssertTrue(
-            app.buttons["handoff.replay"].waitForExistence(timeout: 10)
+            app.buttons["home.add"].waitForExistence(timeout: 10)
         )
 
         app.terminate()
         app.launchArguments = [
+            "-KARAUseInMemoryStore",
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_US",
         ]
         app.launch()
 
         XCTAssertTrue(
-            app.buttons["handoff.replay"].waitForExistence(timeout: 10)
+            app.buttons["home.add"].waitForExistence(timeout: 10)
         )
         XCTAssertFalse(app.buttons["onboarding.primary.action"].exists)
     }
@@ -73,6 +74,7 @@ final class OnboardingUITests: XCTestCase {
     private func launch(language: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = [
+            "-KARAUseInMemoryStore",
             "-KARAResetOnboarding",
             "-AppleLanguages", "(\(language))",
             "-AppleLocale", language == "fr" ? "fr_FR" : "en_US",

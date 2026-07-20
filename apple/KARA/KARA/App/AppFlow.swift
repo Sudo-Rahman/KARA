@@ -11,7 +11,7 @@ enum OnboardingMode: Equatable {
 final class AppFlow {
     enum Destination: Equatable {
         case onboarding(OnboardingMode)
-        case addFirstItem
+        case main
     }
 
     static let completionKey = "kara.onboarding.hasCompleted"
@@ -26,19 +26,19 @@ final class AppFlow {
         self.defaults = defaults
 
         if arguments.contains("-KARAResetOnboarding") {
-            defaults.removeObject(forKey: Self.completionKey)
+            defaults.set(false, forKey: Self.completionKey)
         }
 
         if arguments.contains("-KARAShowOnboarding") || !defaults.bool(forKey: Self.completionKey) {
             destination = .onboarding(.firstLaunch)
         } else {
-            destination = .addFirstItem
+            destination = .main
         }
     }
 
     func completeOnboarding() {
         defaults.set(true, forKey: Self.completionKey)
-        destination = .addFirstItem
+        destination = .main
     }
 
     func skipOnboarding() {
@@ -50,6 +50,6 @@ final class AppFlow {
     }
 
     func finishReplay() {
-        destination = .addFirstItem
+        destination = .main
     }
 }
