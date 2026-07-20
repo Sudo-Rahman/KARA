@@ -106,9 +106,10 @@ identiques sont regroupés. Si Gold API est momentanément indisponible, la dern
 valeur valide peut être servie pendant cinq minutes supplémentaires avec
 `X-Cache: STALE` et un en-tête HTTP `Warning`.
 
-L'endpoint temps réel public de Gold API ne nécessite actuellement aucune clé.
-La variable privée utilisée pour les endpoints historiques ou OHLC n'est donc
-ni lue, ni transmise, ni exposée par cette route.
+`GOLD_API_KEY` est une variable privée obligatoire chargée au runtime. Le serveur
+la transmet uniquement à Gold API dans l'en-tête `x-api-key` ; elle n'est ni
+intégrée au build, ni renvoyée dans les réponses publiques, ni inscrite dans les
+logs applicatifs.
 
 ## Scène et confidentialité
 

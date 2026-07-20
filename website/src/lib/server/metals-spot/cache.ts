@@ -25,6 +25,7 @@ interface CacheEntry {
 }
 
 interface MetalsSpotCacheOptions {
+	apiKey: string;
 	baseUrl?: string;
 	fetcher?: typeof fetch;
 	maxStaleMs?: number;
@@ -34,6 +35,7 @@ interface MetalsSpotCacheOptions {
 }
 
 export class MetalsSpotCache {
+	readonly #apiKey: string;
 	readonly #baseUrl: string;
 	readonly #entries = new Map<string, CacheEntry>();
 	readonly #fetcher: typeof fetch;
@@ -43,7 +45,9 @@ export class MetalsSpotCache {
 	readonly #timeoutMs: number;
 	readonly #ttlMs: number;
 
-	constructor(options: MetalsSpotCacheOptions = {}) {
+	constructor(options: MetalsSpotCacheOptions) {
+		this.#apiKey = options.apiKey.trim();
+		if (this.#apiKey === '') throw new Error('Gold API key is required');
 		this.#baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '');
 		this.#fetcher = options.fetcher ?? fetch;
 		this.#maxStaleMs = options.maxStaleMs ?? DEFAULT_MAX_STALE_MS;
@@ -79,7 +83,7 @@ export class MetalsSpotCache {
 
 	async #refresh(key: string, metal: Metal, currency: Currency): Promise<SpotCacheResult> {
 		const response = await this.#fetcher(`${this.#baseUrl}/price/${metal}/${currency}`, {
-			headers: { Accept: 'application/json' },
+			headers: { Accept: 'application/json', 'x-api-key': this.#apiKey },
 			signal: AbortSignal.timeout(this.#timeoutMs)
 		});
 		if (!response.ok) throw new Error('Gold API request failed');

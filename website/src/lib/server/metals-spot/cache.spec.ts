@@ -2,6 +2,8 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { MetalsSpotCache } from './cache';
 
+const TEST_API_KEY = 'runtime-secret';
+
 function goldApiResponse(
 	price = 4165.200195,
 	symbol: 'XAU' | 'XAG' | 'XPT' | 'XPD' = 'XAU',
@@ -23,7 +25,7 @@ describe('MetalsSpotCache', () => {
 	test('returns a stable Kara quote and reuses it for one minute', async () => {
 		let now = 1_000_000;
 		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(goldApiResponse());
-		const cache = new MetalsSpotCache({ fetcher, now: () => now });
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher, now: () => now });
 
 		const first = await cache.get('XAU', 'EUR');
 		now += 59_999;
@@ -45,7 +47,7 @@ describe('MetalsSpotCache', () => {
 		expect(fetcher).toHaveBeenCalledWith(
 			'https://api.gold-api.com/price/XAU/EUR',
 			expect.objectContaining({
-				headers: { Accept: 'application/json' },
+				headers: { Accept: 'application/json', 'x-api-key': TEST_API_KEY },
 				signal: expect.any(AbortSignal)
 			})
 		);
@@ -57,7 +59,7 @@ describe('MetalsSpotCache', () => {
 			release = resolve;
 		});
 		const fetcher = vi.fn<typeof fetch>().mockReturnValue(pending);
-		const cache = new MetalsSpotCache({ fetcher });
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher });
 
 		const first = cache.get('XAU', 'EUR');
 		const second = cache.get('XAU', 'EUR');
@@ -76,7 +78,7 @@ describe('MetalsSpotCache', () => {
 			.fn<typeof fetch>()
 			.mockResolvedValueOnce(goldApiResponse())
 			.mockRejectedValueOnce(new Error('offline'));
-		const cache = new MetalsSpotCache({ fetcher, now: () => now });
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher, now: () => now });
 
 		const current = await cache.get('XAU', 'EUR');
 		now += 60_000;
@@ -95,7 +97,7 @@ describe('MetalsSpotCache', () => {
 			.fn<typeof fetch>()
 			.mockResolvedValueOnce(goldApiResponse(4000))
 			.mockResolvedValueOnce(goldApiResponse(4100));
-		const cache = new MetalsSpotCache({ fetcher, now: () => now });
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher, now: () => now });
 
 		expect((await cache.get('XAU', 'EUR')).quote.price).toBe('4000.000000');
 		now += 60_000;
@@ -108,7 +110,7 @@ describe('MetalsSpotCache', () => {
 			.fn<typeof fetch>()
 			.mockResolvedValueOnce(goldApiResponse())
 			.mockResolvedValueOnce(goldApiResponse(37.5, 'XAG', 'USD'));
-		const cache = new MetalsSpotCache({ fetcher });
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher });
 
 		await cache.get('XAU', 'EUR');
 		const silver = await cache.get('XAG', 'USD');
@@ -127,7 +129,12 @@ describe('MetalsSpotCache', () => {
 			.fn<typeof fetch>()
 			.mockResolvedValueOnce(goldApiResponse())
 			.mockRejectedValue(new Error('offline'));
-		const cache = new MetalsSpotCache({ fetcher, maxStaleMs: 120_000, now: () => now });
+		const cache = new MetalsSpotCache({
+			apiKey: TEST_API_KEY,
+			fetcher,
+			maxStaleMs: 120_000,
+			now: () => now
+		});
 
 		await cache.get('XAU', 'EUR');
 		now += 60_000;
