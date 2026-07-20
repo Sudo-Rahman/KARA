@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "datasetId": "precious-metals-monthly",
+  "dataVersion": "8ddf50897fdd63e72ebfe06769c6e4365fd4563b90d9feda8363be01ed44b55d",
+  "publishedAt": "2026-07-20T11:08:39.000Z",
+  "metals": [
+    "XAU",
+    "XAG",
+    "XPT",
+    "XPD"
+  ],
+  "coverage": {
+    "from": "1987-01",
+    "through": "2026-05"
+  },
+  "currencies": {
+    "USD": {
+      "from": "1987-01",
+      "through": "2026-05"
+    },
+    "CHF": {
+      "from": "1987-01",
+      "through": "2026-05"
+    },
+    "GBP": {
+      "from": "1987-01",
+      "through": "2026-05"
+    },
+    "XEU": {
+      "from": "1987-01",
+      "through": "1998-12"
+    },
+    "EUR": {
+      "from": "1999-01",
+      "through": "2026-05"
+    }
+  },
+  "file": {
+    "url": "/v1/metals-monthly.json",
+    "sha256": "8ddf50897fdd63e72ebfe06769c6e4365fd4563b90d9feda8363be01ed44b55d",
+    "bytes": 408442
+  }
+}

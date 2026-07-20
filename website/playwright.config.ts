@@ -6,7 +6,8 @@ const testEnvironment = {
 	PUBLIC_APP_STORE_URL: 'https://apps.apple.com/app/kara/id000000000',
 	PUBLIC_GOOGLE_PLAY_URL: 'https://play.google.com/store/apps/details?id=app.kara',
 	PUBLIC_SUPPORT_EMAIL: 'support@kara.example',
-	PUBLIC_LEGAL_NAME: 'Kara'
+	PUBLIC_LEGAL_NAME: 'Kara',
+	METALS_DATA_MANIFEST_URL: 'http://127.0.0.1:9/v1/manifest.json'
 };
 
 export default defineConfig({

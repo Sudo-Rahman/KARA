@@ -12,6 +12,9 @@ Copier `.env.example` vers `.env` et remplacer les valeurs d’exemple :
 - `PUBLIC_SUPPORT_EMAIL` : adresse ouverte par les liens `mailto:` ;
 - `PUBLIC_LEGAL_NAME` : nom de l’éditeur du site.
 
+`METALS_DATA_MANIFEST_URL` est optionnelle. Elle permet à un fork de remplacer
+la source publique Kara utilisée par le cache des métaux.
+
 En développement, les valeurs absentes produisent des CTA désactivés et une mention « Bientôt disponible ». Une configuration incomplète ou invalide bloque le build de production.
 
 ## Commandes
@@ -35,9 +38,23 @@ L’audit Lighthouse attend un serveur sur `127.0.0.1:4173`. Si Chrome n’est p
 - `/privacy` et `/en/privacy` : confidentialité ;
 - `/support` et `/en/support` : support et informations pré-lancement ;
 - `/sitemap.xml` et `/robots.txt` : indexation.
+- `/v1/manifest.json` : version et couverture du snapshot mensuel ;
+- `/v1/metals-monthly.json` : historique mensuel complet.
+
+## Cache des métaux
+
+Le serveur démarre avec un snapshot valide embarqué, puis vérifie le manifeste
+public au démarrage et toutes les douze heures. Une nouvelle publication ne
+remplace le cache en mémoire qu'après validation de son schéma, de sa taille et
+de son SHA-256. Une panne réseau ou une publication invalide conserve la dernière
+version valide. Les requêtes API lisent uniquement la mémoire et ne déclenchent
+aucun téléchargement GitHub.
 
 ## Scène et confidentialité
 
 Le contrôleur Three.js expose `mount`, `setProgress`, `resize`, `setQuality` et `destroy`. Les profils `high`, `mobile` et `static` sélectionnent le budget graphique sans changer les chapitres. Le mode statique est utilisé sans WebGL, avec Save-Data ou mouvement réduit.
 
-Le site n’accepte aucun inventaire et n’expose aucun formulaire ou API applicative. Umami est le seul service tiers : sans cookie, respect de Do Not Track, paramètres de recherche exclus, sans replay ni heatmap. Les seuls événements personnalisés sont `download_app_store` et `download_google_play`.
+Le site n’accepte aucun inventaire et l'API n'expose que des données de marché
+publiques. Umami est le seul service tiers : sans cookie, respect de Do Not
+Track, paramètres de recherche exclus, sans replay ni heatmap. Les seuls
+événements personnalisés sont `download_app_store` et `download_google_play`.
