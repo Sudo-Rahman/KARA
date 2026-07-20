@@ -6,75 +6,56 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Environment(AppFlow.self) private var flow
+    @Environment(KaraTheme.self) private var theme
 
     var body: some View {
-        NavigationViewWrapper {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        Group {
+            switch flow.destination {
+            case let .onboarding(mode):
+                OnboardingView(
+                    mode: mode,
+                    onFinish: finishOnboarding,
+                    onSkip: skipOnboarding
+                )
+            case .addFirstItem:
+                FirstAssetHandoffView(onReplay: flow.replayOnboarding)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
+        }
+        .background(theme.background)
+        .tint(theme.cobalt)
+        .preferredColorScheme(.dark)
+        .animation(.easeOut(duration: 0.35), value: flow.destination)
+    }
+
+    private func finishOnboarding(_ mode: OnboardingMode) {
+        switch mode {
+        case .firstLaunch:
+            flow.completeOnboarding()
+        case .replay:
+            flow.finishReplay()
         }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+    private func skipOnboarding(_ mode: OnboardingMode) {
+        switch mode {
+        case .firstLaunch:
+            flow.skipOnboarding()
+        case .replay:
+            flow.finishReplay()
         }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
-    }
-}
-
-fileprivate struct NavigationViewWrapper<Content: View>: View {
-    let content: () -> Content
-
-    var body: some View {
-#if os(macOS)
-        NavigationSplitView {
-            content()
-        } detail: {
-            Text("Select an item")
-        }
-#else
-        content()
-#endif
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .environment(
+            AppFlow(
+                defaults: UserDefaults(suiteName: "kara.preview")!,
+                arguments: ["-KARAResetOnboarding"]
+            )
+        )
+        .environment(KaraTheme())
 }

@@ -6,27 +6,18 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct KARAApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @State private var flow = AppFlow()
+    @State private var theme = KaraTheme()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(flow)
+                .environment(theme)
+                .preferredColorScheme(.dark)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
