@@ -21,7 +21,15 @@ struct OnboardingView: View {
                 referenceLayout(in: proxy)
             }
         }
-        .background(Color.black)
+        .background {
+            ZStack {
+                Color.black
+                    .ignoresSafeArea()
+
+                onboardingBackground
+                    .offset(y: -24)
+            }
+        }
         .sensoryFeedback(.selection, trigger: flowState.step)
         .sensoryFeedback(.impact(weight: .light), trigger: primaryFeedback)
         .accessibilityAction(named: Text("onboarding.skip")) {
@@ -41,19 +49,8 @@ struct OnboardingView: View {
     private func referenceLayout(in proxy: GeometryProxy) -> some View {
         let width = proxy.size.width
         let height = proxy.size.height
-        let heroHeight = width * (1_035 / 853)
 
         return ZStack {
-            Color.black
-                .ignoresSafeArea()
-
-            heroImage
-                .frame(width: width, height: heroHeight)
-                .position(
-                    x: width / 2,
-                    y: 37 + (heroHeight / 2) - proxy.safeAreaInsets.top
-                )
-
             pager
                 .frame(width: width, height: 154)
                 .position(x: width / 2, y: height * 0.68)
@@ -75,8 +72,7 @@ struct OnboardingView: View {
 
     private func accessibilityLayout(in proxy: GeometryProxy) -> some View {
         VStack(spacing: KaraSpacing.large) {
-            heroImage
-                .frame(height: min(190, proxy.size.height * 0.25))
+            Spacer(minLength: min(190, proxy.size.height * 0.25))
 
             pager
                 .frame(maxHeight: .infinity)
@@ -91,11 +87,12 @@ struct OnboardingView: View {
         .background(Color.black.ignoresSafeArea())
     }
 
-    private var heroImage: some View {
-        Image("OnboardingHeroRevelation")
+    private var onboardingBackground: some View {
+        Image("OnboardingBackgroundRevelation")
             .resizable()
             .interpolation(.high)
-            .scaledToFit()
+            .scaledToFill()
+            .ignoresSafeArea()
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
