@@ -91,6 +91,13 @@ de son SHA-256. Une panne réseau ou une publication invalide conserve la derni�
 version valide. Les requêtes API lisent uniquement la mémoire et ne déclenchent
 aucun téléchargement GitHub.
 
+Le générateur mensuel se trouve dans `data-pipeline/`. Le workflow GitHub
+`Update monthly metals data` s'exécute tous les jours à 05:17 UTC, télécharge
+les sources FMI et Eurostat, valide le snapshot, puis met à jour uniquement
+`data/v1/manifest.json` et `data/v1/metals-monthly.json` lorsque le SHA-256
+change. Un retard d'un mois du FMI est traité comme une attente normale sans
+commit ; un retard supérieur à un mois fait échouer le workflow.
+
 Le cours temps réel accepte `XAU`, `XAG`, `XPT` et `XPD`, ainsi que les devises
 `USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `CNY`, `HKD`, `SGD`, `SEK`,
 `NOK`, `DKK`, `NZD`, `MXN`, `INR`, `BRL`, `ZAR` et `KRW`. Chaque couple

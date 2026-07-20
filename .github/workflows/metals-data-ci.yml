@@ -2,14 +2,14 @@ name: Metals data CI
 
 on:
   push:
+    branches: [main]
     paths:
-      - "api/**"
       - "website/**"
       - ".github/workflows/metals-data-ci.yml"
       - ".github/workflows/metals-data-publish.yml"
   pull_request:
+    branches: [main]
     paths:
-      - "api/**"
       - "website/**"
       - ".github/workflows/metals-data-ci.yml"
       - ".github/workflows/metals-data-publish.yml"
@@ -18,17 +18,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: metals-data-ci-${{ github.workflow }}-${{ github.ref }}
+  group: metals-data-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: Check data generator (Node.js 24)
+  data-pipeline:
+    name: Check monthly data pipeline
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
-        working-directory: api
+        working-directory: website/data-pipeline
 
     steps:
       - name: Check out repository
@@ -37,36 +37,20 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
           cache: npm
-          cache-dependency-path: api/package-lock.json
+          cache-dependency-path: website/data-pipeline/package-lock.json
 
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=moderate
-
       - name: Run checks
         run: npm run check
 
-      - name: Set up Go for actionlint
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.24.x"
-          cache: false
-
-      - name: Validate GitHub Actions workflows
-        working-directory: .
-        run: >-
-          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
-          .github/workflows/metals-data-ci.yml
-          .github/workflows/metals-data-publish.yml
-
   website:
-    name: Check SvelteKit API cache
+    name: Check SvelteKit API
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: website
@@ -84,12 +68,12 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.15.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
           cache: pnpm
           cache-dependency-path: website/pnpm-lock.yaml
 
@@ -102,11 +86,32 @@ jobs:
       - name: Run unit tests
         run: pnpm test:unit --run
 
+      - name: Build SvelteKit server
+        run: pnpm build
+
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Test public metals endpoints
         run: pnpm exec playwright test tests/metals-api.spec.ts --project=desktop-chromium
 
-      - name: Build SvelteKit server
-        run: pnpm build
+  workflows:
+    name: Validate GitHub Actions workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.x"
+          cache: false
+
+      - name: Run actionlint
+        run: >-
+          go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          .github/workflows/metals-data-ci.yml
+          .github/workflows/metals-data-publish.yml

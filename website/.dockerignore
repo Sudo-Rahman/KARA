@@ -9,6 +9,8 @@
 Dockerfile
 build
 coverage
+data
+data-pipeline
 docs
 lighthouse-report.json
 node_modules

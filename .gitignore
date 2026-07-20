@@ -35,6 +35,7 @@ xcuserdata/
 *.log
 coverage/
 .nyc_output/
+website/data-pipeline/artifacts/
 
 # Temporary files
 *.tmp

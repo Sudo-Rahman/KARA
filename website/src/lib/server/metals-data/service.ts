@@ -5,7 +5,7 @@ import fallbackManifest from './fallback/v1/manifest.json?raw';
 import { MetalsDataCache } from './cache';
 
 const DEFAULT_MANIFEST_URL =
-	'https://raw.githubusercontent.com/Sudo-Rahman/KARA/main/api/public/v1/manifest.json';
+	'https://raw.githubusercontent.com/Sudo-Rahman/KARA/main/website/data/v1/manifest.json';
 const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000;
 const encoder = new TextEncoder();
 

@@ -1,0 +1,35 @@
+{
+  "name": "kara-metals-data-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26 <27"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm test && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "update": "node dist/cli.js",
+    "update:dev": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "decimal.js": "^10.6.0",
+    "exceljs": "^4.4.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
+  }
+}

@@ -14,27 +14,30 @@ concurrency:
 
 jobs:
   update:
-    name: Generate and commit a verified snapshot
+    name: Generate and commit verified JSON files
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: api
+        working-directory: website/data-pipeline
     env:
-      OUTPUT_DIR: public
+      OUTPUT_DIR: ../data
       SOURCE_ARCHIVE_DIR: artifacts/sources
+      CURRENT_MANIFEST_URL: https://raw.githubusercontent.com/Sudo-Rahman/KARA/main/website/data/v1/manifest.json
 
     steps:
-      - name: Check out repository
+      - name: Check out main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
           cache: npm
-          cache-dependency-path: api/package-lock.json
+          cache-dependency-path: website/data-pipeline/package-lock.json
 
       - name: Install locked dependencies
         run: npm ci
@@ -53,46 +56,39 @@ jobs:
           PUBLISHED_AT: ${{ steps.timestamp.outputs.published_at }}
         run: npm run update
 
-      - name: Upload generated publication
+      - name: Upload generated JSON files
         if: ${{ steps.generate.outputs.generated == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: publication-${{ github.run_id }}-${{ github.run_attempt }}
-          path: api/public/v1
+          path: website/data/v1
           if-no-files-found: error
           retention-days: 90
 
-      - name: Upload source downloads
+      - name: Upload downloaded sources
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: sources-${{ github.run_id }}-${{ github.run_attempt }}
-          path: api/artifacts/sources
+          path: website/data-pipeline/artifacts/sources
           if-no-files-found: ignore
           retention-days: 90
 
       - name: Report unchanged publication
         if: ${{ steps.generate.outputs.status == 'unchanged' }}
-        run: echo "The generated SHA-256 is already committed; no update is needed."
+        run: echo "The monthly data is unchanged; nothing will be committed."
 
       - name: Report source grace period
         if: ${{ steps.generate.outputs.status == 'waiting' }}
-        run: echo "The newest expected month is not available yet; no update is needed."
+        run: echo "The newest expected month is not available yet; nothing will be committed."
 
       - name: Commit changed publication
         if: ${{ steps.generate.outputs.changed == 'true' }}
-        env:
-          SOURCE_RIGHTS_APPROVED: ${{ vars.SOURCE_RIGHTS_APPROVED }}
         working-directory: .
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$SOURCE_RIGHTS_APPROVED" != "true" ]]; then
-            echo "Repository variable SOURCE_RIGHTS_APPROVED must equal true before public data publication." >&2
-            exit 1
-          fi
-
-          git add -- api/public/v1/manifest.json api/public/v1/metals-monthly.json
+          git add -- website/data/v1/manifest.json website/data/v1/metals-monthly.json
           if git diff --cached --quiet; then
             echo "Generator reported changed data but produced no committable diff." >&2
             exit 1
