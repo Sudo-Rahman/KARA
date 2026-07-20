@@ -39,7 +39,8 @@ L’audit Lighthouse attend un serveur sur `127.0.0.1:4173`. Si Chrome n’est p
 - `/support` et `/en/support` : support et informations pré-lancement ;
 - `/sitemap.xml` et `/robots.txt` : indexation.
 - `/v1/manifest.json` : version et couverture du snapshot mensuel ;
-- `/v1/metals-monthly.json` : historique mensuel complet.
+- `/v1/metals-monthly.json` : historique mensuel complet ;
+- `/v1/metals-spot.json?metal=XAU&currency=EUR` : cours temps réel par once troy.
 
 ## Cache des métaux
 
@@ -49,6 +50,18 @@ remplace le cache en mémoire qu'après validation de son schéma, de sa taille 
 de son SHA-256. Une panne réseau ou une publication invalide conserve la dernière
 version valide. Les requêtes API lisent uniquement la mémoire et ne déclenchent
 aucun téléchargement GitHub.
+
+Le cours temps réel accepte `XAU`, `XAG`, `XPT` et `XPD`, ainsi que les devises
+`USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `CNY`, `HKD`, `SGD`, `SEK`,
+`NOK`, `DKK`, `NZD`, `MXN`, `INR`, `BRL`, `ZAR` et `KRW`. Chaque couple
+métal/devise est conservé en mémoire pendant 60 secondes. Les appels concurrents
+identiques sont regroupés. Si Gold API est momentanément indisponible, la dernière
+valeur valide peut être servie pendant cinq minutes supplémentaires avec
+`X-Cache: STALE` et un en-tête HTTP `Warning`.
+
+L'endpoint temps réel public de Gold API ne nécessite actuellement aucune clé.
+La variable privée utilisée pour les endpoints historiques ou OHLC n'est donc
+ni lue, ni transmise, ni exposée par cette route.
 
 ## Scène et confidentialité
 
