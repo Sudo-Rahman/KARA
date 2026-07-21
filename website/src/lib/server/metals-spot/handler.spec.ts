@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { handleSpotRequest, type SpotQuoteProvider } from './handler';
 
@@ -10,6 +10,10 @@ const quote = {
 	unit: { code: 'troy_ounce' as const, grams: '31.1034768' as const },
 	sourceUpdatedAt: '2026-07-20T12:34:56Z'
 };
+
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 
 describe('handleSpotRequest', () => {
 	test('serves a validated quote using normalized query parameters', async () => {
@@ -80,9 +84,16 @@ describe('handleSpotRequest', () => {
 	});
 
 	test('returns a generic gateway error when no quote is available', async () => {
+		const cause = Object.assign(new Error('getaddrinfo ENOTFOUND api.gold-api.com'), {
+			code: 'ENOTFOUND',
+			hostname: 'api.gold-api.com',
+			syscall: 'getaddrinfo'
+		});
+		const upstreamError = new TypeError('fetch failed', { cause });
 		const provider: SpotQuoteProvider = {
-			get: vi.fn().mockRejectedValue(new Error('secret upstream details'))
+			get: vi.fn().mockRejectedValue(upstreamError)
 		};
+		const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 		const request = new Request(
 			'https://kara.example/v1/metals-spot.json?metal=XAU&currency=EUR'
 		);
@@ -92,6 +103,27 @@ describe('handleSpotRequest', () => {
 
 		expect(response.status).toBe(502);
 		expect(body).toContain('SPOT_UNAVAILABLE');
-		expect(body).not.toContain('secret upstream details');
+		expect(body).not.toContain('fetch failed');
+		expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/);
+		expect(errorLog).toHaveBeenCalledWith(
+			'[metals-spot] Gold API request failed',
+			expect.objectContaining({
+				currency: 'EUR',
+				error: {
+					cause: expect.objectContaining({
+						code: 'ENOTFOUND',
+						hostname: 'api.gold-api.com',
+						message: 'getaddrinfo ENOTFOUND api.gold-api.com',
+						name: 'Error',
+						syscall: 'getaddrinfo'
+					}),
+					message: 'fetch failed',
+					name: 'TypeError'
+				},
+				metal: 'XAU',
+				requestId: response.headers.get('x-request-id'),
+				upstream: 'https://api.gold-api.com'
+			})
+		);
 	});
 });

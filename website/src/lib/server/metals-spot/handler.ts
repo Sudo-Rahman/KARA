@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import type { SpotCacheResult } from './cache';
 import {
@@ -12,6 +12,35 @@ import {
 
 export interface SpotQuoteProvider {
 	get(metal: Metal, currency: Currency): Promise<SpotCacheResult>;
+}
+
+interface ErrorWithDiagnostics extends Error {
+	code?: unknown;
+	errno?: unknown;
+	hostname?: unknown;
+	status?: unknown;
+	statusText?: unknown;
+	syscall?: unknown;
+}
+
+function errorDiagnostics(error: unknown, depth = 0): Record<string, unknown> {
+	if (!(error instanceof Error)) {
+		return { message: String(error), name: 'NonError' };
+	}
+
+	const candidate = error as ErrorWithDiagnostics;
+	const diagnostics: Record<string, unknown> = {
+		name: error.name,
+		message: error.message
+	};
+	for (const key of ['code', 'errno', 'hostname', 'status', 'statusText', 'syscall'] as const) {
+		const value = candidate[key];
+		if (typeof value === 'string' || typeof value === 'number') diagnostics[key] = value;
+	}
+	if (error.cause !== undefined && depth < 3) {
+		diagnostics.cause = errorDiagnostics(error.cause, depth + 1);
+	}
+	return diagnostics;
 }
 
 function jsonHeaders(bytes: Uint8Array): Headers {
@@ -64,12 +93,23 @@ export async function handleSpotRequest(
 	let result: SpotCacheResult;
 	try {
 		result = await provider.get(metal.data, currency.data);
-	} catch {
-		return jsonError(
+	} catch (error) {
+		const requestId = randomUUID();
+		console.error('[metals-spot] Gold API request failed', {
+			timestamp: new Date().toISOString(),
+			requestId,
+			metal: metal.data,
+			currency: currency.data,
+			upstream: 'https://api.gold-api.com',
+			error: errorDiagnostics(error)
+		});
+		const response = jsonError(
 			502,
 			'SPOT_UNAVAILABLE',
 			'Real-time metal price is temporarily unavailable'
 		);
+		response.headers.set('X-Request-Id', requestId);
+		return response;
 	}
 
 	const bytes = jsonBytes(result.quote);
@@ -89,4 +129,3 @@ export async function handleSpotRequest(
 	}
 	return new Response(Buffer.from(bytes), { status: 200, headers });
 }
-

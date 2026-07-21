@@ -142,4 +142,17 @@ describe('MetalsSpotCache', () => {
 		now += 120_000;
 		await expect(cache.get('XAU', 'EUR')).rejects.toThrow('offline');
 	});
+
+	test('preserves the upstream HTTP status for production diagnostics', async () => {
+		const fetcher = vi
+			.fn<typeof fetch>()
+			.mockResolvedValue(Response.json({ error: 'rate limited' }, { status: 429 }));
+		const cache = new MetalsSpotCache({ apiKey: TEST_API_KEY, fetcher });
+
+		await expect(cache.get('XAU', 'EUR')).rejects.toMatchObject({
+			message: 'Gold API request failed with HTTP 429',
+			name: 'GoldApiHttpError',
+			status: 429
+		});
+	});
 });

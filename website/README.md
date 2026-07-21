@@ -111,6 +111,15 @@ la transmet uniquement à Gold API dans l'en-tête `x-api-key` ; elle n'est ni
 intégrée au build, ni renvoyée dans les réponses publiques, ni inscrite dans les
 logs applicatifs.
 
+### Diagnostic du cours temps réel
+
+Lorsqu'un appel Gold API échoue, le serveur écrit sur `stderr` un événement
+`[metals-spot] Gold API request failed`. Il contient l'identifiant de requête,
+le métal, la devise, le statut HTTP éventuel et la chaîne limitée des causes
+réseau. La réponse `502` expose le même identifiant dans `X-Request-Id` pour
+retrouver immédiatement le bon événement dans les logs Dokploy. La clé API, les
+headers sortants et le corps de la réponse Gold API ne sont jamais journalisés.
+
 ## Scène et confidentialité
 
 Le contrôleur Three.js expose `mount`, `setProgress`, `resize`, `setQuality` et `destroy`. Les profils `high`, `mobile` et `static` sélectionnent le budget graphique sans changer les chapitres. Le mode statique est utilisé sans WebGL, avec Save-Data ou mouvement réduit.

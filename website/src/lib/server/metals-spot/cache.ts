@@ -17,6 +17,18 @@ export interface SpotCacheResult {
 	quote: SpotQuote;
 }
 
+export class GoldApiHttpError extends Error {
+	readonly status: number;
+	readonly statusText: string;
+
+	constructor(response: Response) {
+		super(`Gold API request failed with HTTP ${response.status}`);
+		this.name = 'GoldApiHttpError';
+		this.status = response.status;
+		this.statusText = response.statusText;
+	}
+}
+
 interface CacheEntry {
 	expiresAt: number;
 	isStale: boolean;
@@ -86,7 +98,7 @@ export class MetalsSpotCache {
 			headers: { Accept: 'application/json', 'x-api-key': this.#apiKey },
 			signal: AbortSignal.timeout(this.#timeoutMs)
 		});
-		if (!response.ok) throw new Error('Gold API request failed');
+		if (!response.ok) throw new GoldApiHttpError(response);
 
 		const upstream = goldApiQuoteSchema.parse(await response.json());
 		if (upstream.symbol !== metal || upstream.currency !== currency) {
