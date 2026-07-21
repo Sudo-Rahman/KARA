@@ -45,7 +45,7 @@ struct AssetStepScaffold<Content: View, Footer: View>: View {
                 .padding(.bottom, KaraSpacing.small)
         }
         .scrollEdgeEffectStyle(.hard, for: .top)
-        .scrollDismissesKeyboard(.immediately)
+        .scrollDismissesKeyboard(.never)
         .gesture(
             TapGesture().onEnded { onDismissKeyboard?() },
             including: .gesture

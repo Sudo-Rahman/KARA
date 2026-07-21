@@ -44,6 +44,7 @@ struct AssetLocalizationTests {
         let requiredKeys = Set(
             AssetCategory.allCases.map(\.localizationKey)
                 + PreciousMetal.allCases.map(\.localizationKey)
+                + AssetAcquisitionMethod.allCases.map(\.localizationKey)
                 + AssetCatalog.presets.map(\.localizationKey)
         )
 
@@ -51,6 +52,31 @@ struct AssetLocalizationTests {
             let strings = try localizedStrings(for: language)
             for key in requiredKeys {
                 #expect(strings[key] != nil, "Missing \(language) localization for \(key)")
+            }
+        }
+    }
+
+    @Test("Vault journey has complete English and French copy")
+    func vaultJourneyIsLocalized() throws {
+        let requiredKeys = [
+            "privacy.action.conceal",
+            "privacy.action.reveal",
+            "vault.title",
+            "vault.metric.estimated-value",
+            "vault.gold-live.title",
+            "inventory.title",
+            "inventory.search.prompt",
+            "asset-detail.value.title",
+            "asset-detail.documents.title",
+            "sale-simulation.title",
+            "sale-simulation.disclaimer",
+        ]
+
+        for language in ["en", "fr"] {
+            let strings = try localizedStrings(for: language)
+            for key in requiredKeys {
+                let value = strings[key]
+                #expect(value != nil && value != key, "Missing \(language) localization for \(key)")
             }
         }
     }

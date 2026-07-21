@@ -9,7 +9,7 @@ final class AssetCreationUITests: XCTestCase {
     func testFrenchManualFlowSavesAndImmediatelyAppearsAtHome() {
         let app = launchAtHome(language: "fr")
 
-        XCTAssertEqual(app.buttons.allElementsBoundByIndex.count, 1)
+        XCTAssertTrue(app.buttons["vault.privacy-toggle"].exists)
         XCTAssertEqual(app.buttons["home.add"].label, "Ajouter un actif")
 
         completeManualAssetFlow(
@@ -62,7 +62,7 @@ final class AssetCreationUITests: XCTestCase {
     }
 
     @MainActor
-    func testKeyboardDismissesFromPageTapAndScroll() {
+    func testKeyboardDismissesFromPageTapButNotScroll() {
         let app = launchAtHome(language: "fr")
 
         app.buttons["home.add"].tap()
@@ -279,7 +279,7 @@ final class AssetCreationUITests: XCTestCase {
         weight.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         app.swipeUp()
-        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
+        XCTAssertTrue(app.keyboards.firstMatch.exists)
     }
 
     @MainActor

@@ -12,12 +12,14 @@ import SwiftUI
 struct KARAApp: App {
     @State private var flow = AppFlow()
     @State private var theme = KaraTheme()
+    @State private var privacyPreferences = PrivacyPreferences()
 
     var body: some Scene {
         WindowGroup {
             PersistenceHostView()
                 .environment(flow)
                 .environment(theme)
+                .environment(privacyPreferences)
                 .preferredColorScheme(.dark)
         }
     }

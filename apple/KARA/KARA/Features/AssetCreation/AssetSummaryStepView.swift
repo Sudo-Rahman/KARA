@@ -220,6 +220,30 @@ struct AssetSummaryStepView: View {
                     }
                     LabeledContent("details.invoice-number", value: state.draft.invoiceNumber)
                 }
+
+                if let acquisitionMethod = state.draft.acquisitionMethod {
+                    if hasPurchaseInformationBeforeInventoryMetadata { Divider() }
+                    LabeledContent("details.acquisition-method") {
+                        Text(LocalizedStringKey(acquisitionMethod.localizationKey))
+                    }
+                }
+
+                if !state.draft.serialNumber.isEmpty {
+                    if hasPurchaseInformationBeforeInventoryMetadata
+                        || state.draft.acquisitionMethod != nil {
+                        Divider()
+                    }
+                    LabeledContent("details.serial-number", value: state.draft.serialNumber)
+                }
+
+                if !state.draft.tags.isEmpty {
+                    if hasPurchaseInformationBeforeInventoryMetadata
+                        || state.draft.acquisitionMethod != nil
+                        || !state.draft.serialNumber.isEmpty {
+                        Divider()
+                    }
+                    LabeledContent("details.tags", value: state.draft.tags.joined(separator: " · "))
+                }
             }
         }
     }
@@ -239,6 +263,17 @@ struct AssetSummaryStepView: View {
     }
 
     private var hasPurchaseInformation: Bool {
+        state.draft.purchaseDate != nil
+            || state.draft.pricePaidMinorUnits != nil
+            || !state.draft.sellerName.isEmpty
+            || !state.draft.storageLocationName.isEmpty
+            || !state.draft.invoiceNumber.isEmpty
+            || state.draft.acquisitionMethod != nil
+            || !state.draft.serialNumber.isEmpty
+            || !state.draft.tags.isEmpty
+    }
+
+    private var hasPurchaseInformationBeforeInventoryMetadata: Bool {
         state.draft.purchaseDate != nil
             || state.draft.pricePaidMinorUnits != nil
             || !state.draft.sellerName.isEmpty

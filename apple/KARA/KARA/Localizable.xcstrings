@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "·" : {
+
+    },
     "%@ ‰" : {
       "localizations" : {
         "en" : {
@@ -45,6 +48,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ g"
+          }
+        }
+      }
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
           }
         }
       }
@@ -112,6 +125,958 @@
           }
         }
       }
+    },
+    "18,420 €" : {
+
+    },
+    "asset-detail.acquisition.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provenance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provenance"
+          }
+        }
+      }
+    },
+    "asset-detail.acquisition.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acquisition & custody"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acquisition et conservation"
+          }
+        }
+      }
+    },
+    "asset-detail.action.edit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier l’actif"
+          }
+        }
+      }
+    },
+    "asset-detail.completeness.complete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All key information is available."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les informations clés sont disponibles."
+          }
+        }
+      }
+    },
+    "asset-detail.completeness.incomplete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete the missing fields to improve insights."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complétez les champs manquants pour enrichir l’analyse."
+          }
+        }
+      }
+    },
+    "asset-detail.completeness.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset completeness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complétude de l’actif"
+          }
+        }
+      }
+    },
+    "asset-detail.composition.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Physical characteristics"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caractéristiques physiques"
+          }
+        }
+      }
+    },
+    "asset-detail.composition.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.add" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add documents"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter des documents"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.count %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld files"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fichiers"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep invoices, certificates and photos together with this asset."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservez factures, certificats et photos avec cet actif."
+          }
+        }
+      }
+    },
+    "asset-detail.documents.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linked to this asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reliés à cet actif"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.open" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View linked documents"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir les documents reliés"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documents"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documents"
+          }
+        }
+      }
+    },
+    "asset-detail.field.acquisition-method" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acquisition method"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode d’acquisition"
+          }
+        }
+      }
+    },
+    "asset-detail.field.category" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catégorie"
+          }
+        }
+      }
+    },
+    "asset-detail.field.fine-weight" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total fine weight"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids fin total"
+          }
+        }
+      }
+    },
+    "asset-detail.field.gemstone-clarity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemstone clarity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pureté des pierres"
+          }
+        }
+      }
+    },
+    "asset-detail.field.gemstone-weight" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemstone weight"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids des pierres"
+          }
+        }
+      }
+    },
+    "asset-detail.field.gross-weight" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gross weight / object"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids brut / objet"
+          }
+        }
+      }
+    },
+    "asset-detail.field.invoice" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice number"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numéro de facture"
+          }
+        }
+      }
+    },
+    "asset-detail.field.metal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métal"
+          }
+        }
+      }
+    },
+    "asset-detail.field.purchase-date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acquisition date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date d’acquisition"
+          }
+        }
+      }
+    },
+    "asset-detail.field.purity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titre"
+          }
+        }
+      }
+    },
+    "asset-detail.field.seller" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seller"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendeur"
+          }
+        }
+      }
+    },
+    "asset-detail.field.serial-number" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serial number"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numéro de série"
+          }
+        }
+      }
+    },
+    "asset-detail.field.storage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage location"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieu de stockage"
+          }
+        }
+      }
+    },
+    "asset-detail.field.updated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last updated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernière mise à jour"
+          }
+        }
+      }
+    },
+    "asset-detail.karat %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ct"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ct"
+          }
+        }
+      }
+    },
+    "asset-detail.metric.gain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus-value"
+          }
+        }
+      }
+    },
+    "asset-detail.metric.performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        }
+      }
+    },
+    "asset-detail.metric.purchase-price" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase price"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prix d’achat"
+          }
+        }
+      }
+    },
+    "asset-detail.quantity %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity · %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantité · %lld"
+          }
+        }
+      }
+    },
+    "asset-detail.tags.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        }
+      }
+    },
+    "asset-detail.value.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparent valuation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorisation transparente"
+          }
+        }
+      }
+    },
+    "asset-detail.value.not-provided" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not provided"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non renseigné"
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.metal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a supported precious metal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un métal précieux pris en charge."
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.purity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a valid fineness or karat value."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un titre ou un nombre de carats valide."
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.quantity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The quantity must be greater than zero."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La quantité doit être supérieure à zéro."
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.quote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The EUR spot quote is currently unavailable."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le cours spot en EUR est actuellement indisponible."
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete this asset to calculate its current melt value."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complétez cet actif pour calculer sa valeur métal actuelle."
+          }
+        }
+      }
+    },
+    "asset-detail.value.reason.weight" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a valid gross weight."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un poids brut valide."
+          }
+        }
+      }
+    },
+    "asset-detail.value.spot" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spot price"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cours spot"
+          }
+        }
+      }
+    },
+    "asset-detail.value.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current melt value"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur métal actuelle"
+          }
+        }
+      }
+    },
+    "asset-detail.value.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valuation unavailable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorisation indisponible"
+          }
+        }
+      }
+    },
+    "asset-editor.action.cancel" : {
+
+    },
+    "asset-editor.action.keyboard-done" : {
+
+    },
+    "asset-editor.action.ok" : {
+
+    },
+    "asset-editor.action.save" : {
+
+    },
+    "asset-editor.action.saving" : {
+
+    },
+    "asset-editor.discard.action" : {
+
+    },
+    "asset-editor.discard.keep-editing" : {
+
+    },
+    "asset-editor.discard.message" : {
+
+    },
+    "asset-editor.discard.title" : {
+
+    },
+    "asset-editor.field.acquisition-method" : {
+
+    },
+    "asset-editor.field.acquisition-method.unknown" : {
+
+    },
+    "asset-editor.field.category" : {
+
+    },
+    "asset-editor.field.currency" : {
+
+    },
+    "asset-editor.field.fineness" : {
+
+    },
+    "asset-editor.field.fineness.helper" : {
+
+    },
+    "asset-editor.field.fineness.placeholder" : {
+
+    },
+    "asset-editor.field.gemstone-clarity" : {
+
+    },
+    "asset-editor.field.gemstone-clarity.helper" : {
+
+    },
+    "asset-editor.field.gemstone-clarity.placeholder" : {
+
+    },
+    "asset-editor.field.gemstone-weight" : {
+
+    },
+    "asset-editor.field.gemstone-weight.helper" : {
+
+    },
+    "asset-editor.field.gemstone-weight.placeholder" : {
+
+    },
+    "asset-editor.field.invoice" : {
+
+    },
+    "asset-editor.field.invoice.helper" : {
+
+    },
+    "asset-editor.field.invoice.placeholder" : {
+
+    },
+    "asset-editor.field.karat" : {
+
+    },
+    "asset-editor.field.karat.helper" : {
+
+    },
+    "asset-editor.field.karat.placeholder" : {
+
+    },
+    "asset-editor.field.metal" : {
+
+    },
+    "asset-editor.field.metal.none" : {
+
+    },
+    "asset-editor.field.name" : {
+
+    },
+    "asset-editor.field.name.helper" : {
+
+    },
+    "asset-editor.field.name.placeholder" : {
+
+    },
+    "asset-editor.field.preset" : {
+
+    },
+    "asset-editor.field.preset.helper" : {
+
+    },
+    "asset-editor.field.preset.none" : {
+
+    },
+    "asset-editor.field.price" : {
+
+    },
+    "asset-editor.field.price.helper" : {
+
+    },
+    "asset-editor.field.price.placeholder" : {
+
+    },
+    "asset-editor.field.purchase-date" : {
+
+    },
+    "asset-editor.field.purchase-date-known" : {
+
+    },
+    "asset-editor.field.quantity" : {
+
+    },
+    "asset-editor.field.quick-purity" : {
+
+    },
+    "asset-editor.field.quick-purity.helper" : {
+
+    },
+    "asset-editor.field.seller" : {
+
+    },
+    "asset-editor.field.seller.helper" : {
+
+    },
+    "asset-editor.field.seller.placeholder" : {
+
+    },
+    "asset-editor.field.serial-number" : {
+
+    },
+    "asset-editor.field.serial-number.helper" : {
+
+    },
+    "asset-editor.field.serial-number.placeholder" : {
+
+    },
+    "asset-editor.field.storage" : {
+
+    },
+    "asset-editor.field.storage.helper" : {
+
+    },
+    "asset-editor.field.storage.placeholder" : {
+
+    },
+    "asset-editor.field.tags" : {
+
+    },
+    "asset-editor.field.tags.helper" : {
+
+    },
+    "asset-editor.field.tags.placeholder" : {
+
+    },
+    "asset-editor.field.weight" : {
+
+    },
+    "asset-editor.field.weight.helper" : {
+
+    },
+    "asset-editor.field.weight.placeholder" : {
+
+    },
+    "asset-editor.introduction.body" : {
+
+    },
+    "asset-editor.introduction.title" : {
+
+    },
+    "asset-editor.save-error.message" : {
+
+    },
+    "asset-editor.save-error.title" : {
+
+    },
+    "asset-editor.section.composition.body" : {
+
+    },
+    "asset-editor.section.composition.title" : {
+
+    },
+    "asset-editor.section.gemstones.body" : {
+
+    },
+    "asset-editor.section.gemstones.title" : {
+
+    },
+    "asset-editor.section.identity.body" : {
+
+    },
+    "asset-editor.section.identity.title" : {
+
+    },
+    "asset-editor.section.inventory.body" : {
+
+    },
+    "asset-editor.section.inventory.title" : {
+
+    },
+    "asset-editor.section.purchase.body" : {
+
+    },
+    "asset-editor.section.purchase.title" : {
+
+    },
+    "asset-editor.title" : {
+
+    },
+    "asset-editor.validation.title" : {
+
     },
     "asset-flow.analysis.completed" : {
       "localizations" : {
@@ -567,6 +1532,123 @@
         }
       }
     },
+    "asset-missing.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset may have been removed on another device."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet actif a peut-être été supprimé sur un autre appareil."
+          }
+        }
+      }
+    },
+    "asset-missing.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset unavailable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actif indisponible"
+          }
+        }
+      }
+    },
+    "asset.acquisition-method.exchange" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exchange"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échange"
+          }
+        }
+      }
+    },
+    "asset.acquisition-method.gift" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gift"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don"
+          }
+        }
+      }
+    },
+    "asset.acquisition-method.inheritance" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inheritance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Héritage"
+          }
+        }
+      }
+    },
+    "asset.acquisition-method.other" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre"
+          }
+        }
+      }
+    },
+    "asset.acquisition-method.purchase" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achat"
+          }
+        }
+      }
+    },
     "asset.category.bar" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -670,6 +1752,7 @@
       }
     },
     "asset.home.add" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -687,6 +1770,7 @@
     },
     "asset.home.count %lld" : {
       "comment" : "Number of assets stored in the vault.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -727,6 +1811,7 @@
       }
     },
     "asset.home.empty.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -743,6 +1828,7 @@
       }
     },
     "asset.home.empty.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -759,6 +1845,7 @@
       }
     },
     "asset.home.navigation-title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -775,6 +1862,7 @@
       }
     },
     "asset.home.recent" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -791,6 +1879,7 @@
       }
     },
     "asset.home.vault" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2203,6 +3292,25 @@
         }
       }
     },
+    "Date" : {
+
+    },
+    "details.acquisition-method" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acquisition method"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode d’acquisition"
+          }
+        }
+      }
+    },
     "details.body" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2633,6 +3741,22 @@
         }
       }
     },
+    "details.serial-number" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serial number"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numéro de série"
+          }
+        }
+      }
+    },
     "details.storage-location" : {
       "localizations" : {
         "en" : {
@@ -2645,6 +3769,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lieu de stockage"
+          }
+        }
+      }
+    },
+    "details.tags" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tags"
           }
         }
       }
@@ -2823,6 +3963,349 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Poids (g)"
+          }
+        }
+      }
+    },
+    "Document sécurisé" : {
+
+    },
+    "inventory.asset.unvalued" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset cannot currently be valued."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet actif ne peut pas être valorisé actuellement."
+          }
+        }
+      }
+    },
+    "inventory.empty.add" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un actif"
+          }
+        }
+      }
+    },
+    "inventory.empty.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your assets will appear here with their current value and individual performance."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos actifs apparaîtront ici avec leur valeur actuelle et leur performance individuelle."
+          }
+        }
+      }
+    },
+    "inventory.empty.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No assets yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun actif pour le moment"
+          }
+        }
+      }
+    },
+    "inventory.filter.all-categories" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All categories"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les catégories"
+          }
+        }
+      }
+    },
+    "inventory.filter.all-metals" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All metals"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les métaux"
+          }
+        }
+      }
+    },
+    "inventory.filters.reset" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser"
+          }
+        }
+      }
+    },
+    "inventory.no-results.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try another search or reset the active filters."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez une autre recherche ou réinitialisez les filtres actifs."
+          }
+        }
+      }
+    },
+    "inventory.no-results.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching assets"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun actif correspondant"
+          }
+        }
+      }
+    },
+    "inventory.results %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fiches"
+          }
+        }
+      }
+    },
+    "inventory.search.prompt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search an asset, metal, reference…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher un actif, métal, référence…"
+          }
+        }
+      }
+    },
+    "inventory.sort.estimatedValue" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Highest value"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur décroissante"
+          }
+        }
+      }
+    },
+    "inventory.sort.name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
+          }
+        }
+      }
+    },
+    "inventory.sort.performance" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best performance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilleure performance"
+          }
+        }
+      }
+    },
+    "inventory.sort.recent" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Most recent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus récents"
+          }
+        }
+      }
+    },
+    "inventory.summary.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portfolio coverage"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couverture du portefeuille"
+          }
+        }
+      }
+    },
+    "inventory.summary.gain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unrealized gain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus-value latente"
+          }
+        }
+      }
+    },
+    "inventory.summary.objects %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objects"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objets"
+          }
+        }
+      }
+    },
+    "inventory.summary.partial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some assets need more information before they can be valued."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certains actifs nécessitent plus d’informations pour être valorisés."
+          }
+        }
+      }
+    },
+    "inventory.summary.total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total estimated value"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur totale estimée"
+          }
+        }
+      }
+    },
+    "inventory.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventaire"
           }
         }
       }
@@ -3044,6 +4527,9 @@
           }
         }
       }
+    },
+    "KARA" : {
+
     },
     "onboarding.organization.accentTitle" : {
       "localizations" : {
@@ -3270,6 +4756,9 @@
         }
       }
     },
+    "PDF · 280 KB" : {
+
+    },
     "persistence.error.body" : {
       "localizations" : {
         "en" : {
@@ -3318,6 +4807,55 @@
         }
       }
     },
+    "preview.metric.estimated-value" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated value"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur estimée"
+          }
+        }
+      }
+    },
+    "preview.metric.unrealized-gain" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unrealized gain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus-value latente"
+          }
+        }
+      }
+    },
+    "preview.metric.updated-today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis à jour aujourd’hui"
+          }
+        }
+      }
+    },
     "preview.primary-action.unavailable" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3331,6 +4869,104 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indisponible"
+          }
+        }
+      }
+    },
+    "privacy.action.conceal" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hide private values"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les valeurs privées"
+          }
+        }
+      }
+    },
+    "privacy.action.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes the visibility of private portfolio data throughout KARA."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifie la visibilité des données privées du portefeuille dans toute l’app KARA."
+          }
+        }
+      }
+    },
+    "privacy.action.reveal" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show private values"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les valeurs privées"
+          }
+        }
+      }
+    },
+    "privacy.shield.accessibility-label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA is protecting your private values."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA protège vos valeurs privées."
+          }
+        }
+      }
+    },
+    "privacy.value.masked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Value hidden"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur masquée"
+          }
+        }
+      }
+    },
+    "purchase.acquisition.unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not specified"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non précisé"
           }
         }
       }
@@ -3395,6 +5031,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Détails de l’achat"
+          }
+        }
+      }
+    },
+    "purchase.inventory.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional identifiers that make this asset easier to find."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des repères facultatifs pour retrouver facilement cet actif."
+          }
+        }
+      }
+    },
+    "purchase.inventory.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory details"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repères d’inventaire"
           }
         }
       }
@@ -3575,6 +5243,38 @@
         }
       }
     },
+    "purchase.serial-number.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Engraved or certified identifier."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identifiant gravé ou indiqué sur le certificat."
+          }
+        }
+      }
+    },
+    "purchase.serial-number.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. A12 3456"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. A12 3456"
+          }
+        }
+      }
+    },
     "purchase.storage.helper" : {
       "localizations" : {
         "en" : {
@@ -3623,6 +5323,38 @@
         }
       }
     },
+    "purchase.tags.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separate tags with commas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Séparez les tags par des virgules."
+          }
+        }
+      }
+    },
+    "purchase.tags.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long term, certified…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long terme, certifié…"
+          }
+        }
+      }
+    },
     "purchase.title" : {
       "localizations" : {
         "en" : {
@@ -3635,6 +5367,360 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Informations d’achat"
+          }
+        }
+      }
+    },
+    "sale-simulation.asset.deselect" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselect this asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désélectionner cet actif"
+          }
+        }
+      }
+    },
+    "sale-simulation.asset.quantity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity to simulate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantité à simuler"
+          }
+        }
+      }
+    },
+    "sale-simulation.asset.select" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select this asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner cet actif"
+          }
+        }
+      }
+    },
+    "sale-simulation.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select specific assets and an integer quantity. Nothing will be changed in your vault."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionnez des actifs précis et une quantité entière. Rien ne sera modifié dans votre coffre."
+          }
+        }
+      }
+    },
+    "sale-simulation.close" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
+          }
+        }
+      }
+    },
+    "sale-simulation.disclaimer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indicative melt-value estimate based on current spot prices. It excludes dealer spreads, premiums, taxes, fees, gemstones and numismatic value."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimation indicative de la valeur métal fondée sur les cours spot actuels. Elle exclut marges, primes, fiscalité, frais, pierres et valeur numismatique."
+          }
+        }
+      }
+    },
+    "sale-simulation.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Express estimate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimation express"
+          }
+        }
+      }
+    },
+    "sale-simulation.heading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would you like to sell?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que souhaitez-vous vendre ?"
+          }
+        }
+      }
+    },
+    "sale-simulation.quantity.decrease" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decrease quantity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diminuer la quantité"
+          }
+        }
+      }
+    },
+    "sale-simulation.quantity.increase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Increase quantity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Augmenter la quantité"
+          }
+        }
+      }
+    },
+    "sale-simulation.selection.clear" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer"
+          }
+        }
+      }
+    },
+    "sale-simulation.selection.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your inventory"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre inventaire"
+          }
+        }
+      }
+    },
+    "sale-simulation.selection.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select quantities"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionnez les quantités"
+          }
+        }
+      }
+    },
+    "sale-simulation.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sale simulation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulation de vente"
+          }
+        }
+      }
+    },
+    "sale-simulation.total.cost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prorated cost"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coût proratisé"
+          }
+        }
+      }
+    },
+    "sale-simulation.total.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated proceeds"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produit estimé"
+          }
+        }
+      }
+    },
+    "sale-simulation.total.gain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated gain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus-value estimée"
+          }
+        }
+      }
+    },
+    "sale-simulation.total.objects %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objects selected"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objets sélectionnés"
+          }
+        }
+      }
+    },
+    "sale-simulation.total.performance" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Performance"
+          }
+        }
+      }
+    },
+    "sale-simulation.unavailable.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add weight, purity and a supported metal to at least one asset."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un poids, un titre et un métal pris en charge à au moins un actif."
+          }
+        }
+      }
+    },
+    "sale-simulation.unavailable.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No assets can be simulated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun actif ne peut être simulé"
+          }
+        }
+      }
+    },
+    "sale-simulation.value.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
           }
         }
       }
@@ -3812,6 +5898,714 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prêt pour votre coffre"
+          }
+        }
+      }
+    },
+    "Value" : {
+
+    },
+    "vault.action.add" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un actif"
+          }
+        }
+      }
+    },
+    "vault.action.add-first" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add my first asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter mon premier actif"
+          }
+        }
+      }
+    },
+    "vault.action.simulate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate a sale"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simuler une vente"
+          }
+        }
+      }
+    },
+    "vault.action.view-all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View all"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout voir"
+          }
+        }
+      }
+    },
+    "vault.categories.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allocation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répartition"
+          }
+        }
+      }
+    },
+    "vault.categories.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par catégorie"
+          }
+        }
+      }
+    },
+    "vault.coverage.complete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valuation complete"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorisation complète"
+          }
+        }
+      }
+    },
+    "vault.coverage.explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only assets with a supported metal, weight, purity and available quote are included."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seuls les actifs avec un métal pris en charge, un poids, un titre et un cours disponible sont inclus."
+          }
+        }
+      }
+    },
+    "vault.coverage.partial" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partial valuation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorisation partielle"
+          }
+        }
+      }
+    },
+    "vault.coverage.records %lld %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld records"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fiches sur %2$lld"
+          }
+        }
+      }
+    },
+    "vault.empty.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your first asset to unlock live valuation, allocation and performance insights."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez votre premier actif pour débloquer la valorisation en direct, la répartition et les performances."
+          }
+        }
+      }
+    },
+    "vault.empty.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your vault is ready"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre coffre est prêt"
+          }
+        }
+      }
+    },
+    "vault.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private vault"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coffre privé"
+          }
+        }
+      }
+    },
+    "vault.gold-live.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public market data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donnée de marché publique"
+          }
+        }
+      }
+    },
+    "vault.gold-live.no-daily-change" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No daily change is displayed without a source-backed figure."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune variation journalière n’est affichée sans donnée sourcée."
+          }
+        }
+      }
+    },
+    "vault.gold-live.per-gram" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/ g"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/ g"
+          }
+        }
+      }
+    },
+    "vault.gold-live.per-ounce %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / oz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / oz"
+          }
+        }
+      }
+    },
+    "vault.gold-live.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live gold price"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cours de l’or en direct"
+          }
+        }
+      }
+    },
+    "vault.history.accessibility-label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portfolio value evolution over the last twelve months."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur du portefeuille sur les douze derniers mois."
+          }
+        }
+      }
+    },
+    "vault.history.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 12 months"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 derniers mois"
+          }
+        }
+      }
+    },
+    "vault.history.not-enough-data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The chart will appear as soon as enough historical market data is available."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le graphique apparaîtra dès que suffisamment de données de marché historiques seront disponibles."
+          }
+        }
+      }
+    },
+    "vault.history.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portfolio evolution"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution du portefeuille"
+          }
+        }
+      }
+    },
+    "vault.history.unknown-dates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assets without a purchase date are included across the full period."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les actifs sans date d’acquisition sont inclus sur toute la période."
+          }
+        }
+      }
+    },
+    "vault.market.available" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualisé"
+          }
+        }
+      }
+    },
+    "vault.market.cached" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved quote"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cours enregistré"
+          }
+        }
+      }
+    },
+    "vault.market.refreshing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing market data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualisation des cours"
+          }
+        }
+      }
+    },
+    "vault.market.retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "vault.market.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Market data is temporarily unavailable. Your saved assets remain accessible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les cours sont temporairement indisponibles. Vos actifs enregistrés restent accessibles."
+          }
+        }
+      }
+    },
+    "vault.metals.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        }
+      }
+    },
+    "vault.metals.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precious metals"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métaux précieux"
+          }
+        }
+      }
+    },
+    "vault.metric.estimated-value" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated value"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur estimée"
+          }
+        }
+      }
+    },
+    "vault.metric.inventory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventaire"
+          }
+        }
+      }
+    },
+    "vault.metric.inventory.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens your full inventory."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre votre inventaire complet."
+          }
+        }
+      }
+    },
+    "vault.metric.objects %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objects"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld objets"
+          }
+        }
+      }
+    },
+    "vault.metric.records %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld records"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fiches"
+          }
+        }
+      }
+    },
+    "vault.metric.unrealized-gain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unrealized gain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus-value latente"
+          }
+        }
+      }
+    },
+    "vault.performance.missing-cost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add purchase prices to calculate performance."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez les prix d’achat pour calculer la performance."
+          }
+        }
+      }
+    },
+    "vault.performance.partial %lld %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Based on %1$lld of %2$lld valued records"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculée sur %1$lld des %2$lld fiches valorisées"
+          }
+        }
+      }
+    },
+    "vault.recent.eyebrow" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activité"
+          }
+        }
+      }
+    },
+    "vault.recent.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent additions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouts récents"
+          }
+        }
+      }
+    },
+    "vault.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A current, spot-based view of your precious metals."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une vue actuelle de vos métaux précieux, fondée sur les cours spot."
+          }
+        }
+      }
+    },
+    "vault.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your holdings, at a glance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre patrimoine, en un regard"
+          }
+        }
+      }
+    },
+    "vault.value.loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculating from current prices…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calcul avec les cours actuels…"
+          }
+        }
+      }
+    },
+    "vault.value.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
           }
         }
       }

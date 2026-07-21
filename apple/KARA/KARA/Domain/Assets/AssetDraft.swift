@@ -17,6 +17,9 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
     var sellerName: String?
     var storageLocationName: String?
     var invoiceNumber: String?
+    var serialNumber: String?
+    var acquisitionMethod: AssetAcquisitionMethod?
+    var tags: [String]?
 
     init(
         name: String? = nil,
@@ -34,7 +37,10 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         currencyCode: String? = nil,
         sellerName: String? = nil,
         storageLocationName: String? = nil,
-        invoiceNumber: String? = nil
+        invoiceNumber: String? = nil,
+        serialNumber: String? = nil,
+        acquisitionMethod: AssetAcquisitionMethod? = nil,
+        tags: [String]? = nil
     ) {
         self.name = name
         self.category = category
@@ -52,6 +58,9 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         self.sellerName = sellerName
         self.storageLocationName = storageLocationName
         self.invoiceNumber = invoiceNumber
+        self.serialNumber = serialNumber
+        self.acquisitionMethod = acquisitionMethod
+        self.tags = tags
     }
 }
 
@@ -81,6 +90,25 @@ nonisolated struct AssetAttachmentPayload: Equatable, Sendable {
 protocol AssetSaving {
     @discardableResult
     func save(draft: AssetDraft, attachments: [AssetAttachmentPayload]) throws -> Asset
+}
+
+@MainActor
+protocol AssetUpdating {
+    @discardableResult
+    func update(assetID: UUID, with draft: AssetDraft) throws -> Asset
+}
+
+@MainActor
+protocol AttachmentManaging {
+    func attachments(for assetID: UUID) throws -> [AssetAttachment]
+
+    @discardableResult
+    func add(_ payload: AssetAttachmentPayload, to assetID: UUID) throws -> AssetAttachment
+
+    @discardableResult
+    func rename(attachmentID: UUID, for assetID: UUID, to filename: String) throws -> AssetAttachment
+
+    func delete(attachmentID: UUID, for assetID: UUID) throws
 }
 
 nonisolated enum AssetDraftValidationError: Error, Equatable, Sendable {
@@ -113,6 +141,9 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         case sellerName
         case storageLocationName
         case invoiceNumber
+        case serialNumber
+        case acquisitionMethod
+        case tags
     }
 
     var name: String
@@ -131,6 +162,9 @@ nonisolated struct AssetDraft: Equatable, Sendable {
     var sellerName: String
     var storageLocationName: String
     var invoiceNumber: String
+    var serialNumber: String
+    var acquisitionMethod: AssetAcquisitionMethod?
+    var tags: [String]
     private(set) var manuallyEditedFields: Set<Field>
 
     init(
@@ -150,6 +184,9 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         sellerName: String = "",
         storageLocationName: String = "",
         invoiceNumber: String = "",
+        serialNumber: String = "",
+        acquisitionMethod: AssetAcquisitionMethod? = nil,
+        tags: [String] = [],
         manuallyEditedFields: Set<Field> = []
     ) {
         self.name = name
@@ -168,7 +205,35 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         self.sellerName = sellerName
         self.storageLocationName = storageLocationName
         self.invoiceNumber = invoiceNumber
+        self.serialNumber = serialNumber
+        self.acquisitionMethod = acquisitionMethod
+        self.tags = tags
         self.manuallyEditedFields = manuallyEditedFields
+    }
+
+    @MainActor
+    init(asset: Asset) {
+        self.init(
+            name: asset.name,
+            category: asset.category,
+            presetID: asset.presetID,
+            quantity: asset.quantity,
+            purchaseDate: asset.purchaseDate,
+            metal: asset.metal,
+            weightGrams: asset.weightGrams,
+            metalKarat: asset.metalKarat,
+            finenessPermille: asset.finenessPermille,
+            gemstoneCaratWeight: asset.gemstoneCaratWeight,
+            gemstoneClarity: asset.gemstoneClarity ?? "",
+            pricePaidMinorUnits: asset.pricePaidMinorUnits,
+            currencyCode: asset.currencyCode,
+            sellerName: asset.sellerName ?? "",
+            storageLocationName: asset.storageLocationName ?? "",
+            invoiceNumber: asset.invoiceNumber ?? "",
+            serialNumber: asset.serialNumber ?? "",
+            acquisitionMethod: asset.acquisitionMethod,
+            tags: asset.tags
+        )
     }
 
     var validationErrors: [AssetDraftValidationError] {
@@ -319,6 +384,25 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         ) {
             appliedFields.insert(.invoiceNumber)
         }
+        if mergeString(
+            \.serialNumber,
+            field: .serialNumber,
+            suggestion.serialNumber,
+            excluding: excludedFields
+        ) {
+            appliedFields.insert(.serialNumber)
+        }
+        if mergeOptional(
+            \.acquisitionMethod,
+            field: .acquisitionMethod,
+            suggestion.acquisitionMethod,
+            excluding: excludedFields
+        ) {
+            appliedFields.insert(.acquisitionMethod)
+        }
+        if mergeTags(suggestion.tags, excluding: excludedFields) {
+            appliedFields.insert(.tags)
+        }
 
         return appliedFields
     }
@@ -342,6 +426,9 @@ nonisolated struct AssetDraft: Equatable, Sendable {
             case .sellerName: sellerName = ""
             case .storageLocationName: storageLocationName = ""
             case .invoiceNumber: invoiceNumber = ""
+            case .serialNumber: serialNumber = ""
+            case .acquisitionMethod: acquisitionMethod = nil
+            case .tags: tags = []
             }
         }
     }
@@ -408,6 +495,33 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         return true
     }
 
+    private mutating func mergeTags(
+        _ suggestion: [String]?,
+        excluding excludedFields: Set<Field>
+    ) -> Bool {
+        guard !excludedFields.contains(.tags),
+              !manuallyEditedFields.contains(.tags),
+              tags.isEmpty,
+              let suggestion
+        else { return false }
+        let normalizedTags = AssetTagNormalizer.normalize(suggestion)
+        guard !normalizedTags.isEmpty else { return false }
+        tags = normalizedTags
+        return true
+    }
+
+}
+
+nonisolated enum AssetTagNormalizer {
+    static func normalize(_ tags: [String]) -> [String] {
+        var normalizedKeys: Set<String> = []
+        return tags.compactMap { tag in
+            let displayName = AssetSuggestionNormalizer.displayName(tag)
+            guard !displayName.isEmpty else { return nil }
+            let key = AssetSuggestionNormalizer.normalizedName(displayName)
+            return normalizedKeys.insert(key).inserted ? displayName : nil
+        }
+    }
 }
 
 nonisolated enum AssetSuggestionNormalizer {

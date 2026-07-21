@@ -43,11 +43,20 @@ enum KaraModelContainerFactory {
         environment: [String: String] = ProcessInfo.processInfo.environment
     ) throws -> ModelContainer {
         let schema = schema
-        return try ModelContainer(
+        let container = try ModelContainer(
             for: schema,
             configurations: [
                 configuration(arguments: arguments, environment: environment),
             ]
         )
+
+        #if DEBUG
+        try VisualQAVaultSeeder.seedIfRequested(
+            in: container,
+            arguments: arguments
+        )
+        #endif
+
+        return container
     }
 }

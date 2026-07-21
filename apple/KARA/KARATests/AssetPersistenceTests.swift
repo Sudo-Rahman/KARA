@@ -47,6 +47,252 @@ struct AssetPersistenceTests {
         #expect(locations.first?.normalizedName == "coffre personnel")
     }
 
+    @Test("Saving an asset persists normalized inventory metadata")
+    func savesNormalizedInventoryMetadata() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+
+        let savedAsset = try repository.save(
+            draft: AssetDraft(
+                name: "Lingotin 20 g",
+                category: .bar,
+                serialNumber: "  A12 3456 ",
+                acquisitionMethod: .purchase,
+                tags: [" Long   terme ", "investissement", "LONG TERME", "  "]
+            ),
+            attachments: []
+        )
+
+        let verificationContext = ModelContext(container)
+        let persistedAsset = try #require(
+            verificationContext.fetch(FetchDescriptor<Asset>()).first
+        )
+
+        #expect(persistedAsset.id == savedAsset.id)
+        #expect(persistedAsset.serialNumber == "A12 3456")
+        #expect(persistedAsset.acquisitionMethod == .purchase)
+        #expect(persistedAsset.acquisitionMethodRawValue == "purchase")
+        #expect(persistedAsset.tags == ["Long terme", "investissement"])
+    }
+
+    @Test("Updating an asset is atomic and preserves aggregate identity and documents")
+    func updatesAssetWithoutReplacingItsAggregate() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let createdAt = Date(timeIntervalSince1970: 100)
+        let updatedAt = Date(timeIntervalSince1970: 200)
+        let repository = SwiftDataAssetRepository(modelContext: context, now: { createdAt })
+        let original = try repository.save(
+            draft: AssetDraft(
+                name: "Lingotin",
+                category: .bar,
+                sellerName: "Comptoir A",
+                storageLocationName: "Coffre A"
+            ),
+            attachments: [
+                AssetAttachmentPayload(
+                    kind: .certificate,
+                    filename: "certificat.pdf",
+                    mimeType: "application/pdf",
+                    data: Data([1, 2, 3])
+                ),
+            ]
+        )
+        let originalID = original.id
+
+        let updatingRepository = SwiftDataAssetRepository(modelContext: context, now: { updatedAt })
+        let updated = try updatingRepository.update(
+            assetID: originalID,
+            with: AssetDraft(
+                name: "Lingotin certifié",
+                category: .bar,
+                quantity: 2,
+                sellerName: "Comptoir B",
+                storageLocationName: "",
+                serialNumber: "CERT-42",
+                acquisitionMethod: .exchange,
+                tags: ["Certifié"]
+            )
+        )
+
+        #expect(updated.id == originalID)
+        #expect(updated.createdAt == createdAt)
+        #expect(updated.updatedAt == updatedAt)
+        #expect(updated.name == "Lingotin certifié")
+        #expect(updated.serialNumber == "CERT-42")
+        #expect(updated.acquisitionMethod == .exchange)
+        #expect(updated.tags == ["Certifié"])
+        let attachments = try updatingRepository.attachments(for: originalID)
+        #expect(attachments.count == 1)
+        #expect(attachments.first?.data == Data([1, 2, 3]))
+
+        let sellers = try context.fetch(FetchDescriptor<SavedSeller>())
+        let locations = try context.fetch(FetchDescriptor<StorageLocation>())
+        #expect(sellers.map(\.name) == ["Comptoir B"])
+        #expect(sellers.first?.usageCount == 1)
+        #expect(locations.isEmpty)
+    }
+
+    @Test("A failed asset update rolls back fields and reusable suggestions")
+    func rollsBackFailedUpdate() throws {
+        enum SimulatedFailure: Error { case save }
+
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let original = try repository.save(
+            draft: AssetDraft(
+                name: "Original",
+                category: .custom,
+                sellerName: "Vendeur original"
+            ),
+            attachments: []
+        )
+        let failingRepository = SwiftDataAssetRepository(
+            modelContext: context,
+            saveAction: { _ in throw SimulatedFailure.save }
+        )
+
+        #expect(throws: SimulatedFailure.self) {
+            try failingRepository.update(
+                assetID: original.id,
+                with: AssetDraft(
+                    name: "Modifié",
+                    category: .custom,
+                    sellerName: "Nouveau vendeur"
+                )
+            )
+        }
+
+        let persistedAsset = try #require(context.fetch(FetchDescriptor<Asset>()).first)
+        let sellers = try context.fetch(FetchDescriptor<SavedSeller>())
+        #expect(persistedAsset.name == "Original")
+        #expect(persistedAsset.sellerName == "Vendeur original")
+        #expect(sellers.count == 1)
+        #expect(sellers.first?.name == "Vendeur original")
+        #expect(sellers.first?.usageCount == 1)
+    }
+
+    @Test("Attachments can be added and listed for one asset")
+    func addsAndListsAttachmentsByAsset() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let asset = try repository.save(
+            draft: AssetDraft(name: "Napoléon", category: .coin),
+            attachments: []
+        )
+        let otherAsset = try repository.save(
+            draft: AssetDraft(name: "Bracelet", category: .jewelry),
+            attachments: []
+        )
+
+        let certificate = try repository.add(
+            AssetAttachmentPayload(
+                kind: .certificate,
+                filename: " certificat CPOR.pdf ",
+                mimeType: "application/pdf",
+                data: Data([4, 2])
+            ),
+            to: asset.id
+        )
+        _ = try repository.add(
+            AssetAttachmentPayload(
+                kind: .other,
+                filename: "expertise.pdf",
+                mimeType: "application/pdf",
+                data: Data([9])
+            ),
+            to: otherAsset.id
+        )
+
+        let attachments = try repository.attachments(for: asset.id)
+        #expect(attachments.map(\.id) == [certificate.id])
+        #expect(attachments.first?.kind == .certificate)
+        #expect(attachments.first?.kindRawValue == "certificate")
+        #expect(attachments.first?.filename == "certificat CPOR.pdf")
+        #expect(AssetAttachmentKind.objectPhoto.rawValue == "objectPhoto")
+        #expect(AssetAttachmentKind.invoice.rawValue == "invoice")
+    }
+
+    @Test("Attachment rename and deletion are scoped to their owning asset")
+    func renamesAndDeletesAttachmentsWithinAssetScope() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let firstAsset = try repository.save(
+            draft: AssetDraft(name: "Premier", category: .custom),
+            attachments: []
+        )
+        let secondAsset = try repository.save(
+            draft: AssetDraft(name: "Deuxième", category: .custom),
+            attachments: []
+        )
+        let attachment = try repository.add(
+            AssetAttachmentPayload(
+                kind: .other,
+                filename: "note.txt",
+                mimeType: "text/plain",
+                data: Data("note".utf8)
+            ),
+            to: firstAsset.id
+        )
+
+        #expect(throws: AssetRepositoryError.attachmentNotFound(attachment.id)) {
+            try repository.rename(
+                attachmentID: attachment.id,
+                for: secondAsset.id,
+                to: "intrusion.txt"
+            )
+        }
+        let renamed = try repository.rename(
+            attachmentID: attachment.id,
+            for: firstAsset.id,
+            to: "  note finale.txt "
+        )
+        #expect(renamed.filename == "note finale.txt")
+
+        try repository.delete(attachmentID: attachment.id, for: firstAsset.id)
+        #expect(try repository.attachments(for: firstAsset.id).isEmpty)
+    }
+
+    @Test("A failed attachment rename restores its persisted filename")
+    func rollsBackFailedAttachmentRename() throws {
+        enum SimulatedFailure: Error { case save }
+
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let asset = try repository.save(
+            draft: AssetDraft(name: "Actif", category: .custom),
+            attachments: []
+        )
+        let attachment = try repository.add(
+            AssetAttachmentPayload(
+                kind: .other,
+                filename: "original.txt",
+                mimeType: "text/plain",
+                data: Data()
+            ),
+            to: asset.id
+        )
+        let failingRepository = SwiftDataAssetRepository(
+            modelContext: context,
+            saveAction: { _ in throw SimulatedFailure.save }
+        )
+
+        #expect(throws: SimulatedFailure.self) {
+            try failingRepository.rename(
+                attachmentID: attachment.id,
+                for: asset.id,
+                to: "modifié.txt"
+            )
+        }
+
+        #expect(try repository.attachments(for: asset.id).first?.filename == "original.txt")
+    }
+
     @Test("A failed aggregate save rolls back and the same draft can be retried")
     func rollsBackFailedSaveAndRetries() throws {
         enum SimulatedFailure: Error { case save }

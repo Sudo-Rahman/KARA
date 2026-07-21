@@ -11,18 +11,26 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(KaraTheme.self) private var theme
+    @Environment(PrivacyPreferences.self) private var privacyPreferences
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        Group {
-            switch flow.destination {
-            case let .onboarding(mode):
-                OnboardingView(
-                    mode: mode,
-                    onFinish: finishOnboarding,
-                    onSkip: skipOnboarding
-                )
-            case .main:
-                AppShellView()
+        ZStack {
+            Group {
+                switch flow.destination {
+                case let .onboarding(mode):
+                    OnboardingView(
+                        mode: mode,
+                        onFinish: finishOnboarding,
+                        onSkip: skipOnboarding
+                    )
+                case .main:
+                    AppShellView()
+                }
+            }
+
+            if privacyPreferences.hidesSensitiveValues && scenePhase != .active {
+                PrivacyShieldView()
             }
         }
         .background(theme.background)
@@ -50,6 +58,28 @@ struct ContentView: View {
     }
 }
 
+private struct PrivacyShieldView: View {
+    @Environment(KaraTheme.self) private var theme
+
+    var body: some View {
+        ZStack {
+            theme.background.ignoresSafeArea()
+
+            VStack(spacing: KaraSpacing.medium) {
+                Image(systemName: "lock.shield.fill")
+                    .font(.system(size: 34, weight: .medium))
+                    .foregroundStyle(theme.goldBright)
+
+                Text("KARA")
+                    .font(theme.displayFont(size: 28, relativeTo: .title2))
+                    .foregroundStyle(theme.ink)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("privacy.shield.accessibility-label"))
+    }
+}
+
 #Preview {
     ContentView()
         .environment(
@@ -59,6 +89,7 @@ struct ContentView: View {
             )
         )
         .environment(KaraTheme())
+        .environment(PrivacyPreferences(defaults: UserDefaults(suiteName: "kara.preview.privacy")!))
         .modelContainer(
             for: [Asset.self, AssetAttachment.self, SavedSeller.self, StorageLocation.self],
             inMemory: true

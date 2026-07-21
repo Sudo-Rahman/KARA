@@ -81,17 +81,17 @@ private struct KaraPrimaryActionButtonBody<Label: View>: View {
                         .fill(surfaceGradient)
                 }
             }
+            .overlay {
+                Capsule()
+                    .stroke(borderGradient, lineWidth: borderWidth)
+                    .allowsHitTesting(false)
+            }
             .modifier(
                 KaraPrimaryActionGlassEffect(
                     isInteractive: isEnabled && !isLoading,
                     tintOpacity: glassTintOpacity
                 )
             )
-            .overlay {
-                Capsule()
-                    .stroke(borderGradient, lineWidth: borderWidth)
-                    .allowsHitTesting(false)
-            }
             .shadow(
                 color: theme.cobaltBright.opacity(shadowOpacity),
                 radius: isPressed ? 6 : 9,

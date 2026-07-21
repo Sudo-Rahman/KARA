@@ -95,6 +95,22 @@ nonisolated enum SupportedAssetCurrency: String, CaseIterable, Codable, Identifi
 nonisolated enum AssetAttachmentKind: String, CaseIterable, Codable, Sendable {
     case objectPhoto
     case invoice
+    case certificate
+    case other
+}
+
+nonisolated enum AssetAcquisitionMethod: String, CaseIterable, Codable, Identifiable, Sendable {
+    case purchase
+    case gift
+    case inheritance
+    case exchange
+    case other
+
+    var id: String { rawValue }
+
+    var localizationKey: String {
+        "asset.acquisition-method.\(rawValue)"
+    }
 }
 
 nonisolated struct AssetPreset: Identifiable, Hashable, Sendable {

@@ -2,69 +2,130 @@ import SwiftData
 import SwiftUI
 
 struct AppShellView: View {
-    private let analyzer: any AssetAnalyzing
-
-    init(analyzer: any AssetAnalyzing = AppleAssetAnalysisService()) {
-        self.analyzer = analyzer
-    }
-
-    var body: some View {
-        NavigationStack {
-            AssetHomeView(analyzer: analyzer)
-        }
-    }
-}
-
-private struct AssetCreationPresentation: Identifiable {
-    let id = UUID()
-}
-
-struct AssetHomeView: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.modelContext) private var modelContext
+
     @Query(sort: \Asset.createdAt, order: .reverse) private var assets: [Asset]
+    @Query(sort: \AssetAttachment.createdAt, order: .reverse) private var attachments: [AssetAttachment]
 
     private let analyzer: any AssetAnalyzing
+    private let valuationEngine = PortfolioValuationEngine()
 
-    @State private var presentedFlow: AssetCreationPresentation?
+    @State private var router: AppRouter
+    @State private var marketStore: MarketDataStore
+    @State private var valuationAsOf = Date()
 
-    init(analyzer: any AssetAnalyzing) {
+    init(
+        analyzer: any AssetAnalyzing = AppleAssetAnalysisService(),
+        marketStore: MarketDataStore? = nil
+    ) {
         self.analyzer = analyzer
+        _router = State(initialValue: AppRouter())
+        _marketStore = State(initialValue: marketStore ?? MarketDataStore.live())
     }
 
     var body: some View {
-        Group {
-            if assets.isEmpty {
-                emptyState
-            } else {
-                assetList
+        @Bindable var router = router
+
+        NavigationStack(path: $router.path) {
+            VaultDashboardView(
+                assets: assets,
+                attachments: attachments,
+                valuation: portfolioValuation,
+                goldQuote: marketStore.quote(for: .gold),
+                isRefreshing: marketStore.isRefreshing,
+                isUsingCachedMarketData: marketStore.isUsingCachedData,
+                marketErrorDescription: marketStore.lastError?.message,
+                refresh: refreshMarket
+            )
+            .navigationDestination(for: AppRoute.self) { route in
+                destination(for: route)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.background.ignoresSafeArea())
-        .navigationTitle("asset.home.navigation-title")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            if presentedFlow == nil {
-                ToolbarSpacer(.flexible, placement: .bottomBar)
+        .environment(router)
+        .environment(marketStore)
+        .sheet(item: $router.sheet) { destination in
+            sheet(for: destination)
+        }
+        .fullScreenCover(item: $router.cover) { destination in
+            cover(for: destination)
+        }
+        .task(id: requiredPairs) {
+            await marketStore.load(pairs: requiredPairs)
+            valuationAsOf = marketStore.lastRefreshAt ?? Date()
 
-                ToolbarItem(placement: .bottomBar) {
-                    Button {
-                        presentedFlow = AssetCreationPresentation()
-                    } label: {
-                        Label("asset.home.add", systemImage: "plus")
-                            .labelStyle(.iconOnly)
-                            .font(.title3.weight(.semibold))
-                            .frame(minWidth: 44, minHeight: 44)
-                    }
-                    .accessibilityLabel(Text("asset.home.add"))
-                    .accessibilityIdentifier("home.add")
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(for: .seconds(60))
+                } catch {
+                    return
                 }
-
-                ToolbarSpacer(.flexible, placement: .bottomBar)
+                await marketStore.refresh(pairs: requiredPairs)
+                valuationAsOf = marketStore.lastRefreshAt ?? valuationAsOf
             }
         }
-        .fullScreenCover(item: $presentedFlow) { _ in
+        .background(theme.background)
+    }
+
+    @ViewBuilder
+    private func destination(for route: AppRoute) -> some View {
+        switch route {
+        case .inventory:
+            InventoryView(
+                assets: assets,
+                attachments: attachments,
+                valuation: portfolioValuation,
+                isRefreshing: marketStore.isRefreshing
+            )
+        case let .assetDetail(assetID):
+            if let asset = asset(withID: assetID) {
+                AssetDetailView(
+                    asset: asset,
+                    attachments: attachments,
+                    valuation: assetValuation(withID: assetID)
+                )
+            } else {
+                MissingAssetView()
+            }
+        case let .assetDocuments(assetID):
+            if let asset = asset(withID: assetID) {
+                AssetDocumentsView(
+                    asset: asset,
+                    repository: SwiftDataAssetRepository(modelContext: modelContext)
+                )
+            } else {
+                MissingAssetView()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func sheet(for destination: AppSheetDestination) -> some View {
+        switch destination {
+        case let .editAsset(assetID):
+            if let asset = asset(withID: assetID) {
+                AssetEditorView(
+                    asset: asset,
+                    repository: SwiftDataAssetRepository(modelContext: modelContext)
+                )
+            } else {
+                NavigationStack {
+                    MissingAssetView()
+                }
+            }
+        case .saleSimulation:
+            SaleSimulationView(
+                assets: assets,
+                attachments: attachments,
+                valuation: portfolioValuation
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func cover(for destination: AppCoverDestination) -> some View {
+        switch destination {
+        case .assetCreation:
             AssetCreationFlowView(
                 state: AssetCreationState(
                     analyzer: analyzer,
@@ -74,109 +135,88 @@ struct AssetHomeView: View {
         }
     }
 
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label("asset.home.empty.title", systemImage: "shippingbox")
-                .foregroundStyle(theme.ink)
-        } description: {
-            Text("asset.home.empty.body")
-                .foregroundStyle(theme.muted)
-        }
-        .accessibilityIdentifier("home.empty")
+    private var snapshots: [PortfolioAssetSnapshot] {
+        assets.map(\.portfolioSnapshot)
     }
 
-    private var assetList: some View {
-        List {
-            Section {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("asset.home.vault")
-                        .font(theme.displayFont(size: 24, relativeTo: .title2))
+    private var portfolioValuation: PortfolioValuation {
+        valuationEngine.valuate(
+            assets: snapshots,
+            market: marketStore.marketSnapshot,
+            asOf: valuationAsOf
+        )
+    }
 
-                    Spacer()
+    private var requiredPairs: Set<SpotPair> {
+        PortfolioValuationEngine.requiredSpotPairs(for: snapshots)
+            .union([SpotPair(metal: .gold, currency: .eur)])
+    }
 
-                    Text("asset.home.count \(assets.count)")
-                        .font(.subheadline.monospacedDigit())
-                        .foregroundStyle(theme.muted)
-                        .contentTransition(.numericText())
-                }
-                .listRowBackground(theme.surface)
-            }
+    private func asset(withID id: UUID) -> Asset? {
+        assets.first { $0.id == id }
+    }
 
-            Section("asset.home.recent") {
-                ForEach(assets) { asset in
-                    AssetHomeRow(asset: asset)
-                        .listRowBackground(theme.surface)
-                }
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .accessibilityIdentifier("home.assets")
+    private func assetValuation(withID id: UUID) -> AssetValuation? {
+        portfolioValuation.assetValuations.first { $0.assetID == id }
+    }
+
+    private func refreshMarket() async {
+        await marketStore.refresh(pairs: requiredPairs)
+        valuationAsOf = marketStore.lastRefreshAt ?? valuationAsOf
     }
 }
 
-private struct AssetHomeRow: View {
+private struct MissingAssetView: View {
     @Environment(KaraTheme.self) private var theme
 
-    let asset: Asset
-
     var body: some View {
-        HStack(spacing: KaraSpacing.medium) {
-            Image(systemName: symbolName)
-                .font(.title3)
-                .foregroundStyle(theme.goldBright)
-                .frame(width: 42, height: 42)
-                .background(theme.gold.opacity(0.12), in: .circle)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                Text(asset.name)
-                    .font(.headline)
-                    .foregroundStyle(theme.ink)
-
-                Text(categoryKey)
-                    .font(.subheadline)
-                    .foregroundStyle(theme.muted)
-            }
-
-            Spacer(minLength: KaraSpacing.small)
-
-            if asset.quantity > 1 {
-                Text("×\(asset.quantity)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(theme.muted)
-            }
+        ContentUnavailableView {
+            Label("asset-missing.title", systemImage: "shippingbox.and.arrow.backward")
+        } description: {
+            Text("asset-missing.body")
         }
-        .padding(.vertical, KaraSpacing.xSmall)
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("home.asset.\(asset.id.uuidString)")
-    }
-
-    private var categoryKey: LocalizedStringKey {
-        LocalizedStringKey(asset.category.localizationKey)
-    }
-
-    private var symbolName: String {
-        switch asset.category {
-        case .bar:
-            "square.stack.3d.up.fill"
-        case .coin:
-            "medal.fill"
-        case .jewelry:
-            "diamond.fill"
-        case .custom:
-            "shippingbox.fill"
-        }
+        .foregroundStyle(theme.ink)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.background.ignoresSafeArea())
     }
 }
 
-#Preview("Empty vault") {
-    AppShellView(analyzer: PreviewAssetAnalyzer())
-        .environment(KaraTheme())
-        .modelContainer(
-            for: [Asset.self, AssetAttachment.self, SavedSeller.self, StorageLocation.self],
-            inMemory: true
+#Preview("Vault with one asset") {
+    let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Asset.self,
+        AssetAttachment.self,
+        SavedSeller.self,
+        StorageLocation.self,
+        configurations: configuration
+    )
+    let asset = Asset(
+        name: "Lingotin 20 g",
+        category: .bar,
+        quantity: 1,
+        purchaseDate: Date.now.addingTimeInterval(-86_400 * 180),
+        metal: .gold,
+        weightGrams: 20,
+        finenessPermille: 999.9,
+        pricePaidMinorUnits: 120_000,
+        currencyCode: "EUR",
+        storageLocationName: "Coffre principal",
+        acquisitionMethod: .purchase,
+        tags: ["Long terme"]
+    )
+    container.mainContext.insert(asset)
+
+    return AppShellView(
+        analyzer: PreviewAssetAnalyzer(),
+        marketStore: MarketDataStore(
+            client: PreviewMarketDataClient(),
+            cache: PreviewMarketDataCache()
         )
-        .preferredColorScheme(.dark)
+    )
+    .environment(KaraTheme())
+    .environment(PrivacyPreferences(defaults: UserDefaults(suiteName: "kara.preview.vault")!))
+    .modelContainer(container)
+    .preferredColorScheme(.dark)
 }
 
 private struct PreviewAssetAnalyzer: AssetAnalyzing {
@@ -191,4 +231,42 @@ private struct PreviewAssetAnalyzer: AssetAnalyzing {
     ) async throws -> AssetAnalysisSuggestion {
         AssetAnalysisSuggestion()
     }
+}
+
+private struct PreviewMarketDataClient: MarketDataClient {
+    func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote> {
+        let ouncePrice: Decimal = switch pair.metal {
+        case .gold: 2_247.80
+        case .silver: 29.40
+        case .platinum: 1_020
+        case .palladium: 980
+        }
+        return .modified(
+            SpotQuote(
+                metal: pair.metal,
+                currency: pair.currency,
+                price: ouncePrice,
+                unit: MarketUnit(code: .troyOunce, grams: 31.103_476_8),
+                sourceUpdatedAt: .now
+            ),
+            etag: nil
+        )
+    }
+
+    func monthly(etag: String?) async throws -> MarketFetchResult<MonthlyDataset> {
+        .notModified(etag: nil)
+    }
+
+    func manifest(etag: String?) async throws -> MarketFetchResult<MarketManifest> {
+        .notModified(etag: nil)
+    }
+}
+
+private actor PreviewMarketDataCache: MarketDataCaching {
+    func cachedSpot(for pair: SpotPair) -> CachedMarketResource<SpotQuote>? { nil }
+    func saveSpot(_ entry: CachedMarketResource<SpotQuote>, for pair: SpotPair) {}
+    func cachedMonthly() -> CachedMarketResource<MonthlyDataset>? { nil }
+    func saveMonthly(_ entry: CachedMarketResource<MonthlyDataset>) {}
+    func cachedManifest() -> CachedMarketResource<MarketManifest>? { nil }
+    func saveManifest(_ entry: CachedMarketResource<MarketManifest>) {}
 }

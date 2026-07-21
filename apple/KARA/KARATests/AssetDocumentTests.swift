@@ -5,6 +5,14 @@ import UIKit
 
 @Suite("Invoice document preparation")
 struct AssetDocumentTests {
+    @Test("Attachment metadata distinguishes text, images, PDFs and generic files")
+    func classifiesAttachmentContentTypes() {
+        #expect(AssetAttachmentContentKind(mimeType: "application/pdf") == .pdf)
+        #expect(AssetAttachmentContentKind(mimeType: "image/jpeg") == .image)
+        #expect(AssetAttachmentContentKind(mimeType: "text/plain") == .text)
+        #expect(AssetAttachmentContentKind(mimeType: "application/octet-stream") == .file)
+    }
+
     @Test
     func textDocumentsKeepBoundaryPagesAndRankTheMostInformativePages() {
         let pageTexts = [
@@ -69,6 +77,25 @@ struct AssetDocumentTests {
         )
 
         #expect(document.filename == "scan.pdf")
+        #expect(document.mimeType == "application/pdf")
+        #expect(document.pageCount == 2)
+        #expect(PDFDocument(data: document.data)?.pageCount == 2)
+    }
+
+    @Test
+    @MainActor
+    func scannedDocumentPreparationCreatesOnePDFWithoutBlockingItsCaller() async throws {
+        let pages = [
+            ScannedDocumentPage(makeImage(color: .systemYellow)),
+            ScannedDocumentPage(makeImage(color: .systemBlue)),
+        ]
+
+        let document = try await ScannedDocumentPreparation.prepare(
+            pages: pages,
+            filename: "scan-asynchrone"
+        )
+
+        #expect(document.filename == "scan-asynchrone.pdf")
         #expect(document.mimeType == "application/pdf")
         #expect(document.pageCount == 2)
         #expect(PDFDocument(data: document.data)?.pageCount == 2)

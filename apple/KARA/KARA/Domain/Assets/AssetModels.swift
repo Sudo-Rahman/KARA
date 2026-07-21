@@ -20,6 +20,9 @@ final class Asset {
     var sellerName: String?
     var storageLocationName: String?
     var invoiceNumber: String?
+    var serialNumber: String?
+    var acquisitionMethodRawValue: String?
+    var tagsJSON: String = "[]"
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
 
@@ -31,6 +34,31 @@ final class Asset {
     var metal: PreciousMetal? {
         get { metalRawValue.flatMap(PreciousMetal.init(rawValue:)) }
         set { metalRawValue = newValue?.rawValue }
+    }
+
+    var acquisitionMethod: AssetAcquisitionMethod? {
+        get { acquisitionMethodRawValue.flatMap(AssetAcquisitionMethod.init(rawValue:)) }
+        set { acquisitionMethodRawValue = newValue?.rawValue }
+    }
+
+    var tags: [String] {
+        get {
+            guard let data = tagsJSON.data(using: .utf8),
+                  let values = try? JSONDecoder().decode([String].self, from: data)
+            else {
+                return []
+            }
+            return values
+        }
+        set {
+            guard let data = try? JSONEncoder().encode(newValue),
+                  let encoded = String(data: data, encoding: .utf8)
+            else {
+                tagsJSON = "[]"
+                return
+            }
+            tagsJSON = encoded
+        }
     }
 
     init(
@@ -51,6 +79,9 @@ final class Asset {
         sellerName: String? = nil,
         storageLocationName: String? = nil,
         invoiceNumber: String? = nil,
+        serialNumber: String? = nil,
+        acquisitionMethod: AssetAcquisitionMethod? = nil,
+        tags: [String] = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -71,6 +102,12 @@ final class Asset {
         self.sellerName = sellerName
         self.storageLocationName = storageLocationName
         self.invoiceNumber = invoiceNumber
+        self.serialNumber = serialNumber
+        acquisitionMethodRawValue = acquisitionMethod?.rawValue
+        if let data = try? JSONEncoder().encode(tags),
+           let encoded = String(data: data, encoding: .utf8) {
+            tagsJSON = encoded
+        }
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

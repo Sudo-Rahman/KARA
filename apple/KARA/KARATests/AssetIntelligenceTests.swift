@@ -208,7 +208,10 @@ struct AssetIntelligenceTests {
             currencyCode: " eur ",
             sellerName: "  Maison   Lemoine ",
             storageLocationName: " ",
-            invoiceNumber: " ML2024-05872 "
+            invoiceNumber: " ML2024-05872 ",
+            serialNumber: " A12 3456 ",
+            acquisitionMethod: "purchase",
+            tags: [" investissement ", "Long   terme", "INVESTISSEMENT"]
         )
 
         let suggestion = FoundationModelAssetAnalyzer.suggestion(from: generated)
@@ -228,6 +231,9 @@ struct AssetIntelligenceTests {
         #expect(suggestion.sellerName == "Maison Lemoine")
         #expect(suggestion.storageLocationName == nil)
         #expect(suggestion.invoiceNumber == "ML2024-05872")
+        #expect(suggestion.serialNumber == "A12 3456")
+        #expect(suggestion.acquisitionMethod == .purchase)
+        #expect(suggestion.tags == ["investissement", "Long terme"])
 
         let calendar = Calendar(identifier: .gregorian)
         let components = suggestion.purchaseDate.map {

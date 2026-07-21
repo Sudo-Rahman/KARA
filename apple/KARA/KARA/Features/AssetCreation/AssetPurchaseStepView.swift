@@ -8,6 +8,8 @@ struct AssetPurchaseStepView: View {
         case seller
         case storage
         case invoiceNumber
+        case serialNumber
+        case tags
     }
 
     @Environment(KaraTheme.self) private var theme
@@ -18,6 +20,13 @@ struct AssetPurchaseStepView: View {
     let onContinue: () -> Void
 
     @FocusState private var focusedField: FocusField?
+    @State private var tagsText: String
+
+    init(state: AssetCreationState, onContinue: @escaping () -> Void) {
+        self.state = state
+        self.onContinue = onContinue
+        _tagsText = State(initialValue: state.draft.tags.joined(separator: ", "))
+    }
 
     var body: some View {
         AssetStepScaffold(
@@ -27,6 +36,7 @@ struct AssetPurchaseStepView: View {
         ) {
             purchaseSection
             provenanceSection
+            inventorySection
 
             if state.validationAttempted, !purchaseValidationErrors.isEmpty {
                 validationMessages
@@ -150,6 +160,63 @@ struct AssetPurchaseStepView: View {
         }
     }
 
+    private var inventorySection: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+            AssetSectionTitle("purchase.inventory.title", detail: "purchase.inventory.body")
+
+            AssetFieldSurface {
+                VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                    AssetFieldLabel("details.acquisition-method")
+                    Picker("details.acquisition-method", selection: acquisitionMethodBinding) {
+                        Text("purchase.acquisition.unknown")
+                            .tag(Optional<AssetAcquisitionMethod>.none)
+                        ForEach(AssetAcquisitionMethod.allCases) { method in
+                            Text(LocalizedStringKey(method.localizationKey))
+                                .tag(Optional(method))
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .background(theme.cobalt.opacity(0.16), in: .rect(cornerRadius: 12))
+                    .accessibilityIdentifier("details.acquisition-method")
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                    AssetFieldLabel("details.serial-number", helper: "purchase.serial-number.helper")
+                    TextField(
+                        "purchase.serial-number.placeholder",
+                        text: binding(\.serialNumber, field: .serialNumber)
+                    )
+                    .textInputAutocapitalization(.characters)
+                    .focused($focusedField, equals: .serialNumber)
+                    .karaPurchaseInputSurface()
+                    .accessibilityIdentifier("details.serial-number")
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                    AssetFieldLabel("details.tags", helper: "purchase.tags.helper")
+                    TextField("purchase.tags.placeholder", text: $tagsText)
+                        .textInputAutocapitalization(.sentences)
+                        .focused($focusedField, equals: .tags)
+                        .karaPurchaseInputSurface()
+                        .accessibilityIdentifier("details.tags")
+                        .onChange(of: tagsText) { _, value in
+                            state.update(
+                                \.tags,
+                                to: parsedTags(from: value),
+                                field: .tags
+                            )
+                        }
+                }
+            }
+        }
+    }
+
     private var validationMessages: some View {
         AssetFieldSurface {
             ForEach(purchaseValidationErrors, id: \.self) { error in
@@ -215,6 +282,17 @@ struct AssetPurchaseStepView: View {
         Binding(
             get: { SupportedAssetCurrency(rawValue: state.draft.currencyCode) ?? .defaultCurrency },
             set: { state.updateCurrencyCode($0.rawValue) }
+        )
+    }
+
+    private var acquisitionMethodBinding: Binding<AssetAcquisitionMethod?> {
+        binding(\.acquisitionMethod, field: .acquisitionMethod)
+    }
+
+    private func parsedTags(from value: String) -> [String] {
+        let separators = CharacterSet(charactersIn: ",;\n")
+        return AssetTagNormalizer.normalize(
+            value.components(separatedBy: separators)
         )
     }
 

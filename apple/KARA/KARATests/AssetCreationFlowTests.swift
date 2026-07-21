@@ -10,6 +10,8 @@ struct AssetCreationFlowTests {
         let state = makeState()
 
         #expect(state.step == .objectPhoto)
+        #expect(state.draft.acquisitionMethod == .purchase)
+        #expect(!state.hasUserContent)
 
         state.skipCurrentStep()
         #expect(state.step == .invoice)
@@ -23,6 +25,27 @@ struct AssetCreationFlowTests {
         state.update(\.category, to: .custom, field: .category)
 
         #expect(state.canAdvanceFromDetails)
+    }
+
+    @Test
+    func analysisLeavesInventoryMetadataForManualConfirmation() async {
+        let analyzer = SequencedAnalyzer(
+            objectSuggestions: [
+                AssetAnalysisSuggestion(
+                    serialNumber: "AI-123",
+                    acquisitionMethod: .inheritance,
+                    tags: ["AI tag"]
+                )
+            ]
+        )
+        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+
+        state.setObjectPhoto(Data([0x01]))
+        await waitForAnalysis(in: state)
+
+        #expect(state.draft.serialNumber.isEmpty)
+        #expect(state.draft.acquisitionMethod == .purchase)
+        #expect(state.draft.tags.isEmpty)
     }
 
     @Test

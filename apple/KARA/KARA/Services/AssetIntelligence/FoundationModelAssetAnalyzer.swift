@@ -53,6 +53,15 @@ nonisolated struct GeneratedAssetAnalysis {
     @Guide(description: "Invoice identifier or number, only when explicitly visible.")
     var invoiceNumber: String?
 
+    @Guide(description: "Serial number or unique asset identifier, only when explicitly visible.")
+    var serialNumber: String?
+
+    @Guide(description: "One of: purchase, gift, inheritance, exchange, other; only when explicitly stated.")
+    var acquisitionMethod: String?
+
+    @Guide(description: "Short descriptive tags explicitly supported by the document, without duplicates.")
+    var tags: [String]?
+
     init(
         name: String? = nil,
         category: String? = nil,
@@ -69,7 +78,10 @@ nonisolated struct GeneratedAssetAnalysis {
         currencyCode: String? = nil,
         sellerName: String? = nil,
         storageLocationName: String? = nil,
-        invoiceNumber: String? = nil
+        invoiceNumber: String? = nil,
+        serialNumber: String? = nil,
+        acquisitionMethod: String? = nil,
+        tags: [String]? = nil
     ) {
         self.name = name
         self.category = category
@@ -87,6 +99,9 @@ nonisolated struct GeneratedAssetAnalysis {
         self.sellerName = sellerName
         self.storageLocationName = storageLocationName
         self.invoiceNumber = invoiceNumber
+        self.serialNumber = serialNumber
+        self.acquisitionMethod = acquisitionMethod
+        self.tags = tags
     }
 }
 
@@ -260,7 +275,12 @@ nonisolated struct FoundationModelAssetAnalyzer: AssetModelAnalyzing {
             currencyCode: currencyCode,
             sellerName: normalizedText(generated.sellerName),
             storageLocationName: normalizedText(generated.storageLocationName),
-            invoiceNumber: normalizedText(generated.invoiceNumber)
+            invoiceNumber: normalizedText(generated.invoiceNumber),
+            serialNumber: normalizedText(generated.serialNumber),
+            acquisitionMethod: generated.acquisitionMethod.flatMap {
+                AssetAcquisitionMethod(rawValue: $0.trimmingCharacters(in: .whitespacesAndNewlines))
+            },
+            tags: generated.tags.map(AssetTagNormalizer.normalize)
         )
     }
 

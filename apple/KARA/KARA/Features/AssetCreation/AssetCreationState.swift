@@ -82,6 +82,9 @@ final class AssetCreationState {
     private let saver: any AssetSaving
 
     @ObservationIgnored
+    private let pristineDraft: AssetDraft
+
+    @ObservationIgnored
     private var objectAnalysisTask: Task<Void, Never>?
 
     @ObservationIgnored
@@ -104,7 +107,12 @@ final class AssetCreationState {
         analyzer: any AssetAnalyzing,
         saver: any AssetSaving
     ) {
-        self.draft = draft
+        var initialDraft = draft
+        if initialDraft.acquisitionMethod == nil {
+            initialDraft.acquisitionMethod = .purchase
+        }
+        self.draft = initialDraft
+        pristineDraft = initialDraft
         self.analyzer = analyzer
         self.saver = saver
     }
@@ -122,7 +130,7 @@ final class AssetCreationState {
     var hasUserContent: Bool {
         objectPhotoData != nil
             || invoiceDocument != nil
-            || draft != AssetDraft()
+            || draft != pristineDraft
     }
 
     var attachments: [AssetAttachmentPayload] {
@@ -341,19 +349,27 @@ final class AssetCreationState {
     }
 
     private func reapplyAnalysisSuggestions() {
+        let manuallyConfirmedMetadata: Set<AssetDraft.Field> = [
+            .serialNumber,
+            .acquisitionMethod,
+            .tags,
+        ]
         draft.clearSuggestedFields(objectSuggestedFields.union(invoiceSuggestedFields))
         objectSuggestedFields.removeAll()
         invoiceSuggestedFields.removeAll()
 
         // Keep the capture order deterministic even when the two analyses finish out of order.
         if let objectSuggestion {
-            objectSuggestedFields = draft.merge(suggestion: objectSuggestion)
+            objectSuggestedFields = draft.merge(
+                suggestion: objectSuggestion,
+                excluding: manuallyConfirmedMetadata
+            )
         }
 
         if let invoiceSuggestion {
             invoiceSuggestedFields = draft.merge(
                 suggestion: invoiceSuggestion,
-                excluding: objectSuggestedFields
+                excluding: objectSuggestedFields.union(manuallyConfirmedMetadata)
             )
         }
     }

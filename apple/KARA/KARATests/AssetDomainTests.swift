@@ -111,6 +111,48 @@ struct AssetDomainTests {
         #expect(draft.invoiceNumber.isEmpty)
     }
 
+    @Test("An existing asset becomes a complete editable draft")
+    func createsDraftFromExistingAsset() {
+        let asset = Asset(
+            name: "Lingot",
+            category: .bar,
+            quantity: 3,
+            metal: .gold,
+            sellerName: "Comptoir",
+            serialNumber: "A-42",
+            acquisitionMethod: .gift,
+            tags: ["Famille", "Long terme"]
+        )
+
+        let draft = AssetDraft(asset: asset)
+
+        #expect(draft.name == "Lingot")
+        #expect(draft.category == .bar)
+        #expect(draft.quantity == 3)
+        #expect(draft.metal == .gold)
+        #expect(draft.sellerName == "Comptoir")
+        #expect(draft.serialNumber == "A-42")
+        #expect(draft.acquisitionMethod == .gift)
+        #expect(draft.tags == ["Famille", "Long terme"])
+        #expect(draft.manuallyEditedFields.isEmpty)
+    }
+
+    @Test("Analysis suggestions merge serial, acquisition and normalized tags")
+    func mergesInventoryMetadataSuggestions() {
+        var draft = AssetDraft()
+
+        let applied = draft.merge(suggestion: AssetAnalysisSuggestion(
+            serialNumber: "SERIE-42",
+            acquisitionMethod: .inheritance,
+            tags: [" Famille ", "long   terme", "FAMILLE"]
+        ))
+
+        #expect(draft.serialNumber == "SERIE-42")
+        #expect(draft.acquisitionMethod == .inheritance)
+        #expect(draft.tags == ["Famille", "long terme"])
+        #expect(applied.isSuperset(of: [.serialNumber, .acquisitionMethod, .tags]))
+    }
+
     @Test("Catalog presets copy authoritative bullion specifications")
     func catalogCarriesKnownWeightsAndFineness() throws {
         let kilogramBar = try #require(AssetCatalog.preset(id: "gold-bar-1kg"))
