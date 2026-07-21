@@ -21,8 +21,6 @@ struct InvoiceStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .invoice,
-            navigationTitle: "invoice.navigation-title",
             title: "invoice.title",
             message: "invoice.body"
         ) {

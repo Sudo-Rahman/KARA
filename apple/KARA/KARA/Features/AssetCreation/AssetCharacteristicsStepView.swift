@@ -34,10 +34,9 @@ struct AssetCharacteristicsStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .characteristics,
-            navigationTitle: "characteristics.navigation-title",
             title: "characteristics.title",
-            message: "characteristics.body"
+            message: "characteristics.body",
+            onDismissKeyboard: dismissKeyboard
         ) {
             if let preset = AssetCatalog.preset(id: state.draft.presetID) {
                 presetSummary(preset)
@@ -385,6 +384,10 @@ struct AssetCharacteristicsStepView: View {
         }
         focusedField = nil
         onContinue()
+    }
+
+    private func dismissKeyboard() {
+        focusedField = nil
     }
 
     private func localizedName(for preset: AssetPreset) -> String {

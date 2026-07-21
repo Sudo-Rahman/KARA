@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import KARA
 
@@ -71,5 +72,18 @@ struct AssetCreationNavigationTests {
 
         #expect(router.currentStep == .summary)
         #expect(router.path == [.invoice, .classification, .characteristics, .purchase, .summary])
+    }
+
+    @Test("Saved values are filtered without case or accent sensitivity")
+    func filtersSavedValuesForComboBoxes() {
+        let boutique = SavedValue(id: UUID(), name: "Boutique Étincelle")
+        let negociant = SavedValue(id: UUID(), name: "Négociant Central")
+        let values = [boutique, negociant]
+
+        #expect(SavedValueSearch.filtered(values, query: "") == values)
+        #expect(SavedValueSearch.filtered(values, query: "ETINCELLE") == [boutique])
+        #expect(SavedValueSearch.filtered(values, query: "negociant") == [negociant])
+        #expect(SavedValueSearch.filtered(values, query: "inconnu").isEmpty)
+        #expect(SavedValueSearch.isExactMatch("Coffre privé", query: " coffre PRIVE "))
     }
 }

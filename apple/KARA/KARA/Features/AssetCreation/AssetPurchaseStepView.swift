@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -20,10 +21,9 @@ struct AssetPurchaseStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .purchase,
-            navigationTitle: "purchase.navigation-title",
             title: "purchase.title",
-            message: "purchase.body"
+            message: "purchase.body",
+            onDismissKeyboard: dismissKeyboard
         ) {
             purchaseSection
             provenanceSection
@@ -121,29 +121,31 @@ struct AssetPurchaseStepView: View {
             AssetSectionTitle("purchase.provenance.title", detail: "purchase.provenance.body")
 
             AssetFieldSurface {
-                SavedValueField(
+                SavedValueComboBox(
                     title: "details.seller",
                     helper: "purchase.seller.helper",
                     placeholder: "purchase.seller.placeholder",
                     text: binding(\.sellerName, field: .sellerName),
                     savedValues: sellers.map { SavedValue(id: $0.id, name: $0.name) },
                     menuTitle: "purchase.seller.saved",
-                    accessibilityIdentifier: "details.seller"
+                    accessibilityIdentifier: "details.seller",
+                    focusedField: $focusedField,
+                    focusValue: .seller
                 )
-                .focused($focusedField, equals: .seller)
 
                 Divider()
 
-                SavedValueField(
+                SavedValueComboBox(
                     title: "details.storage-location",
                     helper: "purchase.storage.helper",
                     placeholder: "purchase.storage.placeholder",
                     text: binding(\.storageLocationName, field: .storageLocationName),
                     savedValues: storageLocations.map { SavedValue(id: $0.id, name: $0.name) },
                     menuTitle: "purchase.storage.saved",
-                    accessibilityIdentifier: "details.storage-location"
+                    accessibilityIdentifier: "details.storage-location",
+                    focusedField: $focusedField,
+                    focusValue: .storage
                 )
-                .focused($focusedField, equals: .storage)
             }
         }
     }
@@ -227,6 +229,10 @@ struct AssetPurchaseStepView: View {
         onContinue()
     }
 
+    private func dismissKeyboard() {
+        focusedField = nil
+    }
+
     private func currencyLabel(_ currency: SupportedAssetCurrency) -> String {
         switch currency {
         case .euro: "€  EUR"
@@ -255,13 +261,34 @@ struct AssetPurchaseStepView: View {
     }
 }
 
-private struct SavedValue: Identifiable {
+struct SavedValue: Identifiable, Equatable {
     let id: UUID
     let name: String
 }
 
-private struct SavedValueField: View {
+enum SavedValueSearch {
+    static func filtered(_ values: [SavedValue], query: String) -> [SavedValue] {
+        let normalizedQuery = normalized(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !normalizedQuery.isEmpty else { return values }
+
+        return values.filter { normalized($0.name).contains(normalizedQuery) }
+    }
+
+    static func isExactMatch(_ value: String, query: String) -> Bool {
+        normalized(value) == normalized(query.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private static func normalized(_ value: String) -> String {
+        value.folding(
+            options: [.caseInsensitive, .diacriticInsensitive],
+            locale: .current
+        )
+    }
+}
+
+private struct SavedValueComboBox<FocusValue: Hashable>: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let title: LocalizedStringKey
     let helper: LocalizedStringKey
@@ -270,36 +297,93 @@ private struct SavedValueField: View {
     let savedValues: [SavedValue]
     let menuTitle: LocalizedStringKey
     let accessibilityIdentifier: String
+    let focusedField: FocusState<FocusValue?>.Binding
+    let focusValue: FocusValue
 
     var body: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.small) {
             AssetFieldLabel(title, helper: helper)
 
-            TextField(placeholder, text: $text)
-                .textInputAutocapitalization(.words)
-                .karaPurchaseInputSurface()
-                .accessibilityIdentifier(accessibilityIdentifier)
+            HStack(spacing: KaraSpacing.small) {
+                TextField(placeholder, text: $text)
+                    .textInputAutocapitalization(.words)
+                    .focused(focusedField, equals: focusValue)
+                    .accessibilityIdentifier(accessibilityIdentifier)
 
-            if !savedValues.isEmpty {
-                Text(menuTitle)
-                    .font(.caption.weight(.semibold))
+                Image(systemName: isFocused ? "magnifyingglass" : "chevron.up.chevron.down")
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(theme.muted)
+                    .accessibilityHidden(true)
+            }
+            .karaPurchaseInputSurface()
 
-                ScrollView(.horizontal) {
-                    HStack(spacing: KaraSpacing.small) {
-                        ForEach(savedValues.prefix(8)) { savedValue in
-                            Button(savedValue.name) {
-                                text = savedValue.name
+            if isFocused, !suggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(menuTitle)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(theme.muted)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, KaraSpacing.small)
+
+                    ForEach(suggestions.prefix(8)) { savedValue in
+                        Button {
+                            select(savedValue)
+                        } label: {
+                            HStack(spacing: KaraSpacing.small) {
+                                Image(systemName: "checkmark")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(theme.cobaltBright)
+                                    .opacity(isSelected(savedValue) ? 1 : 0)
+                                    .accessibilityHidden(true)
+
+                                Text(savedValue.name)
+                                    .foregroundStyle(theme.ink)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .buttonStyle(.glass)
-                            .controlSize(.small)
+                            .padding(.horizontal, 12)
+                            .frame(minHeight: 44)
+                            .contentShape(.rect)
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(isSelected(savedValue) ? .isSelected : [])
+                        .accessibilityIdentifier("\(accessibilityIdentifier).suggestion.\(savedValue.id)")
                     }
                 }
-                .scrollIndicators(.hidden)
-                .accessibilityIdentifier("\(accessibilityIdentifier).saved")
+                .padding(.bottom, KaraSpacing.xSmall)
+                .background(theme.background.opacity(0.72), in: .rect(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(theme.cobaltBright.opacity(0.28), lineWidth: 1)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .accessibilityIdentifier("\(accessibilityIdentifier).suggestions")
             }
         }
+        .animation(
+            KaraMotion.controlResponse(reduceMotion: reduceMotion),
+            value: isFocused
+        )
+        .animation(
+            KaraMotion.controlResponse(reduceMotion: reduceMotion),
+            value: suggestions.map(\.id)
+        )
+    }
+
+    private var isFocused: Bool {
+        focusedField.wrappedValue == focusValue
+    }
+
+    private var suggestions: [SavedValue] {
+        SavedValueSearch.filtered(savedValues, query: text)
+    }
+
+    private func isSelected(_ savedValue: SavedValue) -> Bool {
+        SavedValueSearch.isExactMatch(savedValue.name, query: text)
+    }
+
+    private func select(_ savedValue: SavedValue) {
+        text = savedValue.name
+        focusedField.wrappedValue = nil
     }
 }
 

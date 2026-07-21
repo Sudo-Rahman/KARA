@@ -16,15 +16,23 @@ struct AssetCreationFlowView: View {
     var body: some View {
         @Bindable var router = router
 
-        NavigationStack(path: $router.path) {
-            ObjectPhotoStepView(
-                state: state,
-                onContinue: { router.advance(to: .invoice) }
+        VStack(spacing: 0) {
+            AssetCreationHeader(
+                step: router.currentStep,
+                onBack: router.goBack,
+                onCancel: requestCancellation
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
-            .navigationDestination(for: AssetCreationStep.self) { step in
-                destination(for: step)
+
+            NavigationStack(path: $router.path) {
+                ObjectPhotoStepView(
+                    state: state,
+                    onContinue: { router.advance(to: .invoice) }
+                )
+                .navigationDestination(for: AssetCreationStep.self) { step in
+                    destination(for: step)
+                }
             }
+            .toolbar(.hidden, for: .navigationBar)
         }
         .background(theme.background.ignoresSafeArea())
         .tint(theme.cobaltBright)
@@ -56,38 +64,32 @@ struct AssetCreationFlowView: View {
                 state: state,
                 onContinue: { router.advance(to: .invoice) }
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         case .invoice:
             InvoiceStepView(
                 state: state,
                 onContinue: { router.advance(to: .classification) }
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         case .classification:
             AssetClassificationStepView(
                 state: state,
                 onContinue: { router.advance(to: .characteristics) }
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         case .characteristics:
             AssetCharacteristicsStepView(
                 state: state,
                 onContinue: { router.advance(to: .purchase) }
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         case .purchase:
             AssetPurchaseStepView(
                 state: state,
                 onContinue: { router.advance(to: .summary) }
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         case .summary:
             AssetSummaryStepView(
                 state: state,
                 onEdit: router.editCharacteristics,
                 onSaved: finishAfterSave
             )
-            .assetCreationCancelToolbar(action: requestCancellation)
         }
     }
 
@@ -107,17 +109,5 @@ struct AssetCreationFlowView: View {
     private func finishAfterSave() {
         savedFeedback += 1
         dismiss()
-    }
-}
-
-private extension View {
-    func assetCreationCancelToolbar(action: @escaping () -> Void) -> some View {
-        toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("asset-flow.cancel", systemImage: "xmark", action: action)
-                    .labelStyle(.iconOnly)
-                    .accessibilityIdentifier("asset-flow.cancel")
-            }
-        }
     }
 }

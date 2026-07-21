@@ -1,6 +1,102 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ ‰" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ‰"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ‰"
+          }
+        }
+      }
+    },
+    "%@ ct" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ct"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ct"
+          }
+        }
+      }
+    },
+    "%@ g" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ g"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ g"
+          }
+        }
+      }
+    },
+    "%lld ct" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ct"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ct"
+          }
+        }
+      }
+    },
+    "%lld ct · %@ ‰" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld ct · %2$@ ‰"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld ct · %2$@ ‰"
+          }
+        }
+      }
+    },
+    "‰" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‰"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‰"
+          }
+        }
+      }
+    },
     "×%lld" : {
       "localizations" : {
         "en" : {
@@ -310,6 +406,7 @@
       }
     },
     "asset-flow.object.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -405,6 +502,22 @@
         }
       }
     },
+    "asset-flow.object.retake" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retake photo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprendre la photo"
+          }
+        }
+      }
+    },
     "asset-flow.object.skip" : {
       "localizations" : {
         "en" : {
@@ -454,7 +567,42 @@
         }
       }
     },
+    "asset.category.bar" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bar or ingot"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot ou lingotin"
+          }
+        }
+      }
+    },
+    "asset.category.coin" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pièce"
+          }
+        }
+      }
+    },
     "asset.category.custom" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -471,6 +619,7 @@
       }
     },
     "asset.category.goldBar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -487,6 +636,7 @@
       }
     },
     "asset.category.goldCoin" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -503,6 +653,7 @@
       }
     },
     "asset.category.jewelry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1160,7 +1311,900 @@
         }
       }
     },
+    "asset.preset.palladium-bar-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz palladium bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot de palladium 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.platinum-bar-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz platinum bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot de platine 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.platinum-bar-100g" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100 g platinum bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot de platine 100 g"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-bar-1kg" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 kg silver bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot d’argent 1 kg"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-bar-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz silver bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot d’argent 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-bar-100g" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100 g silver bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot d’argent 100 g"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-bar-250g" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "250 g silver bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot d’argent 250 g"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-bar-500g" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "500 g silver bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingot d’argent 500 g"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-coin-american-eagle-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz American Silver Eagle"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "American Eagle argent 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-coin-britannia-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz Silver Britannia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Britannia argent 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-coin-maple-leaf-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz Silver Maple Leaf"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maple Leaf argent 1 oz"
+          }
+        }
+      }
+    },
+    "asset.preset.silver-coin-vienna-philharmonic-1oz" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 oz Silver Vienna Philharmonic"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Philharmonique de Vienne argent 1 oz"
+          }
+        }
+      }
+    },
+    "characteristics.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review the detected details and adjust anything you need."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez les informations détectées et ajustez-les si nécessaire."
+          }
+        }
+      }
+    },
+    "characteristics.composition.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the gross weight and metal purity."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indiquez le poids brut et la pureté du métal."
+          }
+        }
+      }
+    },
+    "characteristics.composition.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        }
+      }
+    },
+    "characteristics.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
+    "characteristics.custom-metal.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional for other assets."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Facultatif pour les autres actifs."
+          }
+        }
+      }
+    },
+    "characteristics.fineness.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parts of precious metal per thousand."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parts de métal précieux pour mille."
+          }
+        }
+      }
+    },
+    "characteristics.fineness.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "999.9"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "999,9"
+          }
+        }
+      }
+    },
+    "characteristics.fineness.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fineness"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titre"
+          }
+        }
+      }
+    },
+    "characteristics.gemstone-clarity.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional grading shown on a certificate."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade facultatif indiqué sur un certificat."
+          }
+        }
+      }
+    },
+    "characteristics.gemstone-clarity.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. VS1"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. VS1"
+          }
+        }
+      }
+    },
+    "characteristics.gemstone-weight.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total stone weight."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids total des pierres."
+          }
+        }
+      }
+    },
+    "characteristics.gemstone-weight.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0.00"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0,00"
+          }
+        }
+      }
+    },
+    "characteristics.gemstones.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add stone details when they are known."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez les caractéristiques des pierres si elles sont connues."
+          }
+        }
+      }
+    },
+    "characteristics.gemstones.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemstones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pierres"
+          }
+        }
+      }
+    },
+    "characteristics.gemstones.toggle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This jewellery includes gemstones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce bijou comporte des pierres"
+          }
+        }
+      }
+    },
+    "characteristics.gold-purity.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a common karat or enter the fineness."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un carat courant ou saisissez le titre."
+          }
+        }
+      }
+    },
+    "characteristics.gold-purity.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold purity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pureté de l’or"
+          }
+        }
+      }
+    },
+    "characteristics.identity.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Give this asset a clear name and quantity."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donnez à cet actif un nom clair et indiquez sa quantité."
+          }
+        }
+      }
+    },
+    "characteristics.identity.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identité"
+          }
+        }
+      }
+    },
+    "characteristics.metal-karat.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a common value or enter any karat from 1 to 24."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une valeur courante ou saisissez un carat de 1 à 24."
+          }
+        }
+      }
+    },
+    "characteristics.metal-karat.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. 21"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. 21"
+          }
+        }
+      }
+    },
+    "characteristics.metal-karat.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold karat"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carats de l’or"
+          }
+        }
+      }
+    },
+    "characteristics.name.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Required"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obligatoire"
+          }
+        }
+      }
+    },
+    "characteristics.name.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Britannia 1 oz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. Britannia 1 oz"
+          }
+        }
+      }
+    },
+    "characteristics.navigation-title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Characteristics"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caractéristiques"
+          }
+        }
+      }
+    },
+    "characteristics.preset-applied" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preset applied"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Référence appliquée"
+          }
+        }
+      }
+    },
+    "characteristics.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe your asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Décrivez votre actif"
+          }
+        }
+      }
+    },
+    "characteristics.unit.grams" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "g"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "g"
+          }
+        }
+      }
+    },
+    "characteristics.weight.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weight of one item."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids d’un exemplaire."
+          }
+        }
+      }
+    },
+    "characteristics.weight.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0"
+          }
+        }
+      }
+    },
+    "characteristics.weight.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gross weight"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poids brut"
+          }
+        }
+      }
+    },
+    "classification.ai-prefill" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested by Apple Intelligence"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestion d’Apple Intelligence"
+          }
+        }
+      }
+    },
+    "classification.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a category, then a metal. Select a preset when one matches your asset."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une catégorie, puis un métal. Sélectionnez une référence si elle correspond à votre actif."
+          }
+        }
+      }
+    },
+    "classification.category.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the form that best matches your asset."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez la forme qui correspond le mieux à votre actif."
+          }
+        }
+      }
+    },
+    "classification.category.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catégorie"
+          }
+        }
+      }
+    },
+    "classification.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
+    "classification.metal.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the principal precious metal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le métal précieux principal."
+          }
+        }
+      }
+    },
+    "classification.metal.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métal"
+          }
+        }
+      }
+    },
+    "classification.navigation-title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset type"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type d’actif"
+          }
+        }
+      }
+    },
+    "classification.preset.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preset can prefill the usual weight and purity."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une référence peut préremplir le poids et la pureté habituels."
+          }
+        }
+      }
+    },
+    "classification.preset.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common presets"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Références courantes"
+          }
+        }
+      }
+    },
+    "classification.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What are you adding?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quel actif ajoutez-vous ?"
+          }
+        }
+      }
+    },
+    "ct" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ct"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ct"
+          }
+        }
+      }
+    },
     "details.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1177,6 +2221,7 @@
       }
     },
     "details.category" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1193,6 +2238,7 @@
       }
     },
     "details.category.none" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1225,6 +2271,7 @@
       }
     },
     "details.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1241,6 +2288,7 @@
       }
     },
     "details.fineness" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1321,6 +2369,7 @@
       }
     },
     "details.metal-karat" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1369,6 +2418,7 @@
       }
     },
     "details.navigation-title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1385,6 +2435,7 @@
       }
     },
     "details.preset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1401,6 +2452,7 @@
       }
     },
     "details.preset.none" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1481,6 +2533,7 @@
       }
     },
     "details.review" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1497,6 +2550,7 @@
       }
     },
     "details.section.composition" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1513,6 +2567,7 @@
       }
     },
     "details.section.identity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1529,6 +2584,7 @@
       }
     },
     "details.section.provenance" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1545,6 +2601,7 @@
       }
     },
     "details.section.purchase" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1593,6 +2650,7 @@
       }
     },
     "details.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1753,6 +2811,7 @@
       }
     },
     "details.weight" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1801,6 +2860,7 @@
       }
     },
     "invoice.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2258,6 +3318,327 @@
         }
       }
     },
+    "preview.primary-action.unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unavailable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indisponible"
+          }
+        }
+      }
+    },
+    "purchase.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add what you know. You can leave these fields empty."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez ce que vous connaissez. Ces champs peuvent rester vides."
+          }
+        }
+      }
+    },
+    "purchase.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review asset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifier l’actif"
+          }
+        }
+      }
+    },
+    "purchase.details.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date, price, currency and invoice reference."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date, prix, devise et référence de facture."
+          }
+        }
+      }
+    },
+    "purchase.details.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase details"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détails de l’achat"
+          }
+        }
+      }
+    },
+    "purchase.invoice-number.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional reference from the invoice."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Référence facultative figurant sur la facture."
+          }
+        }
+      }
+    },
+    "purchase.invoice-number.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. INV-2026-042"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. FAC-2026-042"
+          }
+        }
+      }
+    },
+    "purchase.navigation-title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achat"
+          }
+        }
+      }
+    },
+    "purchase.optional-note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All purchase information is optional."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les informations d’achat sont facultatives."
+          }
+        }
+      }
+    },
+    "purchase.price.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total amount paid."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montant total payé."
+          }
+        }
+      }
+    },
+    "purchase.price.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0.00"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0,00"
+          }
+        }
+      }
+    },
+    "purchase.provenance.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved values will be suggested next time."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les valeurs enregistrées seront proposées la prochaine fois."
+          }
+        }
+      }
+    },
+    "purchase.provenance.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seller and storage"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendeur et stockage"
+          }
+        }
+      }
+    },
+    "purchase.seller.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shop, dealer or private seller."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boutique, négociant ou vendeur particulier."
+          }
+        }
+      }
+    },
+    "purchase.seller.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seller name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom du vendeur"
+          }
+        }
+      }
+    },
+    "purchase.seller.saved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved sellers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vendeurs enregistrés"
+          }
+        }
+      }
+    },
+    "purchase.storage.helper" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where this asset is kept."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieu où cet actif est conservé."
+          }
+        }
+      }
+    },
+    "purchase.storage.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Personal safe"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ex. Coffre personnel"
+          }
+        }
+      }
+    },
+    "purchase.storage.saved" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved locations"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieux enregistrés"
+          }
+        }
+      }
+    },
+    "purchase.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase information"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informations d’achat"
+          }
+        }
+      }
+    },
     "summary.body" : {
       "localizations" : {
         "en" : {
@@ -2291,6 +3672,7 @@
       }
     },
     "summary.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2334,6 +3716,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Photo de l’actif"
+          }
+        }
+      }
+    },
+    "summary.purity" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pureté"
           }
         }
       }
@@ -2416,528 +3814,6 @@
             "value" : "Prêt pour votre coffre"
           }
         }
-      }
-    },
-    "asset-flow.object.retake" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retake photo" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Reprendre la photo" } }
-      }
-    },
-    "asset.category.bar" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bar or ingot" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot ou lingotin" } }
-      }
-    },
-    "asset.category.coin" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coin" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pièce" } }
-      }
-    },
-    "asset.preset.palladium-bar-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz palladium bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot de palladium 1 oz" } }
-      }
-    },
-    "asset.preset.platinum-bar-100g" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "100 g platinum bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot de platine 100 g" } }
-      }
-    },
-    "asset.preset.platinum-bar-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz platinum bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot de platine 1 oz" } }
-      }
-    },
-    "asset.preset.silver-bar-100g" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "100 g silver bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot d’argent 100 g" } }
-      }
-    },
-    "asset.preset.silver-bar-1kg" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 kg silver bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot d’argent 1 kg" } }
-      }
-    },
-    "asset.preset.silver-bar-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz silver bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot d’argent 1 oz" } }
-      }
-    },
-    "asset.preset.silver-bar-250g" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "250 g silver bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot d’argent 250 g" } }
-      }
-    },
-    "asset.preset.silver-bar-500g" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "500 g silver bar" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lingot d’argent 500 g" } }
-      }
-    },
-    "asset.preset.silver-coin-american-eagle-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz American Silver Eagle" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "American Eagle argent 1 oz" } }
-      }
-    },
-    "asset.preset.silver-coin-britannia-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz Silver Britannia" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Britannia argent 1 oz" } }
-      }
-    },
-    "asset.preset.silver-coin-maple-leaf-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz Silver Maple Leaf" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Maple Leaf argent 1 oz" } }
-      }
-    },
-    "asset.preset.silver-coin-vienna-philharmonic-1oz" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "1 oz Silver Vienna Philharmonic" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Philharmonique de Vienne argent 1 oz" } }
-      }
-    },
-    "characteristics.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review the detected details and adjust anything you need." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vérifiez les informations détectées et ajustez-les si nécessaire." } }
-      }
-    },
-    "characteristics.composition.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter the gross weight and metal purity." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Indiquez le poids brut et la pureté du métal." } }
-      }
-    },
-    "characteristics.composition.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Composition" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Composition" } }
-      }
-    },
-    "characteristics.continue" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continuer" } }
-      }
-    },
-    "characteristics.custom-metal.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Optional for other assets." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Facultatif pour les autres actifs." } }
-      }
-    },
-    "characteristics.fineness.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Parts of precious metal per thousand." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Parts de métal précieux pour mille." } }
-      }
-    },
-    "characteristics.fineness.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "999.9" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "999,9" } }
-      }
-    },
-    "characteristics.fineness.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fineness" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Titre" } }
-      }
-    },
-    "characteristics.gemstone-clarity.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Optional grading shown on a certificate." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Grade facultatif indiqué sur un certificat." } }
-      }
-    },
-    "characteristics.gemstone-clarity.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "e.g. VS1" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ex. VS1" } }
-      }
-    },
-    "characteristics.gemstone-weight.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total stone weight." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Poids total des pierres." } }
-      }
-    },
-    "characteristics.gemstone-weight.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "0.00" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "0,00" } }
-      }
-    },
-    "characteristics.gemstones.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add stone details when they are known." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ajoutez les caractéristiques des pierres si elles sont connues." } }
-      }
-    },
-    "characteristics.gemstones.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Gemstones" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pierres" } }
-      }
-    },
-    "characteristics.gemstones.toggle" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This jewellery includes gemstones" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ce bijou comporte des pierres" } }
-      }
-    },
-    "characteristics.gold-purity.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a common karat or enter the fineness." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez un carat courant ou saisissez le titre." } }
-      }
-    },
-    "characteristics.gold-purity.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Gold purity" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pureté de l’or" } }
-      }
-    },
-    "characteristics.metal-karat.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a common value or enter any karat from 1 to 24." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez une valeur courante ou saisissez un carat de 1 à 24." } }
-      }
-    },
-    "characteristics.metal-karat.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "e.g. 21" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ex. 21" } }
-      }
-    },
-    "characteristics.metal-karat.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Gold karat" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Carats de l’or" } }
-      }
-    },
-    "characteristics.identity.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Give this asset a clear name and quantity." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Donnez à cet actif un nom clair et indiquez sa quantité." } }
-      }
-    },
-    "characteristics.identity.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Identity" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Identité" } }
-      }
-    },
-    "characteristics.name.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Required" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Obligatoire" } }
-      }
-    },
-    "characteristics.name.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "e.g. Britannia 1 oz" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ex. Britannia 1 oz" } }
-      }
-    },
-    "characteristics.navigation-title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Characteristics" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Caractéristiques" } }
-      }
-    },
-    "characteristics.preset-applied" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preset applied" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Référence appliquée" } }
-      }
-    },
-    "characteristics.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Describe your asset" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Décrivez votre actif" } }
-      }
-    },
-    "characteristics.unit.grams" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "g" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "g" } }
-      }
-    },
-    "characteristics.weight.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Weight of one item." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Poids d’un exemplaire." } }
-      }
-    },
-    "characteristics.weight.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "0" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "0" } }
-      }
-    },
-    "characteristics.weight.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Gross weight" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Poids brut" } }
-      }
-    },
-    "classification.ai-prefill" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suggested by Apple Intelligence" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Suggestion d’Apple Intelligence" } }
-      }
-    },
-    "classification.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a category, then a metal. Select a preset when one matches your asset." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez une catégorie, puis un métal. Sélectionnez une référence si elle correspond à votre actif." } }
-      }
-    },
-    "classification.category.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose the form that best matches your asset." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez la forme qui correspond le mieux à votre actif." } }
-      }
-    },
-    "classification.category.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Category" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Catégorie" } }
-      }
-    },
-    "classification.continue" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Continuer" } }
-      }
-    },
-    "classification.metal.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose the principal precious metal." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez le métal précieux principal." } }
-      }
-    },
-    "classification.metal.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Metal" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Métal" } }
-      }
-    },
-    "classification.navigation-title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Asset type" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Type d’actif" } }
-      }
-    },
-    "classification.preset.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "A preset can prefill the usual weight and purity." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Une référence peut préremplir le poids et la pureté habituels." } }
-      }
-    },
-    "classification.preset.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Common presets" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Références courantes" } }
-      }
-    },
-    "classification.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "What are you adding?" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Quel actif ajoutez-vous ?" } }
-      }
-    },
-    "purchase.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add what you know. You can leave these fields empty." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ajoutez ce que vous connaissez. Ces champs peuvent rester vides." } }
-      }
-    },
-    "purchase.continue" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review asset" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vérifier l’actif" } }
-      }
-    },
-    "purchase.details.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Date, price, currency and invoice reference." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Date, prix, devise et référence de facture." } }
-      }
-    },
-    "purchase.details.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Purchase details" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Détails de l’achat" } }
-      }
-    },
-    "purchase.invoice-number.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Optional reference from the invoice." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Référence facultative figurant sur la facture." } }
-      }
-    },
-    "purchase.invoice-number.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "e.g. INV-2026-042" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ex. FAC-2026-042" } }
-      }
-    },
-    "purchase.navigation-title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Purchase" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Achat" } }
-      }
-    },
-    "purchase.optional-note" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "All purchase information is optional." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Toutes les informations d’achat sont facultatives." } }
-      }
-    },
-    "purchase.price.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total amount paid." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Montant total payé." } }
-      }
-    },
-    "purchase.price.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "0.00" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "0,00" } }
-      }
-    },
-    "purchase.provenance.body" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved values will be suggested next time." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Les valeurs enregistrées seront proposées la prochaine fois." } }
-      }
-    },
-    "purchase.provenance.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Seller and storage" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vendeur et stockage" } }
-      }
-    },
-    "purchase.seller.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Shop, dealer or private seller." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Boutique, négociant ou vendeur particulier." } }
-      }
-    },
-    "purchase.seller.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Seller name" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nom du vendeur" } }
-      }
-    },
-    "purchase.seller.saved" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved sellers" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Vendeurs enregistrés" } }
-      }
-    },
-    "purchase.storage.helper" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Where this asset is kept." } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lieu où cet actif est conservé." } }
-      }
-    },
-    "purchase.storage.placeholder" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "e.g. Personal safe" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ex. Coffre personnel" } }
-      }
-    },
-    "purchase.storage.saved" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved locations" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Lieux enregistrés" } }
-      }
-    },
-    "purchase.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Purchase information" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Informations d’achat" } }
-      }
-    },
-    "summary.purity" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Purity" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Pureté" } }
-      }
-    },
-    "%@ ct" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ ct" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%@ ct" } }
-      }
-    },
-    "%@ g" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ g" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%@ g" } }
-      }
-    },
-    "%@ ‰" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ ‰" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%@ ‰" } }
-      }
-    },
-    "%lld ct" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%lld ct" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%lld ct" } }
-      }
-    },
-    "%lld ct · %@ ‰" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld ct · %2$@ ‰" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld ct · %2$@ ‰" } }
-      }
-    },
-    "ct" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "ct" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "ct" } }
-      }
-    },
-    "preview.primary-action.unavailable" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unavailable" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Indisponible" } }
-      }
-    },
-    "‰" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "‰" } },
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "‰" } }
       }
     }
   },

@@ -10,8 +10,6 @@ struct AssetSummaryStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .summary,
-            navigationTitle: "summary.navigation-title",
             title: "summary.title",
             message: "summary.body"
         ) {

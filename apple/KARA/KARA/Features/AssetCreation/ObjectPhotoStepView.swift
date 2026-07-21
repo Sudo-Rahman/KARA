@@ -22,8 +22,6 @@ struct ObjectPhotoStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .objectPhoto,
-            navigationTitle: "asset-flow.object.navigation-title",
             title: "asset-flow.object.title",
             message: "asset-flow.object.body"
         ) {

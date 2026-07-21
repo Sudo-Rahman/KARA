@@ -3,25 +3,22 @@ import SwiftUI
 struct AssetStepScaffold<Content: View, Footer: View>: View {
     @Environment(KaraTheme.self) private var theme
 
-    let step: AssetCreationStep
-    let navigationTitle: LocalizedStringKey
     let title: LocalizedStringKey
     let message: LocalizedStringKey?
+    let onDismissKeyboard: (() -> Void)?
     @ViewBuilder let content: Content
     @ViewBuilder let footer: Footer
 
     init(
-        step: AssetCreationStep,
-        navigationTitle: LocalizedStringKey,
         title: LocalizedStringKey,
         message: LocalizedStringKey? = nil,
+        onDismissKeyboard: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content,
         @ViewBuilder footer: () -> Footer
     ) {
-        self.step = step
-        self.navigationTitle = navigationTitle
         self.title = title
         self.message = message
+        self.onDismissKeyboard = onDismissKeyboard
         self.content = content()
         self.footer = footer()
     }
@@ -38,12 +35,8 @@ struct AssetStepScaffold<Content: View, Footer: View>: View {
             .padding(.bottom, KaraSpacing.xxLarge)
         }
         .background(theme.background)
-        .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaBar(edge: .top, spacing: 0) {
-            AssetCreationProgressView(step: step)
-                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        }
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationBarBackButtonHidden(true)
         .safeAreaBar(edge: .bottom, spacing: 0) {
             footer
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)
@@ -52,7 +45,94 @@ struct AssetStepScaffold<Content: View, Footer: View>: View {
                 .padding(.bottom, KaraSpacing.small)
         }
         .scrollEdgeEffectStyle(.hard, for: .top)
-        .scrollDismissesKeyboard(.interactively)
+        .scrollDismissesKeyboard(.immediately)
+        .gesture(
+            TapGesture().onEnded { onDismissKeyboard?() },
+            including: .gesture
+        )
+    }
+}
+
+struct AssetCreationHeader: View {
+    @Environment(KaraTheme.self) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    let step: AssetCreationStep
+    let onBack: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                HStack {
+                    if step != .objectPhoto {
+                        headerButton(
+                            title: "asset-flow.back",
+                            systemImage: "chevron.backward",
+                            identifier: "asset-flow.back",
+                            action: onBack
+                        )
+                    } else {
+                        Color.clear
+                            .frame(width: 48, height: 48)
+                            .accessibilityHidden(true)
+                    }
+
+                    Spacer(minLength: KaraSpacing.medium)
+
+                    headerButton(
+                        title: "asset-flow.cancel",
+                        systemImage: "xmark",
+                        identifier: "asset-flow.cancel",
+                        action: onCancel
+                    )
+                }
+
+                Text(step.navigationTitle)
+                    .font(.headline)
+                    .foregroundStyle(theme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .padding(.horizontal, 64)
+                    .contentTransition(.opacity)
+                    .animation(
+                        KaraMotion.controlResponse(reduceMotion: reduceMotion),
+                        value: step
+                    )
+                    .accessibilityAddTraits(.isHeader)
+            }
+            .padding(.horizontal, KaraSpacing.large)
+            .padding(.vertical, KaraSpacing.small)
+
+            AssetCreationProgressView(step: step)
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+
+            Divider()
+        }
+        .background(theme.background)
+    }
+
+    private func headerButton(
+        title: LocalizedStringKey,
+        systemImage: String,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 21, weight: .semibold))
+                .foregroundStyle(theme.cobaltBright)
+                .frame(width: 48, height: 48)
+                .background(theme.surface, in: .circle)
+                .overlay {
+                    Circle()
+                        .stroke(theme.muted.opacity(0.20), lineWidth: 1)
+                }
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityIdentifier(identifier)
     }
 }
 
@@ -78,11 +158,13 @@ struct AssetStepHeading: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("asset-step.heading")
     }
 }
 
 struct AssetCreationProgressView: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let step: AssetCreationStep
 
@@ -101,14 +183,19 @@ struct AssetCreationProgressView: View {
         .padding(.horizontal, KaraSpacing.large)
         .padding(.vertical, 10)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(progressLabel)
+        .accessibilityLabel(progressLabelText)
         .accessibilityIdentifier("asset-flow.progress")
     }
 
-    private var progressLabel: Text {
-        Text("asset-flow.progress \(step.rawValue + 1) \(AssetCreationStep.allCases.count)")
+    private var progressLabel: some View {
+        progressLabelText
             .font(.caption.weight(.semibold))
             .foregroundStyle(theme.muted)
+            .contentTransition(.numericText())
+    }
+
+    private var progressLabelText: Text {
+        Text("asset-flow.progress \(step.rawValue + 1) \(AssetCreationStep.allCases.count)")
     }
 
     private var segments: some View {
@@ -118,9 +205,26 @@ struct AssetCreationProgressView: View {
                     .fill(candidate.rawValue <= step.rawValue ? theme.goldBright : theme.muted.opacity(0.20))
                     .frame(maxWidth: .infinity)
                     .frame(height: 3)
+                    .animation(
+                        KaraMotion.controlResponse(reduceMotion: reduceMotion),
+                        value: step
+                    )
             }
         }
         .frame(minWidth: 160)
+    }
+}
+
+extension AssetCreationStep {
+    var navigationTitle: LocalizedStringKey {
+        switch self {
+        case .objectPhoto: "asset-flow.object.navigation-title"
+        case .invoice: "invoice.navigation-title"
+        case .classification: "classification.navigation-title"
+        case .characteristics: "characteristics.navigation-title"
+        case .purchase: "purchase.navigation-title"
+        case .summary: "summary.navigation-title"
+        }
     }
 }
 

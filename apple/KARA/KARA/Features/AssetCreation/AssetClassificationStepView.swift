@@ -14,8 +14,6 @@ struct AssetClassificationStepView: View {
 
     var body: some View {
         AssetStepScaffold(
-            step: .classification,
-            navigationTitle: "classification.navigation-title",
             title: "classification.title",
             message: "classification.body"
         ) {
@@ -100,6 +98,7 @@ struct AssetClassificationStepView: View {
                     }
                 }
             }
+            .assetPageHorizontalCarousel()
             .scrollIndicators(.hidden)
         }
         .accessibilityIdentifier("classification.metals")
@@ -125,7 +124,7 @@ struct AssetClassificationStepView: View {
                 }
                 .scrollTargetLayout()
             }
-            .contentMargins(.horizontal, 0, for: .scrollContent)
+            .assetPageHorizontalCarousel()
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .accessibilityIdentifier("classification.presets")
@@ -167,6 +166,13 @@ struct AssetClassificationStepView: View {
         let resource = LocalizedStringResource(String.LocalizationValue(preset.localizationKey))
         let localized = String(localized: resource)
         return localized == preset.localizationKey ? preset.name : localized
+    }
+}
+
+private extension View {
+    func assetPageHorizontalCarousel() -> some View {
+        contentMargins(.horizontal, KaraSpacing.large, for: .scrollContent)
+            .padding(.horizontal, -KaraSpacing.large)
     }
 }
 

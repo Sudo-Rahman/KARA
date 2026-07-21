@@ -18,6 +18,8 @@ final class AssetCreationUITests: XCTestCase {
             expectedAssetName: "Lingotin d’or 1 g",
             selectedCurrencyCode: "CHF"
         )
+
+        assertSavedPurchaseSuggestions(in: app, language: "fr")
     }
 
     @MainActor
@@ -46,11 +48,10 @@ final class AssetCreationUITests: XCTestCase {
         assertStep(2, screenIdentifier: "invoice.skip", language: "fr", in: app)
         XCTAssertTrue(app.buttons["asset-flow.cancel"].exists)
 
-        let nativeBack = app.navigationBars.buttons
-            .matching(NSPredicate(format: "identifier != %@", "asset-flow.cancel"))
-            .firstMatch
-        XCTAssertTrue(nativeBack.waitForExistence(timeout: 5))
-        nativeBack.tap()
+        let back = app.buttons["asset-flow.back"]
+        XCTAssertTrue(back.waitForExistence(timeout: 5))
+        XCTAssertEqual(back.label, "Retour")
+        back.tap()
         assertStep(1, screenIdentifier: "asset-flow.object.skip", language: "fr", in: app)
 
         app.buttons["asset-flow.cancel"].tap()
@@ -58,6 +59,22 @@ final class AssetCreationUITests: XCTestCase {
 
         app.buttons["home.add"].tap()
         assertStep(1, screenIdentifier: "asset-flow.object.skip", language: "fr", in: app)
+    }
+
+    @MainActor
+    func testKeyboardDismissesFromPageTapAndScroll() {
+        let app = launchAtHome(language: "fr")
+
+        app.buttons["home.add"].tap()
+        app.buttons["asset-flow.object.skip"].tap()
+        app.buttons["invoice.skip"].tap()
+
+        let category = app.buttons["classification.category.goldBar"]
+        XCTAssertTrue(category.waitForExistence(timeout: 5))
+        category.tap()
+        app.buttons["classification.continue"].tap()
+
+        assertKeyboardDismissal(in: app)
     }
 
     @MainActor
@@ -114,6 +131,7 @@ final class AssetCreationUITests: XCTestCase {
         assertStep(5, screenIdentifier: "details.currency", language: language, in: app)
         selectCurrency(selectedCurrencyCode, in: app)
         capture("\(language)-05-purchase", in: app)
+        enterReusablePurchaseValues(in: app)
 
         let purchaseContinue = app.buttons["purchase.continue"]
         XCTAssertTrue(purchaseContinue.waitForExistence(timeout: 5))
@@ -139,6 +157,72 @@ final class AssetCreationUITests: XCTestCase {
         XCTAssertTrue(savedAsset.label.contains(expectedAssetName))
         XCTAssertTrue(app.buttons["home.add"].exists)
         capture("\(language)-07-saved-home", in: app)
+    }
+
+    @MainActor
+    private func enterReusablePurchaseValues(in app: XCUIApplication) {
+        let seller = app.textFields["details.seller"]
+        reveal(seller, in: app)
+        seller.tap()
+        seller.typeText("Maison Aurore")
+
+        let storage = app.textFields["details.storage-location"]
+        reveal(storage, in: app)
+        storage.tap()
+        storage.typeText("Coffre privé")
+
+        element(identifier: "asset-step.heading", in: app).tap()
+        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
+    }
+
+    @MainActor
+    private func assertSavedPurchaseSuggestions(
+        in app: XCUIApplication,
+        language: String
+    ) {
+        app.buttons["home.add"].tap()
+        app.buttons["asset-flow.object.skip"].tap()
+        app.buttons["invoice.skip"].tap()
+
+        let customCategory = app.buttons["classification.category.custom"]
+        XCTAssertTrue(customCategory.waitForExistence(timeout: 5))
+        customCategory.tap()
+        app.buttons["classification.continue"].tap()
+
+        let name = app.textFields["details.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText(language == "fr" ? "Test des suggestions" : "Suggestion test")
+        element(identifier: "asset-step.heading", in: app).tap()
+        app.buttons["characteristics.continue"].tap()
+
+        let seller = app.textFields["details.seller"]
+        reveal(seller, in: app)
+        seller.tap()
+        XCTAssertTrue(
+            element(identifier: "details.seller.suggestions", in: app)
+                .waitForExistence(timeout: 5)
+        )
+        seller.typeText("auro")
+        let sellerSuggestion = app.buttons["Maison Aurore"]
+        XCTAssertTrue(sellerSuggestion.waitForExistence(timeout: 5))
+        sellerSuggestion.tap()
+        XCTAssertEqual(String(describing: seller.value), "Maison Aurore")
+        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
+
+        let storage = app.textFields["details.storage-location"]
+        reveal(storage, in: app)
+        storage.tap()
+        let storageSuggestion = app.buttons["Coffre privé"]
+        XCTAssertTrue(storageSuggestion.waitForExistence(timeout: 5))
+        storageSuggestion.tap()
+        XCTAssertEqual(String(describing: storage.value), "Coffre privé")
+
+        app.buttons["asset-flow.cancel"].tap()
+        let discard = app.buttons[language == "fr" ? "Abandonner" : "Discard"]
+        XCTAssertTrue(discard.waitForExistence(timeout: 5))
+        discard.tap()
+        XCTAssertTrue(app.buttons["home.add"].waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -176,6 +260,26 @@ final class AssetCreationUITests: XCTestCase {
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         let selectedValue = "\(picker.label) \(String(describing: picker.value))"
         XCTAssertTrue(selectedValue.contains(code))
+    }
+
+    @MainActor
+    private func assertKeyboardDismissal(in app: XCUIApplication) {
+        let weight = app.textFields["details.weight"]
+        reveal(weight, in: app)
+        XCTAssertTrue(weight.isHittable)
+
+        weight.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+
+        let heading = element(identifier: "asset-step.heading", in: app)
+        XCTAssertTrue(heading.isHittable)
+        heading.tap()
+        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
+
+        weight.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
     }
 
     @MainActor
@@ -230,6 +334,18 @@ final class AssetCreationUITests: XCTestCase {
     ) -> Bool {
         let expectation = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "label == %@", label),
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    }
+
+    @MainActor
+    private func waitForDisappearance(
+        of element: XCUIElement,
+        timeout: TimeInterval = 5
+    ) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
             object: element
         )
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
