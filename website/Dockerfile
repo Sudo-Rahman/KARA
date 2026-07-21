@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_IMAGE=node:26.5.0-alpine3.24
+ARG NODE_IMAGE=node:26.5.0-bookworm-slim
 ARG PNPM_VERSION=11.15.1
 
 FROM ${NODE_IMAGE} AS pnpm-base
@@ -37,7 +37,6 @@ COPY --chown=node:node package.json ./package.json
 USER node
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-	CMD wget --quiet --output-document=/dev/null http://127.0.0.1:3000/v1/manifest.json || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD node -e "fetch('http://127.0.0.1:3000/v1/manifest.json').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 CMD ["node", "build"]
