@@ -149,6 +149,60 @@ nonisolated struct PortfolioHistoryPoint: Equatable, Identifiable, Sendable {
     var id: Date { date }
 }
 
+nonisolated enum PortfolioHistoryPeriod: String, CaseIterable, Hashable, Sendable {
+    case threeMonths
+    case sixMonths
+    case twelveMonths
+    case all
+
+    func startDate(
+        asOf: Date,
+        earliestHistoryDate: Date?,
+        calendar: Calendar = .current
+    ) -> Date? {
+        switch self {
+        case .threeMonths:
+            return calendar.date(
+                byAdding: .month,
+                value: -2,
+                to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
+            )
+        case .sixMonths:
+            return calendar.date(
+                byAdding: .month,
+                value: -5,
+                to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
+            )
+        case .twelveMonths:
+            return calendar.date(
+                byAdding: .month,
+                value: -11,
+                to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
+            )
+        case .all:
+            return earliestHistoryDate.map {
+                calendar.dateInterval(of: .month, for: $0)?.start ?? $0
+            }
+        }
+    }
+
+    func filter(
+        _ points: [PortfolioHistoryPoint],
+        asOf: Date,
+        calendar: Calendar = .current
+    ) -> [PortfolioHistoryPoint] {
+        guard let start = startDate(
+            asOf: asOf,
+            earliestHistoryDate: points.first?.date,
+            calendar: calendar
+        ) else {
+            return points
+        }
+
+        return points.filter { $0.date >= start && $0.date <= asOf }
+    }
+}
+
 nonisolated struct PortfolioValuation: Equatable, Sendable {
     let totalEstimatedValueEUR: Decimal
     let totalPurchaseCostEUR: Decimal?
@@ -180,7 +234,7 @@ nonisolated struct PortfolioValuationEngine: Sendable {
     func valuate(
         assets: [PortfolioAssetSnapshot],
         market: PortfolioMarketSnapshot,
-        historyMonths: Int = 12,
+        historyMonths: Int? = 12,
         asOf: Date = Date()
     ) -> PortfolioValuation {
         let assetValuations = assets.map { valuate(asset: $0, market: market) }
@@ -409,23 +463,32 @@ nonisolated struct PortfolioValuationEngine: Sendable {
         assets: [PortfolioAssetSnapshot],
         currentValuations: [AssetValuation],
         market: PortfolioMarketSnapshot,
-        requestedPointCount: Int,
+        requestedPointCount: Int?,
         asOf: Date
     ) -> [PortfolioHistoryPoint] {
-        guard requestedPointCount > 0, !assets.isEmpty else { return [] }
+        guard requestedPointCount.map({ $0 > 0 }) ?? true, !assets.isEmpty else { return [] }
         var points: [PortfolioHistoryPoint] = []
         let calendar = Self.utcCalendar
 
-        if requestedPointCount > 1, let monthly = market.monthly {
+        if requestedPointCount != 1, let monthly = market.monthly {
             let currentMonth = Self.monthIdentifier(for: asOf, calendar: calendar)
+            let earliestKnownAcquisitionMonth = assets
+                .compactMap(\.purchaseDate)
+                .min()
+                .map { Self.monthIdentifier(for: $0, calendar: calendar) }
             let relevantMetals = Set(assets.compactMap(\.metal))
-            let availableMonths = Set(monthly.series
+            var availableMonths = Set(monthly.series
                 .filter { relevantMetals.contains($0.metal) }
                 .flatMap(\.observations)
                 .map(\.month))
                 .filter { $0 < currentMonth }
                 .sorted()
-                .suffix(requestedPointCount - 1)
+
+            if let requestedPointCount {
+                availableMonths = Array(availableMonths.suffix(requestedPointCount - 1))
+            } else if let earliestKnownAcquisitionMonth {
+                availableMonths = availableMonths.filter { $0 >= earliestKnownAcquisitionMonth }
+            }
 
             for month in availableMonths {
                 guard let date = Self.endOfMonth(month, calendar: calendar) else { continue }

@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated enum MarketMetal: String, CaseIterable, Codable, Sendable {
+nonisolated enum MarketMetal: String, CaseIterable, Codable, Hashable, Sendable {
     case gold = "XAU"
     case silver = "XAG"
     case platinum = "XPT"

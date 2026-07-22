@@ -212,7 +212,7 @@ struct InvoiceStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingDocument)
         .accessibilityIdentifier("invoice.import")
     }
@@ -224,7 +224,7 @@ struct InvoiceStepView: View {
             Image(systemName: "folder")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingDocument)
         .accessibilityLabel("invoice.import")
         .accessibilityIdentifier("invoice.import")
@@ -238,8 +238,7 @@ struct InvoiceStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
-        .foregroundStyle(theme.muted)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityIdentifier("invoice.skip")
     }
 
@@ -250,8 +249,7 @@ struct InvoiceStepView: View {
             Image(systemName: "forward.end")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
-        .foregroundStyle(theme.muted)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityLabel("invoice.skip")
         .accessibilityIdentifier("invoice.skip")
     }
@@ -264,7 +262,7 @@ struct InvoiceStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingDocument)
         .accessibilityIdentifier("invoice.scan")
     }
@@ -276,7 +274,7 @@ struct InvoiceStepView: View {
             Image(systemName: "viewfinder")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingDocument)
         .accessibilityLabel("invoice.scan")
         .accessibilityIdentifier("invoice.scan")

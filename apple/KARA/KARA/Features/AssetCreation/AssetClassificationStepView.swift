@@ -26,7 +26,7 @@ struct AssetClassificationStepView: View {
                     .background(theme.gold.opacity(0.10), in: .capsule)
             }
 
-            AssetSectionTitle("classification.category.title", detail: "classification.category.body")
+            AssetSectionTitle("classification.category.title")
 
             LazyVGrid(columns: columns, spacing: KaraSpacing.small) {
                 ForEach(AssetCategory.allCases, id: \.self) { category in
@@ -63,7 +63,7 @@ struct AssetClassificationStepView: View {
 
     private var metalSelection: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AssetSectionTitle("classification.metal.title", detail: "classification.metal.body")
+            AssetSectionTitle("classification.metal.title")
 
             ScrollView(.horizontal) {
                 HStack(spacing: KaraSpacing.small) {
@@ -108,7 +108,7 @@ struct AssetClassificationStepView: View {
 
     private var presetSelection: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AssetSectionTitle("classification.preset.title", detail: "classification.preset.body")
+            AssetSectionTitle("classification.preset.title")
 
             ScrollView(.horizontal) {
                 LazyHStack(spacing: KaraSpacing.small) {

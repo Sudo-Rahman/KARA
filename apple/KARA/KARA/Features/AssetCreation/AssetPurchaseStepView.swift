@@ -66,7 +66,7 @@ struct AssetPurchaseStepView: View {
 
     private var purchaseSection: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AssetSectionTitle("purchase.details.title", detail: "purchase.details.body")
+            AssetSectionTitle("purchase.details.title")
 
             AssetFieldSurface {
                 Toggle("details.purchase-date-known", isOn: purchaseDateEnabledBinding)
@@ -132,7 +132,7 @@ struct AssetPurchaseStepView: View {
 
     private var provenanceSection: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AssetSectionTitle("purchase.provenance.title", detail: "purchase.provenance.body")
+            AssetSectionTitle("purchase.provenance.title")
 
             AssetFieldSurface {
                 SavedValueComboBox(
@@ -166,7 +166,7 @@ struct AssetPurchaseStepView: View {
 
     private var inventorySection: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AssetSectionTitle("purchase.inventory.title", detail: "purchase.inventory.body")
+            AssetSectionTitle("purchase.inventory.title")
 
             AssetFieldSurface {
                 VStack(alignment: .leading, spacing: KaraSpacing.small) {

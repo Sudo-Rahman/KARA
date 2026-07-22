@@ -45,7 +45,7 @@ struct AssetSummaryStepView: View {
                     Label("summary.edit", systemImage: "pencil")
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.karaSecondaryAction)
                 .accessibilityIdentifier("summary.edit")
             }
         }

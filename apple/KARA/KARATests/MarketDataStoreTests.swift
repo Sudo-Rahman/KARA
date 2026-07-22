@@ -4,6 +4,14 @@ import Testing
 
 @Suite("Market data store", .serialized)
 struct MarketDataStoreTests {
+    @Test("The home always requests all four EUR metal quotes")
+    func homeRequestsEveryMetalQuote() {
+        #expect(
+            homeRequiredSpotPairs(for: [])
+                == Set(MarketMetal.allCases.map { SpotPair(metal: $0, currency: .eur) })
+        )
+    }
+
     @Test("Load publishes disk cache before a pending refresh and then publishes live data")
     @MainActor
     func loadsCacheBeforeRefresh() async throws {

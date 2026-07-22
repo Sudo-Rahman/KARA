@@ -1327,13 +1327,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take or choose a clear photo. Apple Intelligence will suggest the type, weight and purity."
+            "value" : "Add a clear photo to help analysis."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prenez ou choisissez une photo nette. Apple Intelligence proposera le type, le poids et la pureté."
+            "value" : "Ajoutez une photo nette pour faciliter l’analyse."
           }
         }
       }
@@ -1424,13 +1424,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Place the object against a plain background for a more accurate analysis."
+            "value" : "Add a photo to analyse the asset."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Placez l’objet sur un fond uni pour faciliter son analyse."
+            "value" : "Ajoutez une photo pour analyser l’actif."
           }
         }
       }
@@ -1440,13 +1440,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No photo yet"
+            "value" : "No photo added yet"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune photo"
+            "value" : "Aucune photo ajoutée"
           }
         }
       }
@@ -1488,13 +1488,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skip"
+            "value" : "Skip for now"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Passer"
+            "value" : "Passer pour l’instant"
           }
         }
       }
@@ -1504,13 +1504,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photograph your asset"
+            "value" : "Add a photo of your asset"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photographiez votre actif"
+            "value" : "Ajoutez une photo de votre actif"
           }
         }
       }
@@ -2609,13 +2609,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Review the detected details and adjust anything you need."
+            "value" : "Review the asset details."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vérifiez les informations détectées et ajustez-les si nécessaire."
+            "value" : "Vérifiez les informations de l’actif."
           }
         }
       }
@@ -2625,13 +2625,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the gross weight and metal purity."
+            "value" : "Weight and metal purity."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Indiquez le poids brut et la pureté du métal."
+            "value" : "Poids et pureté du métal."
           }
         }
       }
@@ -2801,13 +2801,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add stone details when they are known."
+            "value" : "Optional stone details."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoutez les caractéristiques des pierres si elles sont connues."
+            "value" : "Caractéristiques facultatives des pierres."
           }
         }
       }
@@ -2881,13 +2881,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Give this asset a clear name and quantity."
+            "value" : "Name and quantity."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Donnez à cet actif un nom clair et indiquez sa quantité."
+            "value" : "Nom et quantité."
           }
         }
       }
@@ -3121,29 +3121,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose a category, then a metal. Select a preset when one matches your asset."
+            "value" : "Choose a category and metal."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez une catégorie, puis un métal. Sélectionnez une référence si elle correspond à votre actif."
+            "value" : "Choisissez une catégorie et un métal."
           }
         }
       }
     },
     "classification.category.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the form that best matches your asset."
+            "value" : "Asset form."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez la forme qui correspond le mieux à votre actif."
+            "value" : "Forme de l’actif."
           }
         }
       }
@@ -3181,17 +3182,18 @@
       }
     },
     "classification.metal.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the principal precious metal."
+            "value" : "Principal precious metal."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez le métal précieux principal."
+            "value" : "Métal précieux principal."
           }
         }
       }
@@ -3229,17 +3231,18 @@
       }
     },
     "classification.preset.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A preset can prefill the usual weight and purity."
+            "value" : "Presets for common assets."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Une référence peut préremplir le poids et la pureté habituels."
+            "value" : "Références d’actifs courants."
           }
         }
       }
@@ -4315,13 +4318,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan a paper invoice or import a PDF or image. The original PDF will remain unchanged."
+            "value" : "Scan or import an invoice."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scannez une facture papier ou importez un PDF ou une image. Le PDF original restera inchangé."
+            "value" : "Scannez ou importez une facture."
           }
         }
       }
@@ -4364,13 +4367,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Import"
+            "value" : "Import a file"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importer"
+            "value" : "Importer un fichier"
           }
         }
       }
@@ -4437,13 +4440,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan the document or import its PDF or image."
+            "value" : "Scan or import a file."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scannez le document ou importez son PDF ou son image."
+            "value" : "Scannez ou importez un fichier."
           }
         }
       }
@@ -4453,13 +4456,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No invoice yet"
+            "value" : "No invoice added yet"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune facture"
+            "value" : "Aucune facture ajoutée"
           }
         }
       }
@@ -4485,13 +4488,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scan"
+            "value" : "Scan invoice"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scanner"
+            "value" : "Scanner la facture"
           }
         }
       }
@@ -4501,13 +4504,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Skip"
+            "value" : "Skip for now"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Passer"
+            "value" : "Passer pour l’instant"
           }
         }
       }
@@ -4976,13 +4979,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add what you know. You can leave these fields empty."
+            "value" : "Add any information you know."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoutez ce que vous connaissez. Ces champs peuvent rester vides."
+            "value" : "Ajoutez les informations connues."
           }
         }
       }
@@ -5008,13 +5011,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date, price, currency and invoice reference."
+            "value" : "Date, price and invoice."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date, prix, devise et référence de facture."
+            "value" : "Date, prix et facture."
           }
         }
       }
@@ -5040,13 +5043,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Optional identifiers that make this asset easier to find."
+            "value" : "Acquisition, serial number and tags."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Des repères facultatifs pour retrouver facilement cet actif."
+            "value" : "Acquisition, numéro de série et tags."
           }
         }
       }
@@ -5168,13 +5171,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved values will be suggested next time."
+            "value" : "Saved values suggested next time."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les valeurs enregistrées seront proposées la prochaine fois."
+            "value" : "Valeurs enregistrées proposées la prochaine fois."
           }
         }
       }
@@ -5323,6 +5326,22 @@
         }
       }
     },
+    "purchase.tags.commit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add tag"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter le tag"
+          }
+        }
+      }
+    },
     "purchase.tags.helper" : {
       "localizations" : {
         "en" : {
@@ -5367,22 +5386,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retirer le tag"
-          }
-        }
-      }
-    },
-    "purchase.tags.commit" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add tag"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter le tag"
           }
         }
       }
@@ -5795,13 +5798,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Step 4 · Summary"
+            "value" : "Step 6 · Summary"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Étape 4 · Résumé"
+            "value" : "Étape 6 · Résumé"
           }
         }
       }
@@ -6131,6 +6134,7 @@
       }
     },
     "vault.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6158,22 +6162,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Donnée de marché publique"
-          }
-        }
-      }
-    },
-    "vault.gold-live.no-daily-change" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No daily change is displayed without a source-backed figure."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune variation journalière n’est affichée sans donnée sourcée."
           }
         }
       }
@@ -6210,23 +6198,42 @@
         }
       }
     },
-    "vault.gold-live.title" : {
+    "vault.history.accessibility-label.3-months" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Live gold price"
+            "value" : "Portfolio value evolution over the last three months."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cours de l’or en direct"
+            "value" : "Évolution de la valeur du portefeuille sur les trois derniers mois."
           }
         }
       }
     },
-    "vault.history.accessibility-label" : {
+    "vault.history.accessibility-label.6-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portfolio value evolution over the last six months."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur du portefeuille sur les six derniers mois."
+          }
+        }
+      }
+    },
+    "vault.history.accessibility-label.12-months" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6242,7 +6249,25 @@
         }
       }
     },
+    "vault.history.accessibility-label.all" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portfolio value evolution since the first acquisition."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur du portefeuille depuis la première acquisition."
+          }
+        }
+      }
+    },
     "vault.history.eyebrow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6270,6 +6295,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le graphique apparaîtra dès que suffisamment de données de marché historiques seront disponibles."
+          }
+        }
+      }
+    },
+    "vault.history.period" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History period"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Période de l’historique"
+          }
+        }
+      }
+    },
+    "vault.history.period.3-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 mo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 mois"
+          }
+        }
+      }
+    },
+    "vault.history.period.6-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 mo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 mois"
+          }
+        }
+      }
+    },
+    "vault.history.period.12-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 mo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "12 mois"
+          }
+        }
+      }
+    },
+    "vault.history.period.all" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout"
           }
         }
       }
@@ -6306,22 +6415,6 @@
         }
       }
     },
-    "vault.market.available" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updated"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actualisé"
-          }
-        }
-      }
-    },
     "vault.market.cached" : {
       "localizations" : {
         "en" : {
@@ -6334,6 +6427,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cours enregistré"
+          }
+        }
+      }
+    },
+    "vault.market.metal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métal"
           }
         }
       }
@@ -6366,6 +6475,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "vault.market.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metal prices"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cours des métaux"
           }
         }
       }
@@ -6579,6 +6704,7 @@
       }
     },
     "vault.subtitle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6595,6 +6721,7 @@
       }
     },
     "vault.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

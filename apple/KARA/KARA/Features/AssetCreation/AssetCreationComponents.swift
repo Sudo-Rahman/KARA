@@ -75,7 +75,7 @@ struct AssetCreationHeader: View {
                             )
                         } else {
                             Color.clear
-                                .frame(width: 48, height: 48)
+                                .frame(width: 52, height: 52)
                                 .accessibilityHidden(true)
                         }
 
@@ -123,34 +123,13 @@ struct AssetCreationHeader: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.system(size: 21, weight: .semibold))
-                .foregroundStyle(theme.cobaltBright)
                 .frame(width: 48, height: 48)
                 .contentShape(.circle)
-                .modifier(KaraHeaderGlassEffect(tint: theme.cobalt.opacity(0.16)))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.karaSecondaryAction)
+        .frame(width: 52, height: 52)
         .accessibilityLabel(title)
         .accessibilityIdentifier(identifier)
-    }
-}
-
-private struct KaraHeaderGlassEffect: ViewModifier {
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    let tint: Color
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if reduceTransparency {
-            content
-                .background(Color("KaraSurface"), in: .circle)
-                .overlay {
-                    Circle()
-                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                }
-        } else {
-            content.glassEffect(.regular.tint(tint).interactive(), in: .circle)
-        }
     }
 }
 

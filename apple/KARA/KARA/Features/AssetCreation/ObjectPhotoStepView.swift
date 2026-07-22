@@ -201,7 +201,7 @@ struct ObjectPhotoStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingPhoto)
         .accessibilityIdentifier("asset-flow.object.library")
     }
@@ -211,7 +211,7 @@ struct ObjectPhotoStepView: View {
             Image(systemName: "photo.on.rectangle")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .disabled(isPreparingPhoto)
         .accessibilityLabel("asset-flow.object.library")
         .accessibilityIdentifier("asset-flow.object.library")
@@ -225,8 +225,7 @@ struct ObjectPhotoStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
-        .foregroundStyle(theme.muted)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityIdentifier("asset-flow.object.skip")
     }
 
@@ -237,8 +236,7 @@ struct ObjectPhotoStepView: View {
             Image(systemName: "forward.end")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
-        .foregroundStyle(theme.muted)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityLabel("asset-flow.object.skip")
         .accessibilityIdentifier("asset-flow.object.skip")
     }
@@ -251,7 +249,7 @@ struct ObjectPhotoStepView: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityIdentifier("asset-flow.object.retake")
     }
 
@@ -262,7 +260,7 @@ struct ObjectPhotoStepView: View {
             Image(systemName: "camera.rotate")
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.karaSecondaryAction)
         .accessibilityLabel("asset-flow.object.retake")
         .accessibilityIdentifier("asset-flow.object.retake")
     }

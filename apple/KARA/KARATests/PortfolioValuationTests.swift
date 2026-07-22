@@ -198,6 +198,109 @@ struct PortfolioValuationTests {
         #expect(valuation.history.map(\.totalHeldRecordCount) == [1])
     }
 
+    @Test("Full history begins with the first source-backed month when the earliest asset was acquired")
+    func buildsFullHistoryFromEarliestAcquisition() throws {
+        let ounce = Decimal(string: "31.1034768")!
+        let asset = PortfolioAssetSnapshot(
+            name: "Lingot historique",
+            categoryID: "goldBar",
+            metal: .gold,
+            grossWeightGrams: ounce,
+            finenessPermille: 1_000,
+            purchaseDate: utcDate(year: 2002, month: 2, day: 15)
+        )
+        let monthly = MonthlyDataset(
+            unit: MarketUnit(code: .troyOunce, grams: ounce),
+            series: [
+                MonthlySeries(metal: .gold, observations: [
+                    MonthlyObservation(month: "2002-01", prices: ["EUR": 10]),
+                    MonthlyObservation(month: "2002-02", prices: ["EUR": 20]),
+                    MonthlyObservation(month: "2002-03", prices: ["EUR": 30]),
+                ]),
+            ]
+        )
+        let market = PortfolioMarketSnapshot(
+            currentQuotes: [makeQuote(metal: .gold, currency: .eur, price: 40)],
+            monthly: monthly
+        )
+
+        let valuation = PortfolioValuationEngine().valuate(
+            assets: [asset],
+            market: market,
+            historyMonths: nil,
+            asOf: utcDate(year: 2002, month: 4, day: 15)
+        )
+
+        #expect(valuation.history.map(\.valueEUR) == [20, 30, 40])
+        #expect(valuation.history.map(\.totalHeldRecordCount) == [1, 1, 1])
+    }
+
+    @Test("Twelve-month history starts on the first day of the initial calendar month")
+    func computesTwelveMonthVisibleStart() throws {
+        let start = try #require(
+            PortfolioHistoryPeriod.twelveMonths.startDate(
+                asOf: utcDate(year: 2026, month: 7, day: 22),
+                earliestHistoryDate: nil,
+                calendar: utcCalendar
+            )
+        )
+
+        #expect(start == utcDate(year: 2025, month: 8, day: 1))
+    }
+
+    @Test("Bounded history periods keep only points inside their calendar window")
+    func filtersBoundedHistoryPeriods() {
+        let points = [
+            historyPoint(year: 2025, month: 7, day: 31),
+            historyPoint(year: 2025, month: 8, day: 31),
+            historyPoint(year: 2026, month: 2, day: 28),
+            historyPoint(year: 2026, month: 5, day: 31),
+            historyPoint(year: 2026, month: 7, day: 22),
+        ]
+        let asOf = utcDate(year: 2026, month: 7, day: 22)
+
+        #expect(PortfolioHistoryPeriod.twelveMonths.filter(points, asOf: asOf, calendar: utcCalendar).count == 4)
+        #expect(PortfolioHistoryPeriod.sixMonths.filter(points, asOf: asOf, calendar: utcCalendar).count == 3)
+        #expect(PortfolioHistoryPeriod.threeMonths.filter(points, asOf: asOf, calendar: utcCalendar).count == 2)
+        #expect(PortfolioHistoryPeriod.all.filter(points, asOf: asOf, calendar: utcCalendar) == points)
+    }
+
+    @Test("Full history does not invent values before the monthly dataset begins")
+    func limitsFullHistoryToSourceCoverage() {
+        let ounce = Decimal(string: "31.1034768")!
+        let asset = PortfolioAssetSnapshot(
+            name: "Acquisition antérieure aux données",
+            categoryID: "goldBar",
+            metal: .gold,
+            grossWeightGrams: ounce,
+            finenessPermille: 1_000,
+            purchaseDate: utcDate(year: 1980, month: 1, day: 1)
+        )
+        let monthly = MonthlyDataset(
+            unit: MarketUnit(code: .troyOunce, grams: ounce),
+            series: [
+                MonthlySeries(metal: .gold, observations: [
+                    MonthlyObservation(month: "1999-01", prices: ["EUR": 10]),
+                    MonthlyObservation(month: "1999-02", prices: ["EUR": 20]),
+                ]),
+            ]
+        )
+        let market = PortfolioMarketSnapshot(
+            currentQuotes: [makeQuote(metal: .gold, currency: .eur, price: 30)],
+            monthly: monthly
+        )
+
+        let history = PortfolioValuationEngine().valuate(
+            assets: [asset],
+            market: market,
+            historyMonths: nil,
+            asOf: utcDate(year: 1999, month: 3, day: 15)
+        ).history
+
+        #expect(history.map(\.valueEUR) == [10, 20, 30])
+        #expect(utcCalendar.component(.year, from: history[0].date) == 1999)
+    }
+
     @Test("Coverage separates incomplete assets and missing market quotes without inventing zero values")
     func reportsPartialCoverage() throws {
         let assets = [
@@ -257,8 +360,22 @@ struct PortfolioValuationTests {
     }
 
     private func utcDate(year: Int, month: Int, day: Int) -> Date {
+        utcCalendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    private func historyPoint(year: Int, month: Int, day: Int) -> PortfolioHistoryPoint {
+        PortfolioHistoryPoint(
+            date: utcDate(year: year, month: month, day: day),
+            valueEUR: 1,
+            valuedRecordCount: 1,
+            totalHeldRecordCount: 1,
+            isCurrent: false
+        )
+    }
+
+    private var utcCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        return calendar.date(from: DateComponents(year: year, month: month, day: day))!
+        return calendar
     }
 }

@@ -32,10 +32,9 @@ struct AppShellView: View {
                 assets: assets,
                 attachments: attachments,
                 valuation: portfolioValuation,
-                goldQuote: marketStore.quote(for: .gold),
+                metalQuotes: metalQuotes,
                 isRefreshing: marketStore.isRefreshing,
                 isUsingCachedMarketData: marketStore.isUsingCachedData,
-                marketErrorDescription: marketStore.lastError?.message,
                 refresh: refreshMarket
             )
             .navigationDestination(for: AppRoute.self) { route in
@@ -143,13 +142,19 @@ struct AppShellView: View {
         valuationEngine.valuate(
             assets: snapshots,
             market: marketStore.marketSnapshot,
+            historyMonths: nil,
             asOf: valuationAsOf
         )
     }
 
+    private var metalQuotes: [MarketMetal: SpotQuote] {
+        Dictionary(uniqueKeysWithValues: MarketMetal.allCases.compactMap { metal in
+            marketStore.quote(for: metal).map { (metal, $0) }
+        })
+    }
+
     private var requiredPairs: Set<SpotPair> {
-        PortfolioValuationEngine.requiredSpotPairs(for: snapshots)
-            .union([SpotPair(metal: .gold, currency: .eur)])
+        homeRequiredSpotPairs(for: snapshots)
     }
 
     private func asset(withID id: UUID) -> Asset? {
@@ -164,6 +169,13 @@ struct AppShellView: View {
         await marketStore.refresh(pairs: requiredPairs)
         valuationAsOf = marketStore.lastRefreshAt ?? valuationAsOf
     }
+}
+
+nonisolated func homeRequiredSpotPairs(
+    for assets: [PortfolioAssetSnapshot]
+) -> Set<SpotPair> {
+    PortfolioValuationEngine.requiredSpotPairs(for: assets)
+        .union(MarketDataStore.defaultPairs)
 }
 
 private struct MissingAssetView: View {

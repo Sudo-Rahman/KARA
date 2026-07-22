@@ -5,14 +5,17 @@ struct VaultDashboardView: View {
     @Environment(AppRouter.self) private var router
     @Environment(KaraTheme.self) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var selectedHistoryPeriod: PortfolioHistoryPeriod = .twelveMonths
+    @State private var selectedMetal: MarketMetal = .gold
 
     let assets: [Asset]
     let attachments: [AssetAttachment]
     let valuation: PortfolioValuation
-    let goldQuote: SpotQuote?
+    let metalQuotes: [MarketMetal: SpotQuote]
     let isRefreshing: Bool
     let isUsingCachedMarketData: Bool
-    let marketErrorDescription: String?
     let refresh: @MainActor () async -> Void
 
     var body: some View {
@@ -41,7 +44,7 @@ struct VaultDashboardView: View {
                     recentAssetsCard
                 }
 
-                liveGoldCard
+                metalPricesCard
             }
             .padding(.horizontal, KaraSpacing.medium)
             .padding(.top, KaraSpacing.small)
@@ -351,21 +354,31 @@ struct VaultDashboardView: View {
     }
 
     private var historyCard: some View {
-        KaraCard {
+        let points = selectedHistoryPeriod.filter(
+            valuation.history,
+            asOf: historyAsOf
+        )
+
+        return KaraCard {
             VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-                VaultSectionHeader("vault.history.title", eyebrow: "vault.history.eyebrow") {
-                    if let percentage = valuation.gainPercentage {
-                        SensitiveValue {
-                            Text(VaultFormatters.percentage(percentage, showsPositiveSign: true))
-                                .font(.caption.weight(.semibold).monospacedDigit())
-                                .foregroundStyle(performanceColor(percentage))
-                        }
+                VaultSectionHeader("vault.history.title")
+
+                Picker("vault.history.period", selection: $selectedHistoryPeriod) {
+                    ForEach(PortfolioHistoryPeriod.allCases, id: \.self) { period in
+                        Text(LocalizedStringKey(period.localizationKey))
+                            .tag(period)
                     }
                 }
+                .pickerStyle(.segmented)
+                .frame(minHeight: 44)
+                .tint(theme.goldBright)
+                .accessibilityIdentifier("vault.history.period")
 
-                if valuation.history.count >= 2 {
+                if points.count >= 2,
+                   let domain = chartDomain(for: points)
+                {
                     SensitiveValue {
-                        portfolioChart
+                        portfolioChart(points, domain: domain)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: KaraSpacing.small) {
@@ -389,8 +402,11 @@ struct VaultDashboardView: View {
         }
     }
 
-    private var portfolioChart: some View {
-        Chart(valuation.history) { point in
+    private func portfolioChart(
+        _ points: [PortfolioHistoryPoint],
+        domain: ClosedRange<Date>
+    ) -> some View {
+        Chart(points) { point in
             AreaMark(
                 x: .value("Date", point.date),
                 y: .value("Value", point.valueEUR.vaultDouble)
@@ -422,13 +438,32 @@ struct VaultDashboardView: View {
         }
         .chartLegend(.hidden)
         .chartYScale(domain: .automatic(includesZero: false))
+        .chartXScale(domain: domain)
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                AxisValueLabel {
-                    if let date = value.as(Date.self) {
-                        Text(date, format: .dateTime.month(.abbreviated))
-                            .font(.caption2)
-                            .foregroundStyle(theme.muted)
+            if selectedHistoryPeriod == .all {
+                AxisMarks(values: allHistoryAxisDates(for: domain)) { value in
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            Text(date, format: .dateTime.year())
+                                .font(.caption2)
+                                .foregroundStyle(theme.muted)
+                        }
+                    }
+                }
+            } else {
+                AxisMarks(values: .stride(by: .month, count: selectedHistoryPeriod.axisMonthStride)) { value in
+                    AxisValueLabel {
+                        if let date = value.as(Date.self) {
+                            if isInitialMonth(date, in: domain) || Calendar.current.component(.month, from: date) == 1 {
+                                Text(date, format: .dateTime.month(.abbreviated).year())
+                                    .font(.caption2)
+                                    .foregroundStyle(theme.muted)
+                            } else {
+                                Text(date, format: .dateTime.month(.abbreviated))
+                                    .font(.caption2)
+                                    .foregroundStyle(theme.muted)
+                            }
+                        }
                     }
                 }
             }
@@ -447,7 +482,7 @@ struct VaultDashboardView: View {
             }
         }
         .frame(height: 190)
-        .accessibilityLabel(Text("vault.history.accessibility-label"))
+        .accessibilityLabel(Text(LocalizedStringKey(selectedHistoryPeriod.accessibilityLabelKey)))
     }
 
     private var primaryActions: some View {
@@ -617,7 +652,7 @@ struct VaultDashboardView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var liveGoldCard: some View {
+    private var metalPricesCard: some View {
         KaraCard(padding: KaraSpacing.large) {
             VStack(alignment: .leading, spacing: KaraSpacing.medium) {
                 HStack(alignment: .top) {
@@ -628,7 +663,7 @@ struct VaultDashboardView: View {
                             .tracking(1.2)
                             .foregroundStyle(theme.goldBright)
 
-                        Text("vault.gold-live.title")
+                        Text("vault.market.title")
                             .font(theme.displayFont(size: 21, relativeTo: .title3))
                             .foregroundStyle(theme.ink)
                     }
@@ -639,64 +674,133 @@ struct VaultDashboardView: View {
                         ProgressView()
                             .tint(theme.goldBright)
                             .accessibilityLabel(Text("vault.market.refreshing"))
-                    } else if isUsingCachedMarketData && goldQuote != nil {
-                        VaultStatusPill(
-                            text: "vault.market.cached",
-                            systemImage: "clock.arrow.circlepath",
-                            tint: theme.goldBright
-                        )
-                    } else if goldQuote != nil {
-                        VaultStatusPill(
-                            text: "vault.market.available",
-                            systemImage: "dot.radiowaves.left.and.right",
-                            tint: .green
-                        )
                     }
                 }
 
-                if let goldQuote {
-                    HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
-                        Text(VaultFormatters.currency(goldQuote.pricePerGram, maximumFractionDigits: 2))
-                            .font(theme.displayFont(size: 31, relativeTo: .title))
-                            .monospacedDigit()
-                            .foregroundStyle(theme.ink)
-
-                        Text("vault.gold-live.per-gram")
-                            .font(.subheadline)
-                            .foregroundStyle(theme.muted)
+                Picker("vault.market.metal", selection: $selectedMetal) {
+                    ForEach(MarketMetal.allCases, id: \.self) { metal in
+                        Text(metal.symbol)
+                            .accessibilityLabel(Text(LocalizedStringKey(metal.localizationKey)))
+                            .tag(metal)
                     }
-                    .contentTransition(.numericText())
+                }
+                .pickerStyle(.segmented)
+                .frame(minHeight: 44)
+                .tint(theme.goldBright)
+                .accessibilityIdentifier("vault.market.metal")
 
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("vault.gold-live.per-ounce \(VaultFormatters.currency(goldQuote.price, maximumFractionDigits: 2))")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(theme.muted)
+                Group {
+                    if let quote = metalQuotes[selectedMetal] {
+                        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+                            Text(LocalizedStringKey(selectedMetal.localizationKey))
+                                .font(.headline)
+                                .foregroundStyle(metalTint(selectedMetal))
 
-                        Spacer(minLength: KaraSpacing.small)
+                            HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
+                                Text(VaultFormatters.currency(quote.pricePerGram, maximumFractionDigits: 2))
+                                    .font(theme.displayFont(size: 31, relativeTo: .title))
+                                    .monospacedDigit()
+                                    .foregroundStyle(theme.ink)
 
-                        Text(goldQuote.sourceUpdatedAt, format: .dateTime.day().month(.abbreviated).hour().minute())
-                            .font(.caption2)
-                            .foregroundStyle(theme.muted)
-                    }
+                                Text("vault.gold-live.per-gram")
+                                    .font(.subheadline)
+                                    .foregroundStyle(theme.muted)
+                            }
+                            .contentTransition(.numericText())
 
-                    Text("vault.gold-live.no-daily-change")
-                        .font(.caption2)
-                        .foregroundStyle(theme.muted)
-                } else {
-                    Label("vault.market.unavailable", systemImage: "wifi.exclamationmark")
-                        .font(.subheadline)
-                        .foregroundStyle(theme.muted)
+                            HStack(alignment: .firstTextBaseline) {
+                                Text("vault.gold-live.per-ounce \(VaultFormatters.currency(quote.price, maximumFractionDigits: 2))")
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(theme.muted)
 
-                    if marketErrorDescription != nil {
-                        Button("vault.market.retry") {
-                            Task { await refresh() }
+                                Spacer(minLength: KaraSpacing.small)
+
+                                VStack(alignment: .trailing, spacing: KaraSpacing.xSmall) {
+                                    Text(quote.sourceUpdatedAt, format: .dateTime.day().month(.abbreviated).hour().minute())
+                                        .font(.caption2)
+                                        .foregroundStyle(theme.muted)
+
+                                    if isUsingCachedMarketData {
+                                        Label("vault.market.cached", systemImage: "clock.arrow.circlepath")
+                                            .font(.caption2)
+                                            .foregroundStyle(theme.goldBright)
+                                    }
+                                }
+                            }
                         }
-                        .buttonStyle(.glass)
+                    } else {
+                        VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                            Text(LocalizedStringKey(selectedMetal.localizationKey))
+                                .font(.headline)
+                                .foregroundStyle(metalTint(selectedMetal))
+
+                            Label("vault.market.unavailable", systemImage: "wifi.exclamationmark")
+                                .font(.subheadline)
+                                .foregroundStyle(theme.muted)
+
+                            if !isRefreshing {
+                                Button("vault.market.retry") {
+                                    Task { await refresh() }
+                                }
+                                .buttonStyle(.glass)
+                            }
+                        }
                     }
                 }
+                .id(selectedMetal)
+                .transition(.opacity)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: selectedMetal)
             }
         }
-        .accessibilityIdentifier("vault.gold-live")
+        .accessibilityIdentifier("vault.metal-prices")
+    }
+
+    private var historyAsOf: Date {
+        valuation.history.last?.date ?? .now
+    }
+
+    private func chartDomain(
+        for points: [PortfolioHistoryPoint]
+    ) -> ClosedRange<Date>? {
+        guard let end = points.last?.date,
+              let start = selectedHistoryPeriod.startDate(
+                  asOf: end,
+                  earliestHistoryDate: valuation.history.first?.date
+              ),
+              start <= end
+        else {
+            return nil
+        }
+        return start...end
+    }
+
+    private func allHistoryAxisDates(
+        for domain: ClosedRange<Date>
+    ) -> [Date] {
+        let calendar = Calendar.current
+        let firstYear = calendar.component(.year, from: domain.lowerBound)
+        let lastYear = calendar.component(.year, from: domain.upperBound)
+        let yearSpan = max(0, lastYear - firstYear)
+        let yearStep = max(1, Int(ceil(Double(max(yearSpan, 1)) / 4)))
+        var dates = [domain.lowerBound]
+
+        if yearSpan > 0 {
+            for year in stride(from: firstYear + yearStep, to: lastYear, by: yearStep) {
+                if let date = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) {
+                    dates.append(date)
+                }
+            }
+            dates.append(domain.upperBound)
+        }
+
+        return dates
+    }
+
+    private func isInitialMonth(
+        _ date: Date,
+        in domain: ClosedRange<Date>
+    ) -> Bool {
+        Calendar.current.isDate(date, equalTo: domain.lowerBound, toGranularity: .month)
     }
 
     private var recentAssets: [Asset] {
@@ -724,5 +828,49 @@ struct VaultDashboardView: View {
         case .palladium:
             Color.cyan
         }
+    }
+}
+
+private extension PortfolioHistoryPeriod {
+    var localizationKey: String {
+        switch self {
+        case .threeMonths: "vault.history.period.3-months"
+        case .sixMonths: "vault.history.period.6-months"
+        case .twelveMonths: "vault.history.period.12-months"
+        case .all: "vault.history.period.all"
+        }
+    }
+
+    var accessibilityLabelKey: String {
+        switch self {
+        case .threeMonths: "vault.history.accessibility-label.3-months"
+        case .sixMonths: "vault.history.accessibility-label.6-months"
+        case .twelveMonths: "vault.history.accessibility-label.12-months"
+        case .all: "vault.history.accessibility-label.all"
+        }
+    }
+
+    var axisMonthStride: Int {
+        switch self {
+        case .threeMonths: 1
+        case .sixMonths: 2
+        case .twelveMonths: 3
+        case .all: 1
+        }
+    }
+}
+
+private extension MarketMetal {
+    var symbol: String {
+        switch self {
+        case .gold: "Au"
+        case .silver: "Ag"
+        case .platinum: "Pt"
+        case .palladium: "Pd"
+        }
+    }
+
+    var localizationKey: String {
+        preciousMetal.localizationKey
     }
 }
