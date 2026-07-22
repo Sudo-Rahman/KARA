@@ -158,25 +158,128 @@ struct InvoiceStepView: View {
                 .accessibilityIdentifier("invoice.continue")
             }
 
-            Button {
-                showsFileImporter = true
-            } label: {
-                Label("invoice.import", systemImage: "folder")
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-            }
-            .buttonStyle(.glass)
-            .disabled(isPreparingDocument)
-            .accessibilityIdentifier("invoice.import")
-
             if state.invoiceDocument == nil {
-                Button("invoice.skip", action: onContinue)
-                    .buttonStyle(.plain)
-                    .foregroundStyle(theme.muted)
-                    .frame(minHeight: 44)
-                    .accessibilityIdentifier("invoice.skip")
+                invoiceInputActions
+            } else {
+                invoiceReplacementActions
             }
         }
+    }
+
+    @ViewBuilder
+    private var invoiceInputActions: some View {
+        ViewThatFits(in: .horizontal) {
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    importButton
+                    skipButton
+                }
+            }
+
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    importIconButton
+                    skipIconButton
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var invoiceReplacementActions: some View {
+        ViewThatFits(in: .horizontal) {
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    rescanButton
+                    importButton
+                }
+            }
+
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    rescanIconButton
+                    importIconButton
+                }
+            }
+        }
+    }
+
+    private var importButton: some View {
+        Button {
+            showsFileImporter = true
+        } label: {
+            Label("invoice.import", systemImage: "folder")
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .disabled(isPreparingDocument)
+        .accessibilityIdentifier("invoice.import")
+    }
+
+    private var importIconButton: some View {
+        Button {
+            showsFileImporter = true
+        } label: {
+            Image(systemName: "folder")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .disabled(isPreparingDocument)
+        .accessibilityLabel("invoice.import")
+        .accessibilityIdentifier("invoice.import")
+    }
+
+    private var skipButton: some View {
+        Button {
+            onContinue()
+        } label: {
+            Label("invoice.skip", systemImage: "forward.end")
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .foregroundStyle(theme.muted)
+        .accessibilityIdentifier("invoice.skip")
+    }
+
+    private var skipIconButton: some View {
+        Button {
+            onContinue()
+        } label: {
+            Image(systemName: "forward.end")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .foregroundStyle(theme.muted)
+        .accessibilityLabel("invoice.skip")
+        .accessibilityIdentifier("invoice.skip")
+    }
+
+    private var rescanButton: some View {
+        Button {
+            presentScanner()
+        } label: {
+            Label("invoice.scan", systemImage: "viewfinder")
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .disabled(isPreparingDocument)
+        .accessibilityIdentifier("invoice.scan")
+    }
+
+    private var rescanIconButton: some View {
+        Button {
+            presentScanner()
+        } label: {
+            Image(systemName: "viewfinder")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .disabled(isPreparingDocument)
+        .accessibilityLabel("invoice.scan")
+        .accessibilityIdentifier("invoice.scan")
     }
 
     private func presentScanner() {

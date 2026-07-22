@@ -41,8 +41,8 @@ struct AssetStepScaffold<Content: View, Footer: View>: View {
             footer
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 .padding(.horizontal, KaraSpacing.large)
-                .padding(.top, KaraSpacing.small)
-                .padding(.bottom, KaraSpacing.small)
+                .padding(.top, KaraSpacing.xSmall)
+                .padding(.bottom, KaraSpacing.xSmall)
         }
         .scrollEdgeEffectStyle(.hard, for: .top)
         .scrollDismissesKeyboard(.never)
@@ -64,28 +64,30 @@ struct AssetCreationHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                HStack {
-                    if step != .objectPhoto {
+                GlassEffectContainer(spacing: KaraSpacing.small) {
+                    HStack {
+                        if step != .objectPhoto {
+                            headerButton(
+                                title: "asset-flow.back",
+                                systemImage: "chevron.backward",
+                                identifier: "asset-flow.back",
+                                action: onBack
+                            )
+                        } else {
+                            Color.clear
+                                .frame(width: 48, height: 48)
+                                .accessibilityHidden(true)
+                        }
+
+                        Spacer(minLength: KaraSpacing.medium)
+
                         headerButton(
-                            title: "asset-flow.back",
-                            systemImage: "chevron.backward",
-                            identifier: "asset-flow.back",
-                            action: onBack
+                            title: "asset-flow.cancel",
+                            systemImage: "xmark",
+                            identifier: "asset-flow.cancel",
+                            action: onCancel
                         )
-                    } else {
-                        Color.clear
-                            .frame(width: 48, height: 48)
-                            .accessibilityHidden(true)
                     }
-
-                    Spacer(minLength: KaraSpacing.medium)
-
-                    headerButton(
-                        title: "asset-flow.cancel",
-                        systemImage: "xmark",
-                        identifier: "asset-flow.cancel",
-                        action: onCancel
-                    )
                 }
 
                 Text(step.navigationTitle)
@@ -123,16 +125,32 @@ struct AssetCreationHeader: View {
                 .font(.system(size: 21, weight: .semibold))
                 .foregroundStyle(theme.cobaltBright)
                 .frame(width: 48, height: 48)
-                .background(theme.surface, in: .circle)
-                .overlay {
-                    Circle()
-                        .stroke(theme.muted.opacity(0.20), lineWidth: 1)
-                }
                 .contentShape(.circle)
+                .modifier(KaraHeaderGlassEffect(tint: theme.cobalt.opacity(0.16)))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
         .accessibilityIdentifier(identifier)
+    }
+}
+
+private struct KaraHeaderGlassEffect: ViewModifier {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    let tint: Color
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if reduceTransparency {
+            content
+                .background(Color("KaraSurface"), in: .circle)
+                .overlay {
+                    Circle()
+                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                }
+        } else {
+            content.glassEffect(.regular.tint(tint).interactive(), in: .circle)
+        }
     }
 }
 

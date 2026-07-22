@@ -2849,13 +2849,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose a common karat or enter the fineness."
+            "value" : "Choose a common karat or enter a custom karat."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez un carat courant ou saisissez le titre."
+            "value" : "Choisissez un carat courant ou saisissez un autre carat."
           }
         }
       }
@@ -5328,13 +5328,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Separate tags with commas."
+            "value" : "Add a tag, then press Return or tap outside to validate it."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Séparez les tags par des virgules."
+            "value" : "Ajoutez un tag, puis appuyez sur Entrée ou touchez ailleurs pour le valider."
           }
         }
       }
@@ -5344,13 +5344,45 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Long term, certified…"
+            "value" : "Add a tag…"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Long terme, certifié…"
+            "value" : "Ajouter un tag…"
+          }
+        }
+      }
+    },
+    "purchase.tags.remove" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove tag"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer le tag"
+          }
+        }
+      }
+    },
+    "purchase.tags.commit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add tag"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter le tag"
           }
         }
       }

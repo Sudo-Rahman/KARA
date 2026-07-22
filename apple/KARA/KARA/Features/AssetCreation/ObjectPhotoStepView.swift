@@ -149,40 +149,53 @@ struct ObjectPhotoStepView: View {
                 .accessibilityIdentifier("asset-flow.object.continue")
             }
 
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: KaraSpacing.small) {
-                    alternatePhotoActions
-                }
-
-                VStack(spacing: KaraSpacing.small) {
-                    alternatePhotoActions
-                }
-            }
-
             if state.objectPhotoData == nil {
-                Button("asset-flow.object.skip", action: onContinue)
-                    .buttonStyle(.plain)
-                    .foregroundStyle(theme.muted)
-                    .frame(minHeight: 44)
-                    .accessibilityIdentifier("asset-flow.object.skip")
+                photoInputActions
+            } else {
+                photoReplacementActions
             }
         }
     }
 
     @ViewBuilder
-    private var alternatePhotoActions: some View {
-        if state.objectPhotoData != nil {
-            Button {
-                presentCamera()
-            } label: {
-                Label("asset-flow.object.retake", systemImage: "camera.rotate")
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 44)
+    private var photoInputActions: some View {
+        ViewThatFits(in: .horizontal) {
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    libraryButton
+                    skipButton
+                }
             }
-            .buttonStyle(.glass)
-            .accessibilityIdentifier("asset-flow.object.retake")
-        }
 
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    libraryIconButton
+                    skipIconButton
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var photoReplacementActions: some View {
+        ViewThatFits(in: .horizontal) {
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    retakeButton
+                    libraryButton
+                }
+            }
+
+            GlassEffectContainer(spacing: KaraSpacing.small) {
+                HStack(spacing: KaraSpacing.small) {
+                    retakeIconButton
+                    libraryIconButton
+                }
+            }
+        }
+    }
+
+    private var libraryButton: some View {
         PhotosPicker(selection: $selectedPhoto, matching: .images) {
             Label("asset-flow.object.library", systemImage: "photo.on.rectangle")
                 .lineLimit(1)
@@ -191,6 +204,67 @@ struct ObjectPhotoStepView: View {
         .buttonStyle(.glass)
         .disabled(isPreparingPhoto)
         .accessibilityIdentifier("asset-flow.object.library")
+    }
+
+    private var libraryIconButton: some View {
+        PhotosPicker(selection: $selectedPhoto, matching: .images) {
+            Image(systemName: "photo.on.rectangle")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .disabled(isPreparingPhoto)
+        .accessibilityLabel("asset-flow.object.library")
+        .accessibilityIdentifier("asset-flow.object.library")
+    }
+
+    private var skipButton: some View {
+        Button {
+            onContinue()
+        } label: {
+            Label("asset-flow.object.skip", systemImage: "forward.end")
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .foregroundStyle(theme.muted)
+        .accessibilityIdentifier("asset-flow.object.skip")
+    }
+
+    private var skipIconButton: some View {
+        Button {
+            onContinue()
+        } label: {
+            Image(systemName: "forward.end")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .foregroundStyle(theme.muted)
+        .accessibilityLabel("asset-flow.object.skip")
+        .accessibilityIdentifier("asset-flow.object.skip")
+    }
+
+    private var retakeButton: some View {
+        Button {
+            presentCamera()
+        } label: {
+            Label("asset-flow.object.retake", systemImage: "camera.rotate")
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .accessibilityIdentifier("asset-flow.object.retake")
+    }
+
+    private var retakeIconButton: some View {
+        Button {
+            presentCamera()
+        } label: {
+            Image(systemName: "camera.rotate")
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .buttonStyle(.glass)
+        .accessibilityLabel("asset-flow.object.retake")
+        .accessibilityIdentifier("asset-flow.object.retake")
     }
 
     private func analysisBadge(_ phase: AssetAnalysisPhase) -> some View {

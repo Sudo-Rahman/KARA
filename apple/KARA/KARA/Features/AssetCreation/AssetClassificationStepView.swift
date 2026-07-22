@@ -88,7 +88,7 @@ struct AssetClassificationStepView: View {
                                             state.draft.metal == metal
                                                 ? theme.cobaltBright.opacity(0.85)
                                                 : Color.clear,
-                                            lineWidth: 1
+                                            lineWidth: state.draft.metal == metal ? 1.5 : 1
                                         )
                                 }
                         }
@@ -97,6 +97,8 @@ struct AssetClassificationStepView: View {
                         .accessibilityIdentifier("classification.metal.\(metal.rawValue)")
                     }
                 }
+                .padding(.horizontal, 1)
+                .padding(.vertical, KaraSpacing.xSmall)
             }
             .assetPageHorizontalCarousel()
             .scrollIndicators(.hidden)
@@ -122,6 +124,8 @@ struct AssetClassificationStepView: View {
                         .containerRelativeFrame(.horizontal, count: 2, spacing: KaraSpacing.small)
                     }
                 }
+                .padding(.horizontal, 1)
+                .padding(.vertical, KaraSpacing.xSmall)
                 .scrollTargetLayout()
             }
             .assetPageHorizontalCarousel()
@@ -263,7 +267,10 @@ private struct AssetPresetCard: View {
             .background(theme.surface, in: .rect(cornerRadius: 16))
             .overlay {
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? theme.cobaltBright : theme.muted.opacity(0.16), lineWidth: 1)
+                    .stroke(
+                        isSelected ? theme.cobaltBright : theme.muted.opacity(0.16),
+                        lineWidth: isSelected ? 1.5 : 1
+                    )
             }
         }
         .buttonStyle(.plain)

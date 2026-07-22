@@ -221,6 +221,8 @@ struct AssetCharacteristicsStepView: View {
                         .accessibilityIdentifier("characteristics.gold-karat.\(purity.karat)")
                     }
                 }
+                .padding(.horizontal, 1)
+                .padding(.vertical, KaraSpacing.xSmall)
             }
             .scrollIndicators(.hidden)
 
@@ -253,8 +255,6 @@ struct AssetCharacteristicsStepView: View {
                     .foregroundStyle(theme.goldBright)
                     .contentTransition(.numericText())
             }
-
-            finenessEditor
         }
     }
 
@@ -369,12 +369,19 @@ struct AssetCharacteristicsStepView: View {
             get: { state.draft.metalKarat },
             set: { karat in
                 state.update(\.metalKarat, to: karat, field: .metalKarat)
-                let matchingFineness = karat.flatMap { value in
-                    commonGoldPurities.first(where: { $0.karat == value })?.fineness
-                }
-                state.update(\.finenessPermille, to: matchingFineness, field: .finenessPermille)
+                state.update(
+                    \.finenessPermille,
+                    to: karat.flatMap(fineness(for:)),
+                    field: .finenessPermille
+                )
             }
         )
+    }
+
+    private func fineness(for karat: Int) -> Double? {
+        guard (1 ... 24).contains(karat) else { return nil }
+        return commonGoldPurities.first(where: { $0.karat == karat })?.fineness
+            ?? Double(karat) / 24 * 1_000
     }
 
     private func validateAndContinue() {
