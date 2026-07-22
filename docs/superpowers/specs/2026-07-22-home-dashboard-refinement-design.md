@@ -7,8 +7,8 @@ Simplify the home dashboard, restore a clear native navigation hierarchy, and ma
 ## Navigation and wording
 
 - Remove the marketing introduction: the private-vault eyebrow, portfolio headline, and explanatory subtitle.
-- Present `Kara` as the screen's native large navigation title.
-- Let the title collapse into the navigation bar as the user scrolls.
+- Present `Kara` as a centered, gold-tinted title directly inside the navigation bar.
+- Keep the title inline and stable while the user scrolls.
 - Keep the privacy control in the trailing navigation-bar position.
 - Render the privacy control as a flat, gold-tinted eye icon without a Liquid Glass background or grey circular plate.
 
@@ -16,6 +16,7 @@ Simplify the home dashboard, restore a clear native navigation hierarchy, and ma
 
 - Keep the existing Liquid Glass card visual language and card order.
 - Give every glass card subtle touch-driven visual feedback.
+- Compose each card border inside the same rendered surface as its interactive Liquid Glass effect, so the border follows the system-managed press enlargement exactly.
 - Preserve navigation only for cards and rows that already have a destination; informational cards must not invent new routes or accessibility button semantics.
 - Keep card shapes, borders, spacing, and interaction feedback consistent.
 - Make the unrealized-gain and inventory metric cards equal in height at standard Dynamic Type sizes.
@@ -45,13 +46,12 @@ Simplify the home dashboard, restore a clear native navigation hierarchy, and ma
 
 - Limit changes to the home dashboard and shared design-system components directly responsible for these visuals.
 - Do not change valuation logic, persistence, market-data loading, navigation destinations, or unrelated asset-creation work already present in the worktree.
-- Prefer native SwiftUI navigation-title behavior and native iOS 26 Liquid Glass interaction APIs.
+- Prefer native SwiftUI toolbar composition and native iOS 26 Liquid Glass interaction APIs.
 
 ## Verification
 
-- Build the KARA scheme for the currently booted iPhone simulator.
-- Launch the app with the visual-QA seed data and inspect the top, metric cards, privacy state, actions, category/recent artwork, and scrolled title state.
+- Build the KARA scheme without launching the app.
+- Leave visual inspection of the title, cards, privacy state, actions, and artwork to the user on a physical iPhone.
 - Verify both visible and concealed privacy modes.
 - Verify equal metric-card and action-button heights visually.
-- Run focused home/privacy UI or unit tests when available, and confirm no existing home accessibility identifiers or routes regress.
-
+- Run the unit-test target only; do not execute UI tests.
