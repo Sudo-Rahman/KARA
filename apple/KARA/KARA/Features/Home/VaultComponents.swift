@@ -127,8 +127,7 @@ struct AssetArtworkView: View {
             } else {
                 Image(category.imageName)
                     .resizable()
-                    .scaledToFit()
-                    .padding(size * 0.12)
+                    .scaledToFill()
             }
         }
         .frame(width: size, height: size)
@@ -170,6 +169,7 @@ struct VaultStatusPill: View {
 }
 
 struct PrivacyToolbarButton: View {
+    @Environment(KaraTheme.self) private var theme
     @Environment(PrivacyPreferences.self) private var privacyPreferences
 
     var body: some View {
@@ -177,8 +177,11 @@ struct PrivacyToolbarButton: View {
             privacyPreferences.toggle()
         } label: {
             Image(systemName: privacyPreferences.hidesSensitiveValues ? "eye.slash.fill" : "eye.fill")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(theme.goldBright)
                 .contentTransition(.symbolEffect(.replace))
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(Text(LocalizedStringKey(
             privacyPreferences.hidesSensitiveValues
                 ? "privacy.action.reveal"

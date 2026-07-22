@@ -18,8 +18,6 @@ struct VaultDashboardView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
-                introduction
-
                 if assets.isEmpty {
                     emptyVaultCard
                 } else {
@@ -54,41 +52,22 @@ struct VaultDashboardView: View {
             await refresh()
         }
         .background(theme.background.ignoresSafeArea())
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("KARA")
+                Text("Kara")
                     .font(theme.displayFont(size: 20, relativeTo: .headline))
-                    .tracking(2.2)
                     .foregroundStyle(theme.goldBright)
                     .accessibilityAddTraits(.isHeader)
             }
 
             ToolbarItem(placement: .topBarTrailing) {
                 PrivacyToolbarButton()
-                .accessibilityIdentifier("vault.privacy-toggle")
+                    .tint(theme.goldBright)
+                    .accessibilityIdentifier("vault.privacy-toggle")
             }
         }
         .accessibilityIdentifier("vault.dashboard")
-    }
-
-    private var introduction: some View {
-        VStack(alignment: .leading, spacing: KaraSpacing.small) {
-            Text("vault.eyebrow")
-                .font(.caption.weight(.semibold))
-                .textCase(.uppercase)
-                .tracking(1.5)
-                .foregroundStyle(theme.goldBright)
-
-            Text("vault.title")
-                .font(theme.displayFont(size: 31, relativeTo: .largeTitle))
-                .foregroundStyle(theme.ink)
-
-            Text("vault.subtitle")
-                .font(.subheadline)
-                .foregroundStyle(theme.muted)
-        }
-        .accessibilityElement(children: .combine)
     }
 
     private var emptyVaultCard: some View {
@@ -238,7 +217,10 @@ struct VaultDashboardView: View {
     }
 
     private var gainMetricCard: some View {
-        KaraCard(padding: KaraSpacing.medium) {
+        KaraCard(
+            padding: KaraSpacing.medium,
+            minHeight: compactMetricCardHeight
+        ) {
             KaraMetric(title: "vault.metric.unrealized-gain", systemImage: "chart.line.uptrend.xyaxis") {
                 if let gain = valuation.totalGainEUR {
                     SensitiveValue {
@@ -281,7 +263,10 @@ struct VaultDashboardView: View {
         Button {
             router.showInventory()
         } label: {
-            KaraCard(padding: KaraSpacing.medium) {
+            KaraCard(
+                padding: KaraSpacing.medium,
+                minHeight: compactMetricCardHeight
+            ) {
                 KaraMetric(title: "vault.metric.inventory", systemImage: "shippingbox.fill") {
                     SensitiveValue {
                         Text("vault.metric.objects \(valuation.coverage.totalObjectCount)")
@@ -479,13 +464,15 @@ struct VaultDashboardView: View {
                 router.presentSaleSimulation()
             } label: {
                 Label("vault.action.simulate", systemImage: "equal.circle")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 50)
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.karaSecondaryAction)
             .disabled(valuation.coverage.valuedRecordCount == 0)
             .accessibilityIdentifier("vault.simulate")
         }
+    }
+
+    private var compactMetricCardHeight: CGFloat? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 176
     }
 
     private var categoryCard: some View {

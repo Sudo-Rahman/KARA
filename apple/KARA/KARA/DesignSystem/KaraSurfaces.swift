@@ -6,27 +6,29 @@ struct KaraCard<Content: View>: View {
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     private let contentPadding: CGFloat
+    private let minHeight: CGFloat?
     private let content: Content
 
     init(
         padding: CGFloat = KaraSpacing.medium,
+        minHeight: CGFloat? = nil,
         @ViewBuilder content: () -> Content
     ) {
         contentPadding = padding
+        self.minHeight = minHeight
         self.content = content()
     }
 
     var body: some View {
         content
             .padding(contentPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(
+                maxWidth: .infinity,
+                minHeight: minHeight,
+                alignment: .topLeading
+            )
             .background {
                 cardBackground
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(borderGradient, lineWidth: borderWidth)
-                    .allowsHitTesting(false)
             }
             .shadow(
                 color: theme.cobalt.opacity(colorSchemeContrast == .increased ? 0.24 : 0.16),
@@ -40,15 +42,32 @@ struct KaraCard<Content: View>: View {
         let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
 
         if reduceTransparency {
-            shape.fill(theme.surface)
+            shape
+                .fill(theme.surface)
+                .overlay {
+                    cardBorder(shape)
+                }
         } else {
             shape
                 .fill(surfaceGradient)
+                .overlay {
+                    cardBorder(shape)
+                }
                 .glassEffect(
-                    .clear.tint(theme.cobalt.opacity(0.07)),
+                    .clear
+                        .tint(theme.cobalt.opacity(0.07))
+                        .interactive(),
                     in: .rect(cornerRadius: 20)
                 )
         }
+    }
+
+    private func cardBorder(
+        _ shape: RoundedRectangle
+    ) -> some View {
+        shape
+            .stroke(borderGradient, lineWidth: borderWidth)
+            .allowsHitTesting(false)
     }
 
     private var surfaceGradient: LinearGradient {

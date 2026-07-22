@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SensitiveValue<Content: View>: View {
-    @Environment(KaraTheme.self) private var theme
     @Environment(PrivacyPreferences.self) private var privacyPreferences
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -29,42 +28,21 @@ struct SensitiveValue<Content: View>: View {
 
     private var concealedContent: some View {
         content
-            .hidden()
+            .blur(radius: reduceTransparency ? 8 : 11)
+            .opacity(reduceTransparency ? 0.30 : 0.42)
             .accessibilityHidden(true)
             .overlay {
-                mask
+                if !reduceTransparency {
+                    content
+                        .blur(radius: 18)
+                        .opacity(colorSchemeContrast == .increased ? 0.12 : 0.18)
+                        .blendMode(.screen)
+                        .accessibilityHidden(true)
+                        .allowsHitTesting(false)
+                }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("privacy.value.masked"))
-    }
-
-    @ViewBuilder
-    private var mask: some View {
-        let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
-
-        if reduceTransparency {
-            shape
-                .fill(theme.muted.opacity(colorSchemeContrast == .increased ? 0.52 : 0.36))
-        } else {
-            shape
-                .fill(maskGradient)
-                .glassEffect(
-                    .regular.tint(theme.cobalt.opacity(0.14)),
-                    in: .rect(cornerRadius: 7)
-                )
-        }
-    }
-
-    private var maskGradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                theme.muted.opacity(0.22),
-                theme.cobalt.opacity(0.22),
-                theme.muted.opacity(0.16),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 }
 
