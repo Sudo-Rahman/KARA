@@ -9,6 +9,11 @@ struct AssetDetailView: View {
     let asset: Asset
     let attachments: [AssetAttachment]
     let valuation: AssetValuation?
+    let repository: any AssetTrashManaging
+
+    @State private var deletionRequest: AssetDeletionRequest?
+    @State private var isShowingDeletionConfirmation = false
+    @State private var isShowingDeletionError = false
 
     var body: some View {
         let renderData = AssetDetailRenderData(
@@ -40,15 +45,36 @@ struct AssetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    router.presentEditor(for: asset.id)
+                Menu {
+                    Button {
+                        router.presentEditor(for: asset.id)
+                    } label: {
+                        Label("asset-detail.action.edit", systemImage: "pencil")
+                    }
+                    .accessibilityIdentifier("asset-detail.edit")
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        requestDeletion()
+                    } label: {
+                        Label("asset-delete.action.delete", systemImage: "trash")
+                    }
+                    .accessibilityIdentifier("asset-detail.delete")
                 } label: {
-                    Image(systemName: "pencil")
+                    Image(systemName: "ellipsis")
                 }
-                .accessibilityLabel(Text("asset-detail.action.edit"))
-                .accessibilityIdentifier("asset-detail.edit")
+                .accessibilityLabel(Text("asset-detail.action.more"))
+                .accessibilityIdentifier("asset-detail.more")
             }
         }
+        .assetDeletionPresentation(
+            request: $deletionRequest,
+            isPresentingConfirmation: $isShowingDeletionConfirmation,
+            isShowingError: $isShowingDeletionError,
+            delete: repository.moveToTrash,
+            onDeleted: router.dismissCurrentRoute
+        )
         .accessibilityIdentifier("asset-detail.screen")
     }
 
@@ -477,6 +503,11 @@ struct AssetDetailView: View {
         case .other:
             "doc.fill"
         }
+    }
+
+    private func requestDeletion() {
+        deletionRequest = AssetDeletionRequest(id: asset.id, name: asset.name)
+        isShowingDeletionConfirmation = true
     }
 }
 

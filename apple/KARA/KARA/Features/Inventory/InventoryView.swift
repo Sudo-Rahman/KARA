@@ -9,11 +9,15 @@ struct InventoryView: View {
     let attachments: [AssetAttachment]
     let valuation: PortfolioValuation
     let isRefreshing: Bool
+    let repository: any AssetTrashManaging
 
     @State private var searchText = ""
     @State private var selectedMetal: PreciousMetal?
     @State private var selectedCategory: AssetCategory?
     @State private var sortOption = InventorySortOption.recent
+    @State private var deletionRequest: AssetDeletionRequest?
+    @State private var isShowingDeletionConfirmation = false
+    @State private var isShowingDeletionError = false
 
     var body: some View {
         let renderData = InventoryRenderData(
@@ -62,6 +66,29 @@ struct InventoryView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("asset-delete.action.delete", role: .destructive) {
+                                requestDeletion(of: asset)
+                            }
+                            .accessibilityIdentifier("inventory.asset.delete.\(asset.id.uuidString)")
+                        } onPresentationChanged: { _ in }
+                        .contextMenu {
+                            Button {
+                                router.presentEditor(for: asset.id)
+                            } label: {
+                                Label("asset-detail.action.edit", systemImage: "pencil")
+                            }
+                            .accessibilityIdentifier("inventory.asset.edit.\(asset.id.uuidString)")
+
+                            Divider()
+
+                            Button(role: .destructive) {
+                                requestDeletion(of: asset)
+                            } label: {
+                                Label("asset-delete.action.delete", systemImage: "trash")
+                            }
+                            .accessibilityIdentifier("inventory.asset.delete.\(asset.id.uuidString)")
+                        }
                         .accessibilityIdentifier("inventory.asset.\(asset.id.uuidString)")
                     }
                 }
@@ -71,6 +98,7 @@ struct InventoryView: View {
             .padding(.bottom, KaraSpacing.xxLarge)
         }
         .scrollIndicators(.hidden)
+        .swipeActionsContainer()
         .background(theme.background.ignoresSafeArea())
         .navigationTitle("inventory.title")
         .navigationBarTitleDisplayMode(.large)
@@ -78,6 +106,12 @@ struct InventoryView: View {
             text: $searchText,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("inventory.search.prompt")
+        )
+        .assetDeletionPresentation(
+            request: $deletionRequest,
+            isPresentingConfirmation: $isShowingDeletionConfirmation,
+            isShowingError: $isShowingDeletionError,
+            delete: repository.moveToTrash
         )
         .accessibilityIdentifier("inventory.screen")
     }
@@ -400,6 +434,11 @@ struct InventoryView: View {
         if value > 0 { return .green }
         if value < 0 { return .red }
         return theme.muted
+    }
+
+    private func requestDeletion(of asset: Asset) {
+        deletionRequest = AssetDeletionRequest(id: asset.id, name: asset.name)
+        isShowingDeletionConfirmation = true
     }
 }
 

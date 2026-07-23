@@ -99,6 +99,15 @@ protocol AssetUpdating {
 }
 
 @MainActor
+protocol AssetTrashManaging {
+    func moveToTrash(assetID: UUID) throws
+    func restore(assetID: UUID) throws
+    func trashedAssets() throws -> [Asset]
+    func purgeExpiredAssets(olderThan cutoff: Date) throws
+    func permanentlyDelete(assetID: UUID) throws
+}
+
+@MainActor
 protocol AttachmentManaging {
     func attachments(for assetID: UUID) throws -> [AssetAttachment]
 

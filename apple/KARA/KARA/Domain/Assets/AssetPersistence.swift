@@ -9,7 +9,7 @@ nonisolated enum AssetRepositoryError: Error, Equatable, Sendable {
 }
 
 @MainActor
-final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentManaging {
+final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentManaging, AssetTrashManaging {
     typealias SaveAction = @MainActor (ModelContext) throws -> Void
 
     private let modelContext: ModelContext
@@ -218,6 +218,80 @@ final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentMana
         }
     }
 
+    func moveToTrash(assetID: UUID) throws {
+        guard let asset = try asset(withID: assetID) else {
+            throw AssetRepositoryError.assetNotFound(assetID)
+        }
+        guard asset.deletedAt == nil else { return }
+
+        do {
+            asset.deletedAt = now()
+            try saveAction(modelContext)
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
+    func restore(assetID: UUID) throws {
+        guard let asset = try asset(withID: assetID) else {
+            throw AssetRepositoryError.assetNotFound(assetID)
+        }
+        guard asset.deletedAt != nil else { return }
+
+        do {
+            asset.deletedAt = nil
+            try saveAction(modelContext)
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
+    func trashedAssets() throws -> [Asset] {
+        let descriptor = FetchDescriptor<Asset>(
+            predicate: #Predicate { $0.deletedAt != nil }
+        )
+        return try modelContext.fetch(descriptor).sorted {
+            ($0.deletedAt ?? .distantPast) > ($1.deletedAt ?? .distantPast)
+        }
+    }
+
+    func purgeExpiredAssets(olderThan cutoff: Date) throws {
+        let descriptor = FetchDescriptor<Asset>(
+            predicate: #Predicate { $0.deletedAt != nil }
+        )
+        let expiredAssets = try modelContext.fetch(descriptor).filter {
+            guard let deletedAt = $0.deletedAt else { return false }
+            return deletedAt <= cutoff
+        }
+        guard !expiredAssets.isEmpty else { return }
+
+        do {
+            for asset in expiredAssets {
+                try deletePermanentlyWithoutSaving(asset)
+            }
+            try saveAction(modelContext)
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
+    func permanentlyDelete(assetID: UUID) throws {
+        guard let asset = try asset(withID: assetID) else {
+            throw AssetRepositoryError.assetNotFound(assetID)
+        }
+
+        do {
+            try deletePermanentlyWithoutSaving(asset)
+            try saveAction(modelContext)
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
     private func asset(withID assetID: UUID) throws -> Asset? {
         let descriptor = FetchDescriptor<Asset>(
             predicate: #Predicate { $0.id == assetID }
@@ -232,6 +306,24 @@ final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentMana
             }
         )
         return try modelContext.fetch(descriptor).first
+    }
+
+    private func deletePermanentlyWithoutSaving(_ asset: Asset) throws {
+        let assetID = asset.id
+        let descriptor = FetchDescriptor<AssetAttachment>(
+            predicate: #Predicate { $0.assetID == assetID }
+        )
+        for attachment in try modelContext.fetch(descriptor) {
+            modelContext.delete(attachment)
+        }
+
+        if let sellerName = asset.sellerName {
+            try releaseSeller(named: sellerName)
+        }
+        if let storageLocationName = asset.storageLocationName {
+            try releaseStorageLocation(named: storageLocationName)
+        }
+        modelContext.delete(asset)
     }
 
     private func recordSeller(named name: String, at timestamp: Date) throws {

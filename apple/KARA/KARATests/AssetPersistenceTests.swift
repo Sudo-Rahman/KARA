@@ -357,6 +357,182 @@ struct AssetPersistenceTests {
         #expect(locations.first?.normalizedName == "coffre personnel")
     }
 
+    @Test("Moving an asset to trash preserves its aggregate and restoring reveals it again")
+    func movesToTrashAndRestoresCompleteAggregate() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let deletedAt = Date(timeIntervalSince1970: 2_000)
+        let repository = SwiftDataAssetRepository(modelContext: context, now: { deletedAt })
+        let asset = try repository.save(
+            draft: AssetDraft(name: "Napoléon", category: .coin),
+            attachments: [
+                AssetAttachmentPayload(
+                    kind: .certificate,
+                    filename: "certificat.pdf",
+                    mimeType: "application/pdf",
+                    data: Data([1, 2, 3])
+                ),
+            ]
+        )
+
+        try repository.moveToTrash(assetID: asset.id)
+
+        #expect(asset.deletedAt == deletedAt)
+        #expect(try repository.trashedAssets().map(\.id) == [asset.id])
+        #expect(try repository.attachments(for: asset.id).count == 1)
+
+        try repository.restore(assetID: asset.id)
+
+        #expect(asset.deletedAt == nil)
+        #expect(try repository.trashedAssets().isEmpty)
+        #expect(try repository.attachments(for: asset.id).count == 1)
+    }
+
+    @Test("Purging removes only assets expired for 30 days and reconciles shared suggestions")
+    func purgesExpiredAssetsAndTheirAttachments() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let expired = try repository.save(
+            draft: AssetDraft(
+                name: "Ancien actif",
+                category: .custom,
+                sellerName: "Maison Kara",
+                storageLocationName: "Coffre"
+            ),
+            attachments: [
+                AssetAttachmentPayload(
+                    kind: .other,
+                    filename: "ancien.txt",
+                    mimeType: "text/plain",
+                    data: Data([1])
+                ),
+            ]
+        )
+        let retained = try repository.save(
+            draft: AssetDraft(
+                name: "Actif récent",
+                category: .custom,
+                sellerName: "Maison Kara",
+                storageLocationName: "Coffre"
+            ),
+            attachments: [
+                AssetAttachmentPayload(
+                    kind: .other,
+                    filename: "recent.txt",
+                    mimeType: "text/plain",
+                    data: Data([2])
+                ),
+            ]
+        )
+        let cutoff = Date(timeIntervalSince1970: 10_000)
+        expired.deletedAt = cutoff
+        retained.deletedAt = cutoff.addingTimeInterval(1)
+        try context.save()
+
+        try repository.purgeExpiredAssets(olderThan: cutoff)
+
+        let assets = try context.fetch(FetchDescriptor<Asset>())
+        let attachments = try context.fetch(FetchDescriptor<AssetAttachment>())
+        let seller = try #require(context.fetch(FetchDescriptor<SavedSeller>()).first)
+        let location = try #require(context.fetch(FetchDescriptor<StorageLocation>()).first)
+        #expect(assets.map(\.id) == [retained.id])
+        #expect(attachments.count == 1)
+        #expect(attachments.first?.assetID == retained.id)
+        #expect(seller.usageCount == 1)
+        #expect(location.usageCount == 1)
+    }
+
+    @Test("A failed trash move leaves the asset active")
+    func rollsBackFailedTrashMove() throws {
+        enum SimulatedFailure: Error { case save }
+
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let asset = try repository.save(
+            draft: AssetDraft(name: "Actif", category: .custom),
+            attachments: []
+        )
+        let failingRepository = SwiftDataAssetRepository(
+            modelContext: context,
+            now: { Date(timeIntervalSince1970: 3_000) },
+            saveAction: { _ in throw SimulatedFailure.save }
+        )
+
+        #expect(throws: SimulatedFailure.self) {
+            try failingRepository.moveToTrash(assetID: asset.id)
+        }
+
+        let verificationContext = ModelContext(container)
+        let persistedAsset = try #require(
+            verificationContext.fetch(FetchDescriptor<Asset>()).first
+        )
+        #expect(persistedAsset.deletedAt == nil)
+    }
+
+    @Test("A failed purge restores the asset, its attachment and reusable suggestions")
+    func rollsBackFailedPurge() throws {
+        enum SimulatedFailure: Error { case save }
+
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let repository = SwiftDataAssetRepository(modelContext: context)
+        let asset = try repository.save(
+            draft: AssetDraft(
+                name: "Actif expiré",
+                category: .custom,
+                sellerName: "Maison Kara",
+                storageLocationName: "Coffre"
+            ),
+            attachments: [
+                AssetAttachmentPayload(
+                    kind: .other,
+                    filename: "preuve.txt",
+                    mimeType: "text/plain",
+                    data: Data([1])
+                ),
+            ]
+        )
+        let cutoff = Date(timeIntervalSince1970: 10_000)
+        asset.deletedAt = cutoff
+        try context.save()
+        let failingRepository = SwiftDataAssetRepository(
+            modelContext: context,
+            saveAction: { _ in throw SimulatedFailure.save }
+        )
+
+        #expect(throws: SimulatedFailure.self) {
+            try failingRepository.purgeExpiredAssets(olderThan: cutoff)
+        }
+
+        let verificationContext = ModelContext(container)
+        #expect(try verificationContext.fetchCount(FetchDescriptor<Asset>()) == 1)
+        #expect(try verificationContext.fetchCount(FetchDescriptor<AssetAttachment>()) == 1)
+        #expect(try verificationContext.fetchCount(FetchDescriptor<SavedSeller>()) == 1)
+        #expect(try verificationContext.fetchCount(FetchDescriptor<StorageLocation>()) == 1)
+    }
+
+    @Test("The retention cutoff uses 30 calendar days")
+    func computesCalendarRetentionCutoff() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "Europe/Paris"))
+        let asOf = try #require(calendar.date(from: DateComponents(
+            year: 2026,
+            month: 4,
+            day: 15,
+            hour: 12
+        )))
+
+        let cutoff = AssetTrashPolicy.expirationCutoff(asOf: asOf, calendar: calendar)
+        let components = calendar.dateComponents([.year, .month, .day, .hour], from: cutoff)
+
+        #expect(components.year == 2026)
+        #expect(components.month == 3)
+        #expect(components.day == 16)
+        #expect(components.hour == 12)
+    }
+
     private func makeContainer() throws -> ModelContainer {
         let schema = Schema([
             Asset.self,

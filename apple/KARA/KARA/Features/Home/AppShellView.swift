@@ -4,8 +4,13 @@ import SwiftUI
 struct AppShellView: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
-    @Query(sort: \Asset.createdAt, order: .reverse) private var assets: [Asset]
+    @Query(
+        filter: #Predicate<Asset> { $0.deletedAt == nil },
+        sort: \Asset.createdAt,
+        order: .reverse
+    ) private var assets: [Asset]
     @Query(sort: \AssetAttachment.createdAt, order: .reverse) private var attachments: [AssetAttachment]
 
     private let analyzer: any AssetAnalyzing
@@ -30,7 +35,7 @@ struct AppShellView: View {
         NavigationStack(path: $router.path) {
             VaultDashboardView(
                 assets: assets,
-                attachments: attachments,
+                attachments: activeAttachments,
                 valuation: portfolioValuation,
                 metalQuotes: metalQuotes,
                 isRefreshing: marketStore.isRefreshing,
@@ -48,6 +53,13 @@ struct AppShellView: View {
         }
         .fullScreenCover(item: $router.cover) { destination in
             cover(for: destination)
+        }
+        .task {
+            purgeExpiredAssets()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            purgeExpiredAssets()
         }
         .task(id: requiredPairs) {
             await marketStore.load(pairs: requiredPairs)
@@ -72,16 +84,18 @@ struct AppShellView: View {
         case .inventory:
             InventoryView(
                 assets: assets,
-                attachments: attachments,
+                attachments: activeAttachments,
                 valuation: portfolioValuation,
-                isRefreshing: marketStore.isRefreshing
+                isRefreshing: marketStore.isRefreshing,
+                repository: SwiftDataAssetRepository(modelContext: modelContext)
             )
         case let .assetDetail(assetID):
             if let asset = asset(withID: assetID) {
                 AssetDetailView(
                     asset: asset,
-                    attachments: attachments,
-                    valuation: assetValuation(withID: assetID)
+                    attachments: activeAttachments,
+                    valuation: assetValuation(withID: assetID),
+                    repository: SwiftDataAssetRepository(modelContext: modelContext)
                 )
             } else {
                 MissingAssetView()
@@ -115,7 +129,7 @@ struct AppShellView: View {
         case .saleSimulation:
             SaleSimulationView(
                 assets: assets,
-                attachments: attachments,
+                attachments: activeAttachments,
                 valuation: portfolioValuation
             )
         }
@@ -136,6 +150,11 @@ struct AppShellView: View {
 
     private var snapshots: [PortfolioAssetSnapshot] {
         assets.map(\.portfolioSnapshot)
+    }
+
+    private var activeAttachments: [AssetAttachment] {
+        let activeAssetIDs = Set(assets.map(\.id))
+        return attachments.filter { activeAssetIDs.contains($0.assetID) }
     }
 
     private var portfolioValuation: PortfolioValuation {
@@ -168,6 +187,12 @@ struct AppShellView: View {
     private func refreshMarket() async {
         await marketStore.refresh(pairs: requiredPairs)
         valuationAsOf = marketStore.lastRefreshAt ?? valuationAsOf
+    }
+
+    private func purgeExpiredAssets() {
+        let repository = SwiftDataAssetRepository(modelContext: modelContext)
+        let cutoff = AssetTrashPolicy.expirationCutoff(asOf: .now)
+        try? repository.purgeExpiredAssets(olderThan: cutoff)
     }
 }
 

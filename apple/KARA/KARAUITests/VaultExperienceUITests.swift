@@ -31,7 +31,12 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
         capture("vault-03-detail", in: app)
 
+        let more = app.buttons["asset-detail.more"]
+        XCTAssertTrue(more.isHittable)
+        more.tap()
+
         let edit = app.buttons["asset-detail.edit"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 2))
         XCTAssertTrue(edit.isHittable)
         edit.tap()
 
@@ -90,6 +95,50 @@ final class VaultExperienceUITests: XCTestCase {
     }
 
     @MainActor
+    func testDeletionConfirmationAndThirtyDayTrashWording() {
+        let app = launchSeededVault()
+        app.buttons["vault.inventory-card"].tap()
+        XCTAssertTrue(element("inventory.screen", in: app).waitForExistence(timeout: 5))
+
+        let featuredAsset = app.buttons["inventory.asset.\(featuredAssetID)"]
+        reveal(featuredAsset, in: app, attempts: 10)
+        XCTAssertTrue(featuredAsset.isHittable)
+        featuredAsset.swipeLeft()
+
+        let swipeDelete = app.buttons["Supprimer"].firstMatch
+        XCTAssertTrue(swipeDelete.waitForExistence(timeout: 2))
+        swipeDelete.tap()
+
+        let confirmationMessage = app.staticTexts[
+            "Cet actif sera placé dans la corbeille, puis supprimé automatiquement après 30 jours."
+        ]
+        XCTAssertTrue(confirmationMessage.waitForExistence(timeout: 2))
+        hittableElement(labeled: "Annuler", in: app).tap()
+        XCTAssertTrue(featuredAsset.exists)
+
+        featuredAsset.tap()
+        XCTAssertTrue(element("asset-detail.screen", in: app).waitForExistence(timeout: 5))
+        app.buttons["asset-detail.more"].tap()
+
+        let detailDelete = app.buttons["asset-detail.delete"]
+        XCTAssertTrue(detailDelete.waitForExistence(timeout: 2))
+        detailDelete.tap()
+        XCTAssertTrue(confirmationMessage.waitForExistence(timeout: 2))
+        hittableElement(labeled: "Supprimer", in: app).tap()
+
+        XCTAssertTrue(element("inventory.screen", in: app).waitForExistence(timeout: 5))
+        let removalExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: featuredAsset
+        )
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [removalExpectation], timeout: 5),
+            .completed
+        )
+        capture("vault-08-after-delete", in: app)
+    }
+
+    @MainActor
     private func launchSeededVault() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = [
@@ -119,6 +168,17 @@ final class VaultExperienceUITests: XCTestCase {
         app.descendants(matching: .any)
             .matching(identifier: identifier)
             .firstMatch
+    }
+
+    @MainActor
+    private func hittableElement(
+        labeled label: String,
+        in app: XCUIApplication
+    ) -> XCUIElement {
+        let matches = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", label))
+        return matches.allElementsBoundByIndex.first(where: \.isHittable)
+            ?? matches.firstMatch
     }
 
     @MainActor

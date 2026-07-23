@@ -25,6 +25,7 @@ final class Asset {
     var tagsJSON: String = "[]"
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
+    var deletedAt: Date?
 
     var category: AssetCategory {
         get { AssetCategory(rawValue: categoryRawValue) ?? .custom }
@@ -83,7 +84,8 @@ final class Asset {
         acquisitionMethod: AssetAcquisitionMethod? = nil,
         tags: [String] = [],
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        deletedAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -110,6 +112,7 @@ final class Asset {
         }
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.deletedAt = deletedAt
     }
 }
 

@@ -67,4 +67,9 @@ final class AppRouter {
     func presentAssetCreation() {
         cover = .assetCreation
     }
+
+    func dismissCurrentRoute() {
+        guard !path.isEmpty else { return }
+        path.removeLast()
+    }
 }

@@ -28,5 +28,11 @@ struct VaultNavigationTests {
 
         router.presentAssetCreation()
         #expect(router.cover == .assetCreation)
+
+        router.dismissCurrentRoute()
+        #expect(router.path == [
+            .inventory,
+            .assetDetail(assetID),
+        ])
     }
 }
