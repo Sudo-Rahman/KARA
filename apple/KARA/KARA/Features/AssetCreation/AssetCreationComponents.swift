@@ -286,23 +286,28 @@ extension AssetStepFooter where Secondary == EmptyView {
 struct AssetSectionTitle: View {
     @Environment(KaraTheme.self) private var theme
 
-    let title: LocalizedStringKey
-    let detail: LocalizedStringKey?
+    let title: Text
+    let detail: Text?
 
     init(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil) {
+        self.title = Text(title)
+        self.detail = detail.map { Text($0) }
+    }
+
+    init(_ title: Text, detail: Text? = nil) {
         self.title = title
         self.detail = detail
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-            Text(title)
+            title
                 .font(.headline)
                 .foregroundStyle(theme.ink)
                 .accessibilityAddTraits(.isHeader)
 
             if let detail {
-                Text(detail)
+                detail
                     .font(.subheadline)
                     .foregroundStyle(theme.muted)
             }
@@ -332,26 +337,342 @@ struct AssetFieldSurface<Content: View>: View {
 struct AssetFieldLabel: View {
     @Environment(KaraTheme.self) private var theme
 
-    let title: LocalizedStringKey
-    let helper: LocalizedStringKey?
+    let title: Text
+    let helper: Text?
 
     init(_ title: LocalizedStringKey, helper: LocalizedStringKey? = nil) {
+        self.title = Text(title)
+        self.helper = helper.map { Text($0) }
+    }
+
+    init(_ title: Text, helper: Text? = nil) {
         self.title = title
         self.helper = helper
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title)
+            title
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(theme.ink)
 
             if let helper {
-                Text(helper)
+                helper
                     .font(.caption)
                     .foregroundStyle(theme.muted)
             }
         }
+    }
+}
+
+struct AssetFormSection<Content: View>: View {
+    let title: Text
+    let detail: Text?
+    @ViewBuilder let content: Content
+
+    init(
+        title: Text,
+        detail: Text? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.detail = detail
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+            AssetSectionTitle(title, detail: detail)
+            AssetFieldSurface { content }
+        }
+    }
+}
+
+struct AssetFieldGroup<Content: View>: View {
+    let title: Text
+    let helper: Text?
+    @ViewBuilder let content: Content
+
+    init(
+        title: Text,
+        helper: Text? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.helper = helper
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.small) {
+            AssetFieldLabel(title, helper: helper)
+            content
+        }
+    }
+}
+
+struct AssetGoldPurity: Identifiable, Sendable {
+    let karat: Int
+    let fineness: Double
+    var id: Int { karat }
+
+    static let common: [AssetGoldPurity] = [
+        AssetGoldPurity(karat: 24, fineness: 999.9),
+        AssetGoldPurity(karat: 22, fineness: 916.7),
+        AssetGoldPurity(karat: 18, fineness: 750),
+        AssetGoldPurity(karat: 14, fineness: 585),
+        AssetGoldPurity(karat: 9, fineness: 375),
+    ]
+}
+
+struct AssetGoldPurityPicker: View {
+    @Environment(KaraTheme.self) private var theme
+
+    let selectedKarat: Int?
+    let onSelect: (AssetGoldPurity) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: KaraSpacing.small) {
+                ForEach(AssetGoldPurity.common) { purity in
+                    Button {
+                        onSelect(purity)
+                    } label: {
+                        Text("\(purity.karat) ct")
+                            .font(.subheadline.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(selectedKarat == purity.karat ? theme.ink : theme.muted)
+                            .padding(.horizontal, KaraSpacing.medium)
+                            .frame(minHeight: 44)
+                            .background(
+                                selectedKarat == purity.karat
+                                    ? theme.cobalt.opacity(0.24)
+                                    : theme.background.opacity(0.70),
+                                in: .capsule
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(selectedKarat == purity.karat ? .isSelected : [])
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+}
+
+struct AssetTagsEditor<FocusValue: Hashable>: View {
+    @Environment(KaraTheme.self) private var theme
+
+    @Binding var tags: [String]
+    @Binding var pendingText: String
+    let placeholder: String
+    let commitAccessibilityLabel: String
+    let removeAccessibilityLabel: String
+    let accessibilityIdentifier: String
+    let focusedField: FocusState<FocusValue?>.Binding
+    let focusValue: FocusValue
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.small) {
+            if !tags.isEmpty {
+                AssetTagFlowLayout(
+                    horizontalSpacing: KaraSpacing.small,
+                    verticalSpacing: KaraSpacing.small
+                ) {
+                    ForEach(tags, id: \.self) { tag in
+                        AssetTagChip(
+                            tag: tag,
+                            removeAccessibilityLabel: removeAccessibilityLabel,
+                            accessibilityIdentifier: "\(accessibilityIdentifier).remove.\(tag)"
+                        ) {
+                            tags.removeAll { $0 == tag }
+                        }
+                    }
+                }
+            }
+
+            HStack(spacing: KaraSpacing.small) {
+                TextField(placeholder, text: $pendingText)
+                    .textInputAutocapitalization(.sentences)
+                    .submitLabel(.done)
+                    .focused(focusedField, equals: focusValue)
+                    .frame(minHeight: 46)
+                    .accessibilityIdentifier(accessibilityIdentifier)
+                    .onSubmit {
+                        commitPendingText()
+                        focusedField.wrappedValue = nil
+                    }
+                    .onChange(of: pendingText) { _, value in
+                        commitTagsBeforeSeparator(in: value)
+                    }
+
+                if !pendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button(action: commitPendingText) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(theme.goldBright)
+                    .frame(width: 32, height: 32)
+                    .accessibilityLabel(commitAccessibilityLabel)
+                    .accessibilityIdentifier("\(accessibilityIdentifier).commit")
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, KaraSpacing.xSmall)
+        .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
+        .onChange(of: focusedField.wrappedValue) { oldValue, newValue in
+            guard oldValue == focusValue, newValue != focusValue else { return }
+            commitPendingText()
+        }
+    }
+
+    private func commitTagsBeforeSeparator(in value: String) {
+        let components = value.components(separatedBy: CharacterSet(charactersIn: ",;\n"))
+        guard components.count > 1 else { return }
+
+        let pending = value.last.map { ",;\n".contains($0) ? "" : (components.last ?? "") } ?? ""
+        commit(components.dropLast())
+        pendingText = pending
+    }
+
+    private func commitPendingText() {
+        commit([pendingText])
+        pendingText = ""
+    }
+
+    private func commit<S: Sequence>(_ candidates: S) where S.Element == String {
+        let newTags = AssetTagNormalizer.normalize(Array(candidates))
+        guard !newTags.isEmpty else { return }
+        tags = AssetTagNormalizer.normalize(tags + newTags)
+    }
+}
+
+private struct AssetTagChip: View {
+    @Environment(KaraTheme.self) private var theme
+
+    let tag: String
+    let removeAccessibilityLabel: String
+    let accessibilityIdentifier: String
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: KaraSpacing.xSmall) {
+            Text(verbatim: tag)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(theme.ink)
+                .lineLimit(1)
+
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .frame(width: 24, height: 24)
+                    .contentShape(.circle)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(theme.muted)
+            .accessibilityLabel(removeAccessibilityLabel)
+            .accessibilityValue(Text(verbatim: tag))
+            .accessibilityIdentifier(accessibilityIdentifier)
+        }
+        .padding(.leading, 12)
+        .padding(.trailing, KaraSpacing.xSmall)
+        .background(theme.cobalt.opacity(0.22), in: .capsule)
+        .overlay {
+            Capsule()
+                .stroke(theme.cobaltBright.opacity(0.42), lineWidth: 1)
+        }
+    }
+}
+
+private struct AssetTagFlowLayout: Layout {
+    let horizontalSpacing: CGFloat
+    let verticalSpacing: CGFloat
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
+        var rowWidth: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        var widestRow: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            let proposedRowWidth = rowWidth == 0
+                ? size.width
+                : rowWidth + horizontalSpacing + size.width
+
+            if rowWidth > 0, proposedRowWidth > availableWidth {
+                totalHeight += rowHeight + verticalSpacing
+                widestRow = max(widestRow, rowWidth)
+                rowWidth = size.width
+                rowHeight = size.height
+            } else {
+                rowWidth = proposedRowWidth
+                rowHeight = max(rowHeight, size.height)
+            }
+        }
+
+        totalHeight += rowHeight
+        widestRow = max(widestRow, rowWidth)
+        return CGSize(width: proposal.width ?? widestRow, height: totalHeight)
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x > bounds.minX, x + size.width > bounds.maxX {
+                x = bounds.minX
+                y += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+
+            subview.place(
+                at: CGPoint(x: x + size.width / 2, y: y + size.height / 2),
+                anchor: .center,
+                proposal: ProposedViewSize(size)
+            )
+            x += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
+        }
+    }
+}
+
+extension View {
+    func assetInputSurface() -> some View {
+        self
+            .font(.body)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 46)
+            .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
+    }
+
+    func assetPickerSurface() -> some View {
+        modifier(AssetPickerSurfaceModifier())
+    }
+}
+
+private struct AssetPickerSurfaceModifier: ViewModifier {
+    @Environment(KaraTheme.self) private var theme
+
+    func body(content: Content) -> some View {
+        content
+            .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
+            .padding(.horizontal, 12)
+            .background(theme.cobalt.opacity(0.16), in: .rect(cornerRadius: 12))
     }
 }
 

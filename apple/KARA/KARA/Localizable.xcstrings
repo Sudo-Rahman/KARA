@@ -1000,9 +1000,6 @@
     "asset-editor.action.cancel" : {
 
     },
-    "asset-editor.action.keyboard-done" : {
-
-    },
     "asset-editor.action.ok" : {
 
     },
@@ -1172,12 +1169,6 @@
 
     },
     "asset-editor.field.weight.placeholder" : {
-
-    },
-    "asset-editor.introduction.body" : {
-
-    },
-    "asset-editor.introduction.title" : {
 
     },
     "asset-editor.save-error.message" : {

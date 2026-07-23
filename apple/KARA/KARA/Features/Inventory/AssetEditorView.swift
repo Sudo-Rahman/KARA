@@ -108,14 +108,13 @@ struct AssetEditorView: View {
         assetID = asset.id
         self.repository = repository
         _editor = State(initialValue: AssetEditorDraftState(draft: draft))
-        _tagsText = State(initialValue: draft.tags.joined(separator: ", "))
+        _tagsText = State(initialValue: "")
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
-                    introduction
                     identitySection
                     compositionSection
                     purchaseSection
@@ -143,19 +142,11 @@ struct AssetEditorView: View {
                     .accessibilityIdentifier("asset-editor.cancel")
                 }
 
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button {
-                        focusedField = nil
-                    } label: {
-                        AssetEditorCopy.text("asset-editor.action.keyboard-done")
-                    }
-                }
             }
             .safeAreaBar(edge: .bottom, spacing: 0) {
                 saveBar
             }
-            .interactiveDismissDisabled(editor.hasUnsavedChanges)
+            .interactiveDismissDisabled(hasUnsavedChanges)
             .confirmationDialog(
                 AssetEditorCopy.string("asset-editor.discard.title"),
                 isPresented: $showingDiscardConfirmation,
@@ -184,35 +175,10 @@ struct AssetEditorView: View {
         }
     }
 
-    private var introduction: some View {
-        HStack(alignment: .top, spacing: KaraSpacing.medium) {
-            Image(systemName: "square.and.pencil")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(theme.goldBright)
-                .frame(width: 48, height: 48)
-                .background(theme.gold.opacity(0.12), in: .circle)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                AssetEditorCopy.text("asset-editor.introduction.title")
-                    .font(theme.displayFont(size: 24, relativeTo: .title2))
-                    .foregroundStyle(theme.ink)
-                    .accessibilityAddTraits(.isHeader)
-
-                AssetEditorCopy.text("asset-editor.introduction.body")
-                    .font(.subheadline)
-                    .foregroundStyle(theme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
-
     private var identitySection: some View {
-        AssetEditorSection(
-            title: "asset-editor.section.identity.title",
-            message: "asset-editor.section.identity.body",
-            systemImage: "seal"
+        AssetFormSection(
+            title: AssetEditorCopy.text("asset-editor.section.identity.title"),
+            detail: AssetEditorCopy.text("asset-editor.section.identity.body")
         ) {
             AssetEditorField(
                 title: "asset-editor.field.name",
@@ -226,7 +192,7 @@ struct AssetEditorView: View {
                 .submitLabel(.next)
                 .focused($focusedField, equals: .name)
                 .onSubmit { focusedField = .weight }
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.name"))
                 .accessibilityIdentifier("asset-editor.name")
             }
@@ -243,7 +209,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetEditorPickerSurface()
+            .assetPickerSurface()
             .accessibilityIdentifier("asset-editor.category")
 
             if !availablePresets.isEmpty {
@@ -266,7 +232,7 @@ struct AssetEditorView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .assetEditorPickerSurface()
+                    .assetPickerSurface()
                     .accessibilityIdentifier("asset-editor.preset")
                 }
             }
@@ -286,10 +252,9 @@ struct AssetEditorView: View {
     }
 
     private var compositionSection: some View {
-        AssetEditorSection(
-            title: "asset-editor.section.composition.title",
-            message: "asset-editor.section.composition.body",
-            systemImage: "atom"
+        AssetFormSection(
+            title: AssetEditorCopy.text("asset-editor.section.composition.title"),
+            detail: AssetEditorCopy.text("asset-editor.section.composition.body")
         ) {
             Picker(
                 AssetEditorCopy.string("asset-editor.field.metal"),
@@ -304,7 +269,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetEditorPickerSurface()
+            .assetPickerSurface()
             .accessibilityIdentifier("asset-editor.metal")
 
             editorDivider
@@ -344,7 +309,7 @@ struct AssetEditorView: View {
                     )
                     .keyboardType(.numberPad)
                     .focused($focusedField, equals: .karat)
-                    .assetEditorInputSurface()
+                    .assetInputSurface()
                     .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.karat"))
                     .accessibilityIdentifier("asset-editor.karat")
 
@@ -375,10 +340,9 @@ struct AssetEditorView: View {
     }
 
     private var purchaseSection: some View {
-        AssetEditorSection(
-            title: "asset-editor.section.purchase.title",
-            message: "asset-editor.section.purchase.body",
-            systemImage: "eurosign.circle"
+        AssetFormSection(
+            title: AssetEditorCopy.text("asset-editor.section.purchase.title"),
+            detail: AssetEditorCopy.text("asset-editor.section.purchase.body")
         ) {
             Toggle(
                 AssetEditorCopy.string("asset-editor.field.purchase-date-known"),
@@ -430,7 +394,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetEditorPickerSurface()
+            .assetPickerSurface()
             .accessibilityIdentifier("asset-editor.acquisition-method")
 
             editorDivider
@@ -445,7 +409,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: .seller)
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.seller"))
                 .accessibilityIdentifier("asset-editor.seller")
             }
@@ -453,10 +417,9 @@ struct AssetEditorView: View {
     }
 
     private var inventorySection: some View {
-        AssetEditorSection(
-            title: "asset-editor.section.inventory.title",
-            message: "asset-editor.section.inventory.body",
-            systemImage: "lock.doc"
+        AssetFormSection(
+            title: AssetEditorCopy.text("asset-editor.section.inventory.title"),
+            detail: AssetEditorCopy.text("asset-editor.section.inventory.body")
         ) {
             AssetEditorField(
                 title: "asset-editor.field.storage",
@@ -468,7 +431,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: .storage)
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.storage"))
                 .accessibilityIdentifier("asset-editor.storage")
             }
@@ -485,7 +448,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .invoice)
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.invoice"))
                 .accessibilityIdentifier("asset-editor.invoice")
             }
@@ -502,7 +465,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .serialNumber)
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.serial-number"))
                 .accessibilityIdentifier("asset-editor.serial-number")
             }
@@ -513,29 +476,25 @@ struct AssetEditorView: View {
                 title: "asset-editor.field.tags",
                 helper: "asset-editor.field.tags.helper"
             ) {
-                TextField(
-                    AssetEditorCopy.string("asset-editor.field.tags.placeholder"),
-                    text: $tagsText,
-                    axis: .vertical
+                AssetTagsEditor(
+                    tags: binding(\.tags),
+                    pendingText: $tagsText,
+                    placeholder: AssetEditorCopy.string("asset-editor.field.tags.placeholder"),
+                    commitAccessibilityLabel: String(localized: "purchase.tags.commit"),
+                    removeAccessibilityLabel: String(localized: "purchase.tags.remove"),
+                    accessibilityIdentifier: "asset-editor.tags",
+                    focusedField: $focusedField,
+                    focusValue: .tags
                 )
-                .lineLimit(1 ... 3)
-                .textInputAutocapitalization(.sentences)
-                .focused($focusedField, equals: .tags)
-                .assetEditorInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.tags"))
-                .accessibilityIdentifier("asset-editor.tags")
-                .onChange(of: tagsText) { _, value in
-                    editor.setTags(from: value)
-                }
             }
         }
     }
 
     private var gemstoneSection: some View {
-        AssetEditorSection(
-            title: "asset-editor.section.gemstones.title",
-            message: "asset-editor.section.gemstones.body",
-            systemImage: "diamond"
+        AssetFormSection(
+            title: AssetEditorCopy.text("asset-editor.section.gemstones.title"),
+            detail: AssetEditorCopy.text("asset-editor.section.gemstones.body")
         ) {
             AssetEditorField(
                 title: "asset-editor.field.gemstone-weight",
@@ -565,7 +524,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .gemstoneClarity)
-                .assetEditorInputSurface()
+                .assetInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.gemstone-clarity"))
                 .accessibilityIdentifier("asset-editor.gemstone-clarity")
             }
@@ -573,7 +532,7 @@ struct AssetEditorView: View {
     }
 
     private var validationSection: some View {
-        KaraCard {
+        AssetFieldSurface {
             VStack(alignment: .leading, spacing: KaraSpacing.small) {
                 Label {
                     AssetEditorCopy.text("asset-editor.validation.title")
@@ -614,7 +573,7 @@ struct AssetEditorView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.karaPrimaryAction(isLoading: isSaving))
-        .disabled(isSaving || !editor.hasUnsavedChanges)
+        .disabled(isSaving || !hasUnsavedChanges)
         .accessibilityIdentifier("asset-editor.save")
         .padding(.horizontal, KaraSpacing.large)
         .padding(.vertical, KaraSpacing.small)
@@ -626,42 +585,20 @@ struct AssetEditorView: View {
             .overlay(theme.muted.opacity(0.18))
     }
 
+    private var hasUnsavedChanges: Bool {
+        editor.hasUnsavedChanges
+            || !tagsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     private var commonGoldPurities: some View {
         AssetEditorField(
             title: "asset-editor.field.quick-purity",
             helper: "asset-editor.field.quick-purity.helper"
         ) {
-            ScrollView(.horizontal) {
-                HStack(spacing: KaraSpacing.small) {
-                    ForEach(Self.commonGoldPurities, id: \.karat) { purity in
-                        Button {
-                            editor.draft.metalKarat = purity.karat
-                            editor.draft.finenessPermille = purity.fineness
-                        } label: {
-                            Text("\(purity.karat) ct")
-                                .font(.subheadline.weight(.semibold).monospacedDigit())
-                                .foregroundStyle(
-                                    editor.draft.metalKarat == purity.karat
-                                        ? theme.ink
-                                        : theme.muted
-                                )
-                                .padding(.horizontal, KaraSpacing.medium)
-                                .frame(minHeight: 44)
-                                .background(
-                                    editor.draft.metalKarat == purity.karat
-                                        ? theme.cobalt.opacity(0.28)
-                                        : theme.background.opacity(0.76),
-                                    in: .capsule
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(
-                            editor.draft.metalKarat == purity.karat ? .isSelected : []
-                        )
-                    }
-                }
+            AssetGoldPurityPicker(selectedKarat: editor.draft.metalKarat) { purity in
+                editor.draft.metalKarat = purity.karat
+                editor.draft.finenessPermille = purity.fineness
             }
-            .scrollIndicators(.hidden)
         }
     }
 
@@ -673,7 +610,7 @@ struct AssetEditorView: View {
         )
         .keyboardType(.decimalPad)
         .focused($focusedField, equals: .price)
-        .assetEditorInputSurface()
+        .assetInputSurface()
         .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.price"))
         .accessibilityIdentifier("asset-editor.price")
     }
@@ -689,7 +626,7 @@ struct AssetEditorView: View {
             }
         }
         .pickerStyle(.menu)
-        .assetEditorPickerSurface()
+        .assetPickerSurface()
         .accessibilityIdentifier("asset-editor.currency")
     }
 
@@ -800,7 +737,7 @@ struct AssetEditorView: View {
             )
             .keyboardType(keyboard)
             .focused($focusedField, equals: focus)
-            .assetEditorInputSurface()
+            .assetInputSurface()
             .accessibilityLabel(AssetEditorCopy.string(label))
             .accessibilityIdentifier(identifier)
 
@@ -812,6 +749,7 @@ struct AssetEditorView: View {
 
     private func requestDismissal() {
         focusedField = nil
+        commitPendingTag()
         if editor.hasUnsavedChanges {
             showingDiscardConfirmation = true
         } else {
@@ -820,6 +758,7 @@ struct AssetEditorView: View {
     }
 
     private func save() {
+        commitPendingTag()
         validationAttempted = true
         guard editor.draft.isValid else {
             focusFirstInvalidField()
@@ -836,6 +775,14 @@ struct AssetEditorView: View {
         } catch {
             showingSaveError = true
         }
+    }
+
+    private func commitPendingTag() {
+        let newTags = AssetTagNormalizer.normalize([tagsText])
+        if !newTags.isEmpty {
+            editor.draft.tags = AssetTagNormalizer.normalize(editor.draft.tags + newTags)
+        }
+        tagsText = ""
     }
 
     private func focusFirstInvalidField() {
@@ -900,68 +847,9 @@ struct AssetEditorView: View {
         }
     }
 
-    private static let commonGoldPurities: [(karat: Int, fineness: Double)] = [
-        (24, 999.9),
-        (22, 916.7),
-        (18, 750),
-        (14, 585),
-        (9, 375),
-    ]
-}
-
-private struct AssetEditorSection<Content: View>: View {
-    @Environment(KaraTheme.self) private var theme
-
-    let title: String.LocalizationValue
-    let message: String.LocalizationValue
-    let systemImage: String
-    @ViewBuilder let content: Content
-
-    init(
-        title: String.LocalizationValue,
-        message: String.LocalizationValue,
-        systemImage: String,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.title = title
-        self.message = message
-        self.systemImage = systemImage
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
-                Image(systemName: systemImage)
-                    .font(.headline)
-                    .foregroundStyle(theme.goldBright)
-                    .accessibilityHidden(true)
-
-                VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                    AssetEditorCopy.text(title)
-                        .font(.headline)
-                        .foregroundStyle(theme.ink)
-                        .accessibilityAddTraits(.isHeader)
-
-                    AssetEditorCopy.text(message)
-                        .font(.subheadline)
-                        .foregroundStyle(theme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-
-            KaraCard {
-                VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-                    content
-                }
-            }
-        }
-    }
 }
 
 private struct AssetEditorField<Content: View>: View {
-    @Environment(KaraTheme.self) private var theme
-
     let title: String.LocalizationValue
     let helper: String.LocalizationValue?
     @ViewBuilder let content: Content
@@ -977,20 +865,10 @@ private struct AssetEditorField<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: KaraSpacing.small) {
-            VStack(alignment: .leading, spacing: 2) {
-                AssetEditorCopy.text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(theme.ink)
-
-                if let helper {
-                    AssetEditorCopy.text(helper)
-                        .font(.caption)
-                        .foregroundStyle(theme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-
+        AssetFieldGroup(
+            title: AssetEditorCopy.text(title),
+            helper: helper.map(AssetEditorCopy.text)
+        ) {
             content
         }
     }
@@ -1009,48 +887,6 @@ private enum AssetEditorCopy {
 
     static func text(_ key: String.LocalizationValue) -> Text {
         Text(resource(key))
-    }
-}
-
-private struct AssetEditorInputSurface: ViewModifier {
-    @Environment(KaraTheme.self) private var theme
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-
-    func body(content: Content) -> some View {
-        content
-            .font(.body)
-            .padding(.horizontal, 12)
-            .frame(minHeight: 48)
-            .background {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(
-                        reduceTransparency
-                            ? theme.background
-                            : theme.cobalt.opacity(0.12)
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(
-                        theme.cobaltBright.opacity(
-                            colorSchemeContrast == .increased ? 0.52 : 0.22
-                        ),
-                        lineWidth: colorSchemeContrast == .increased ? 1.5 : 1
-                    )
-                    .allowsHitTesting(false)
-            }
-    }
-}
-
-private extension View {
-    func assetEditorInputSurface() -> some View {
-        modifier(AssetEditorInputSurface())
-    }
-
-    func assetEditorPickerSurface() -> some View {
-        modifier(AssetEditorInputSurface())
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

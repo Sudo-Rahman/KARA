@@ -44,6 +44,13 @@ final class VaultExperienceUITests: XCTestCase {
         let name = app.textFields["asset-editor.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertEqual(name.value as? String, "Lingotin Or 50 g CPoR")
+        XCTAssertFalse(app.staticTexts["Affinez chaque détail"].exists)
+        XCTAssertTrue(app.staticTexts["Investissement"].exists)
+        XCTAssertTrue(app.staticTexts["Long terme"].exists)
+
+        name.tap()
+        XCTAssertFalse(app.buttons["Terminé"].exists)
+        XCTAssertTrue(app.buttons["asset-editor.save"].exists)
         capture("vault-04-editor", in: app)
         app.buttons["asset-editor.cancel"].tap()
         XCTAssertTrue(element("asset-detail.screen", in: app).waitForExistence(timeout: 5))

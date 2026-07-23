@@ -58,10 +58,6 @@ struct AssetPurchaseStepView: View {
             }
             .accessibilityIdentifier("purchase.continue")
         }
-        .onChange(of: focusedField) { oldValue, newValue in
-            guard oldValue == .tags, newValue != .tags else { return }
-            commitPendingTag()
-        }
     }
 
     private var purchaseSection: some View {
@@ -95,7 +91,7 @@ struct AssetPurchaseStepView: View {
                         )
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .price)
-                        .karaPurchaseInputSurface()
+                        .assetInputSurface()
                         .accessibilityIdentifier("details.price")
 
                         Picker("details.currency", selection: currencyBinding) {
@@ -123,7 +119,7 @@ struct AssetPurchaseStepView: View {
                     )
                     .textInputAutocapitalization(.characters)
                     .focused($focusedField, equals: .invoiceNumber)
-                    .karaPurchaseInputSurface()
+                    .assetInputSurface()
                     .accessibilityIdentifier("details.invoice-number")
                 }
             }
@@ -180,9 +176,7 @@ struct AssetPurchaseStepView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
-                    .padding(.horizontal, 12)
-                    .background(theme.cobalt.opacity(0.16), in: .rect(cornerRadius: 12))
+                    .assetPickerSurface()
                     .accessibilityIdentifier("details.acquisition-method")
                 }
 
@@ -196,7 +190,7 @@ struct AssetPurchaseStepView: View {
                     )
                     .textInputAutocapitalization(.characters)
                     .focused($focusedField, equals: .serialNumber)
-                    .karaPurchaseInputSurface()
+                    .assetInputSurface()
                     .accessibilityIdentifier("details.serial-number")
                 }
 
@@ -204,7 +198,16 @@ struct AssetPurchaseStepView: View {
 
                 VStack(alignment: .leading, spacing: KaraSpacing.small) {
                     AssetFieldLabel("details.tags", helper: "purchase.tags.helper")
-                    tagsInput
+                    AssetTagsEditor(
+                        tags: binding(\.tags, field: .tags),
+                        pendingText: $tagsText,
+                        placeholder: String(localized: "purchase.tags.placeholder"),
+                        commitAccessibilityLabel: String(localized: "purchase.tags.commit"),
+                        removeAccessibilityLabel: String(localized: "purchase.tags.remove"),
+                        accessibilityIdentifier: "details.tags",
+                        focusedField: $focusedField,
+                        focusValue: .tags
+                    )
                 }
             }
         }
@@ -282,83 +285,16 @@ struct AssetPurchaseStepView: View {
         binding(\.acquisitionMethod, field: .acquisitionMethod)
     }
 
-    private var tagsInput: some View {
-        VStack(alignment: .leading, spacing: KaraSpacing.small) {
-            if !state.draft.tags.isEmpty {
-                TagFlowLayout(horizontalSpacing: KaraSpacing.small, verticalSpacing: KaraSpacing.small) {
-                    ForEach(state.draft.tags, id: \.self) { tag in
-                        TagChip(tag: tag) {
-                            removeTag(tag)
-                        }
-                    }
-                }
-            }
-
-            HStack(spacing: KaraSpacing.small) {
-                TextField("purchase.tags.placeholder", text: $tagsText)
-                    .textInputAutocapitalization(.sentences)
-                    .submitLabel(.done)
-                    .focused($focusedField, equals: .tags)
-                    .frame(minHeight: 46)
-                    .accessibilityIdentifier("details.tags")
-                    .onSubmit {
-                        commitPendingTag()
-                        focusedField = nil
-                    }
-                    .onChange(of: tagsText) { _, value in
-                        commitTagsBeforeSeparator(in: value)
-                    }
-
-                if !tagsText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Button {
-                        commitPendingTag()
-                    } label: {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(theme.goldBright)
-                    .frame(width: 32, height: 32)
-                    .accessibilityLabel("purchase.tags.commit")
-                    .accessibilityIdentifier("details.tags.commit")
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, KaraSpacing.xSmall)
-        .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
-    }
-
-    private func commitTagsBeforeSeparator(in value: String) {
-        let components = value.components(separatedBy: CharacterSet(charactersIn: ",;\n"))
-        guard components.count > 1 else { return }
-
-        let pending = value.last.map { ",;\n".contains($0) ? "" : (components.last ?? "") } ?? ""
-        commitTags(Array(components.dropLast()))
-        tagsText = pending
-    }
-
     private func commitPendingTag() {
-        commitTags([tagsText])
+        let newTags = AssetTagNormalizer.normalize([tagsText])
+        if !newTags.isEmpty {
+            state.update(
+                \.tags,
+                to: AssetTagNormalizer.normalize(state.draft.tags + newTags),
+                field: .tags
+            )
+        }
         tagsText = ""
-    }
-
-    private func commitTags(_ candidates: [String]) {
-        let newTags = AssetTagNormalizer.normalize(candidates)
-        guard !newTags.isEmpty else { return }
-        state.update(
-            \.tags,
-            to: AssetTagNormalizer.normalize(state.draft.tags + newTags),
-            field: .tags
-        )
-    }
-
-    private func removeTag(_ tag: String) {
-        state.update(
-            \.tags,
-            to: state.draft.tags.filter { $0 != tag },
-            field: .tags
-        )
     }
 
     private func validateAndContinue() {
@@ -402,107 +338,6 @@ struct AssetPurchaseStepView: View {
         case .invalidPrice: "details.validation.invalid-price"
         case .invalidCurrencyCode: "details.validation.invalid-currency"
         default: "asset-flow.error.save"
-        }
-    }
-}
-
-private struct TagChip: View {
-    @Environment(KaraTheme.self) private var theme
-
-    let tag: String
-    let onRemove: () -> Void
-
-    var body: some View {
-        HStack(spacing: KaraSpacing.xSmall) {
-            Text(verbatim: tag)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(theme.ink)
-                .lineLimit(1)
-
-            Button(action: onRemove) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 11, weight: .bold))
-                    .frame(width: 24, height: 24)
-                    .contentShape(.circle)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(theme.muted)
-            .accessibilityLabel("purchase.tags.remove")
-            .accessibilityValue(Text(verbatim: tag))
-            .accessibilityIdentifier("details.tags.remove.\(tag)")
-        }
-        .padding(.leading, 12)
-        .padding(.trailing, KaraSpacing.xSmall)
-        .background(theme.cobalt.opacity(0.22), in: .capsule)
-        .overlay {
-            Capsule()
-                .stroke(theme.cobaltBright.opacity(0.42), lineWidth: 1)
-        }
-    }
-}
-
-private struct TagFlowLayout: Layout {
-    let horizontalSpacing: CGFloat
-    let verticalSpacing: CGFloat
-
-    func sizeThatFits(
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) -> CGSize {
-        let availableWidth = proposal.width ?? .greatestFiniteMagnitude
-        var rowWidth: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var totalHeight: CGFloat = 0
-        var widestRow: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            let proposedRowWidth = rowWidth == 0
-                ? size.width
-                : rowWidth + horizontalSpacing + size.width
-
-            if rowWidth > 0, proposedRowWidth > availableWidth {
-                totalHeight += rowHeight + verticalSpacing
-                widestRow = max(widestRow, rowWidth)
-                rowWidth = size.width
-                rowHeight = size.height
-            } else {
-                rowWidth = proposedRowWidth
-                rowHeight = max(rowHeight, size.height)
-            }
-        }
-
-        totalHeight += rowHeight
-        widestRow = max(widestRow, rowWidth)
-        return CGSize(width: proposal.width ?? widestRow, height: totalHeight)
-    }
-
-    func placeSubviews(
-        in bounds: CGRect,
-        proposal: ProposedViewSize,
-        subviews: Subviews,
-        cache: inout ()
-    ) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x > bounds.minX, x + size.width > bounds.maxX {
-                x = bounds.minX
-                y += rowHeight + verticalSpacing
-                rowHeight = 0
-            }
-
-            subview.place(
-                at: CGPoint(x: x + size.width / 2, y: y + size.height / 2),
-                anchor: .center,
-                proposal: ProposedViewSize(size)
-            )
-            x += size.width + horizontalSpacing
-            rowHeight = max(rowHeight, size.height)
         }
     }
 }
@@ -561,7 +396,7 @@ private struct SavedValueComboBox<FocusValue: Hashable>: View {
                     .foregroundStyle(theme.muted)
                     .accessibilityHidden(true)
             }
-            .karaPurchaseInputSurface()
+            .assetInputSurface()
 
             if isFocused, !suggestions.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
@@ -630,15 +465,5 @@ private struct SavedValueComboBox<FocusValue: Hashable>: View {
     private func select(_ savedValue: SavedValue) {
         text = savedValue.name
         focusedField.wrappedValue = nil
-    }
-}
-
-private extension View {
-    func karaPurchaseInputSurface() -> some View {
-        self
-            .font(.body)
-            .padding(.horizontal, 12)
-            .frame(minHeight: 46)
-            .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
     }
 }

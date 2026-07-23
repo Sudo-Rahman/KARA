@@ -10,12 +10,6 @@ struct AssetCharacteristicsStepView: View {
         case gemstoneClarity
     }
 
-    private struct GoldPurity: Identifiable {
-        let karat: Int
-        let fineness: Double
-        var id: Int { karat }
-    }
-
     @Environment(KaraTheme.self) private var theme
 
     let state: AssetCreationState
@@ -23,14 +17,6 @@ struct AssetCharacteristicsStepView: View {
 
     @FocusState private var focusedField: FocusField?
     @State private var hasGemstones = false
-
-    private let commonGoldPurities = [
-        GoldPurity(karat: 24, fineness: 999.9),
-        GoldPurity(karat: 22, fineness: 916.7),
-        GoldPurity(karat: 18, fineness: 750),
-        GoldPurity(karat: 14, fineness: 585),
-        GoldPurity(karat: 9, fineness: 375),
-    ]
 
     var body: some View {
         AssetStepScaffold(
@@ -116,7 +102,7 @@ struct AssetCharacteristicsStepView: View {
                         .submitLabel(.next)
                         .focused($focusedField, equals: .name)
                         .onSubmit { focusedField = .weight }
-                        .karaInputSurface()
+                        .assetInputSurface()
                         .accessibilityIdentifier("details.name")
                 }
 
@@ -148,6 +134,7 @@ struct AssetCharacteristicsStepView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .assetPickerSurface()
                 .accessibilityIdentifier("details.metal")
             }
         }
@@ -169,7 +156,7 @@ struct AssetCharacteristicsStepView: View {
                         )
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .weight)
-                        .karaInputSurface()
+                        .assetInputSurface()
                         .accessibilityIdentifier("details.weight")
 
                         Text("characteristics.unit.grams")
@@ -193,38 +180,10 @@ struct AssetCharacteristicsStepView: View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
             AssetFieldLabel("characteristics.gold-purity.title", helper: "characteristics.gold-purity.helper")
 
-            ScrollView(.horizontal) {
-                HStack(spacing: KaraSpacing.small) {
-                    ForEach(commonGoldPurities) { purity in
-                        Button {
-                            state.update(\.metalKarat, to: Optional(purity.karat), field: .metalKarat)
-                            state.update(\.finenessPermille, to: Optional(purity.fineness), field: .finenessPermille)
-                        } label: {
-                            Text("\(purity.karat) ct")
-                                .font(.subheadline.weight(.semibold).monospacedDigit())
-                                .foregroundStyle(
-                                    state.draft.metalKarat == purity.karat ? theme.ink : theme.muted
-                                )
-                                .padding(.horizontal, KaraSpacing.medium)
-                                .frame(minHeight: 44)
-                                .background(
-                                    state.draft.metalKarat == purity.karat
-                                        ? theme.cobalt.opacity(0.24)
-                                        : theme.background.opacity(0.7),
-                                    in: .capsule
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(
-                            state.draft.metalKarat == purity.karat ? .isSelected : []
-                        )
-                        .accessibilityIdentifier("characteristics.gold-karat.\(purity.karat)")
-                    }
-                }
-                .padding(.horizontal, 1)
-                .padding(.vertical, KaraSpacing.xSmall)
+            AssetGoldPurityPicker(selectedKarat: state.draft.metalKarat) { purity in
+                state.update(\.metalKarat, to: Optional(purity.karat), field: .metalKarat)
+                state.update(\.finenessPermille, to: Optional(purity.fineness), field: .finenessPermille)
             }
-            .scrollIndicators(.hidden)
 
             VStack(alignment: .leading, spacing: KaraSpacing.small) {
                 AssetFieldLabel(
@@ -240,7 +199,7 @@ struct AssetCharacteristicsStepView: View {
                     )
                     .keyboardType(.numberPad)
                     .focused($focusedField, equals: .metalKarat)
-                    .karaInputSurface()
+                    .assetInputSurface()
                     .accessibilityIdentifier("details.metal-karat")
 
                     Text("ct")
@@ -270,7 +229,7 @@ struct AssetCharacteristicsStepView: View {
                 )
                 .keyboardType(.decimalPad)
                 .focused($focusedField, equals: .fineness)
-                .karaInputSurface()
+                .assetInputSurface()
                 .accessibilityIdentifier("details.fineness")
 
                 Text("‰")
@@ -301,7 +260,7 @@ struct AssetCharacteristicsStepView: View {
                             )
                             .keyboardType(.decimalPad)
                             .focused($focusedField, equals: .gemstoneWeight)
-                            .karaInputSurface()
+                            .assetInputSurface()
                             .accessibilityIdentifier("details.gemstone-carat")
 
                             Text("ct")
@@ -318,7 +277,7 @@ struct AssetCharacteristicsStepView: View {
                         )
                         .textInputAutocapitalization(.characters)
                         .focused($focusedField, equals: .gemstoneClarity)
-                        .karaInputSurface()
+                        .assetInputSurface()
                         .accessibilityIdentifier("details.gemstone-clarity")
                     }
                 }
@@ -380,7 +339,7 @@ struct AssetCharacteristicsStepView: View {
 
     private func fineness(for karat: Int) -> Double? {
         guard (1 ... 24).contains(karat) else { return nil }
-        return commonGoldPurities.first(where: { $0.karat == karat })?.fineness
+        return AssetGoldPurity.common.first(where: { $0.karat == karat })?.fineness
             ?? Double(karat) / 24 * 1_000
     }
 
@@ -425,15 +384,5 @@ struct AssetCharacteristicsStepView: View {
         case .invalidPrice: "details.validation.invalid-price"
         case .invalidCurrencyCode: "details.validation.invalid-currency"
         }
-    }
-}
-
-private extension View {
-    func karaInputSurface() -> some View {
-        self
-            .font(.body)
-            .padding(.horizontal, 12)
-            .frame(minHeight: 46)
-            .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
     }
 }
