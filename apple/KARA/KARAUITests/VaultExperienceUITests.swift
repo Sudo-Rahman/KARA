@@ -28,6 +28,7 @@ final class VaultExperienceUITests: XCTestCase {
         featuredAsset.tap()
 
         XCTAssertTrue(element("asset-detail.screen", in: app).waitForExistence(timeout: 5))
+        XCTAssertTrue(element("asset-detail.hero", in: app).exists)
         XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
         capture("vault-03-detail", in: app)
 

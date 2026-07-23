@@ -24,18 +24,21 @@ struct AssetDetailView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
                 hero(photoData: renderData.objectPhotoData)
-                valueCard
-                completenessCard
-                compositionCard
-                acquisitionCard
 
-                if !asset.tags.isEmpty {
-                    tagsSection
+                Group {
+                    valueCard
+                    completenessCard
+                    compositionCard
+                    acquisitionCard
+
+                    if !asset.tags.isEmpty {
+                        tagsSection
+                    }
+
+                    documentsCard(attachments: renderData.attachments)
                 }
-
-                documentsCard(attachments: renderData.attachments)
+                .padding(.horizontal, KaraSpacing.medium)
             }
-            .padding(.horizontal, KaraSpacing.medium)
             .padding(.top, KaraSpacing.small)
             .padding(.bottom, KaraSpacing.xxLarge)
         }
@@ -79,57 +82,73 @@ struct AssetDetailView: View {
     }
 
     private func hero(photoData: Data?) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            AssetDetailHeroImage(
-                category: asset.category,
-                photoData: photoData
-            )
-            .frame(maxWidth: .infinity)
-            .frame(height: 230)
+        GeometryReader { proxy in
+            ZStack(alignment: .bottomLeading) {
+                AssetDetailHeroImage(
+                    category: asset.category,
+                    photoData: photoData
+                )
 
-            LinearGradient(
-                colors: [.clear, theme.background.opacity(0.88)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            .allowsHitTesting(false)
+                AssetDetailHeroScrim(hasPersonalPhoto: photoData != nil)
 
-            VStack(alignment: .leading, spacing: KaraSpacing.small) {
-                HStack(spacing: KaraSpacing.small) {
-                    VaultStatusPill(
-                        text: LocalizedStringKey(asset.category.localizationKey),
-                        systemImage: asset.category.symbolName,
-                        tint: theme.goldBright
-                    )
+                VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                    heroBadges
 
-                    if asset.quantity > 1 {
-                        SensitiveValue {
-                            Text("asset-detail.quantity \(asset.quantity)")
-                                .font(.caption.weight(.semibold).monospacedDigit())
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(theme.surface.opacity(0.78), in: .capsule)
-                        }
+                    Text(asset.name)
+                        .font(theme.displayFont(size: 28, relativeTo: .title))
+                        .foregroundStyle(theme.ink)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.84)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let metal = asset.metal {
+                        Text(metal.localizedKey)
+                            .font(.subheadline)
+                            .foregroundStyle(theme.muted)
+                            .lineLimit(1)
                     }
                 }
-
-                Text(asset.name)
-                    .font(theme.displayFont(size: 28, relativeTo: .title))
-                    .foregroundStyle(theme.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                if let metal = asset.metal {
-                    Text(metal.localizedKey)
-                        .font(.subheadline)
-                        .foregroundStyle(theme.muted)
-                }
+                .frame(width: proxy.size.width * 0.58, alignment: .leading)
+                .padding(.leading, 18)
+                .padding(.bottom, 18)
             }
-            .padding(KaraSpacing.large)
         }
-        .clipShape(.rect(cornerRadius: 24))
-        .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        .frame(height: dynamicTypeSize.isAccessibilitySize ? 264 : 216)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("asset-detail.hero")
+    }
+
+    @ViewBuilder
+    private var heroBadges: some View {
+        let categoryBadge = VaultStatusPill(
+            text: LocalizedStringKey(asset.category.localizationKey),
+            systemImage: asset.category.symbolName,
+            tint: theme.goldBright
+        )
+
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                categoryBadge
+                quantityBadge
+            }
+        } else {
+            HStack(spacing: KaraSpacing.small) {
+                categoryBadge
+                quantityBadge
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var quantityBadge: some View {
+        if asset.quantity > 1 {
+            SensitiveValue {
+                Text("asset-detail.quantity \(asset.quantity)")
+                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(theme.surface.opacity(0.82), in: .capsule)
+            }
         }
     }
 
@@ -623,14 +642,54 @@ private struct AssetDetailHeroImage: View {
                 ZStack {
                     theme.surface
 
-                    Image(category.imageName)
+                    Image(category.heroImageName)
                         .resizable()
-                        .scaledToFit()
-                        .padding(KaraSpacing.xLarge)
+                        .scaledToFill()
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         .clipped()
         .accessibilityHidden(true)
+    }
+}
+
+private struct AssetDetailHeroScrim: View {
+    @Environment(KaraTheme.self) private var theme
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
+    let hasPersonalPhoto: Bool
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                stops: [
+                    .init(color: theme.background.opacity(leadingOpacity), location: 0),
+                    .init(color: theme.background.opacity(middleOpacity), location: 0.34),
+                    .init(color: theme.background.opacity(0.30), location: 0.56),
+                    .init(color: .clear, location: 0.76),
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+
+            LinearGradient(
+                colors: [.clear, theme.background.opacity(0.38)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private var leadingOpacity: Double {
+        if colorSchemeContrast == .increased { return 1 }
+        return hasPersonalPhoto ? 0.96 : 0.90
+    }
+
+    private var middleOpacity: Double {
+        if colorSchemeContrast == .increased { return 0.92 }
+        return hasPersonalPhoto ? 0.82 : 0.72
     }
 }

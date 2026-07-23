@@ -33,7 +33,7 @@ enum VisualQAVaultSeeder {
                 kind: .objectPhoto,
                 filename: "Lingotin Or 50 g.png",
                 mimeType: "image/png",
-                data: UIImage(named: "AssetKindBar")?.pngData() ?? Data(),
+                data: UIImage(named: "AssetKindBarHero")?.pngData() ?? Data(),
                 createdAt: date(daysAgo: 23, relativeTo: timestamp)
             ))
             context.insert(AssetAttachment(

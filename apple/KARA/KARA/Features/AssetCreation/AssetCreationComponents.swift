@@ -399,6 +399,15 @@ extension AssetCategory {
         }
     }
 
+    var heroImageName: String {
+        switch self {
+        case .bar: "AssetKindBarHero"
+        case .coin: "AssetKindCoinHero"
+        case .jewelry: "AssetKindJewelryHero"
+        case .custom: "AssetKindOtherHero"
+        }
+    }
+
     var symbolName: String {
         switch self {
         case .bar: "square.stack.3d.up.fill"
