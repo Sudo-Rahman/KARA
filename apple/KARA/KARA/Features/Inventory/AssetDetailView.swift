@@ -24,6 +24,7 @@ struct AssetDetailView: View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
                 hero(photoData: renderData.objectPhotoData)
+                    .padding(.top, -1)
 
                 Group {
                     valueCard
@@ -39,7 +40,6 @@ struct AssetDetailView: View {
                 }
                 .padding(.horizontal, KaraSpacing.medium)
             }
-            .padding(.top, KaraSpacing.small)
             .padding(.bottom, KaraSpacing.xxLarge)
         }
         .scrollIndicators(.hidden)
@@ -674,8 +674,22 @@ private struct AssetDetailHeroScrim: View {
             )
 
             LinearGradient(
-                colors: [.clear, theme.background.opacity(0.38)],
-                startPoint: .center,
+                stops: [
+                    .init(color: theme.background, location: 0),
+                    .init(color: theme.background.opacity(0.78), location: 0.10),
+                    .init(color: .clear, location: 0.26),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0.58),
+                    .init(color: theme.background.opacity(0.42), location: 0.80),
+                    .init(color: theme.background, location: 1),
+                ],
+                startPoint: .top,
                 endPoint: .bottom
             )
         }
