@@ -4531,6 +4531,9 @@
         }
       }
     },
+    "Kara" : {
+
+    },
     "KARA" : {
 
     },
@@ -5007,6 +5010,7 @@
       }
     },
     "purchase.details.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5039,6 +5043,7 @@
       }
     },
     "purchase.inventory.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5167,6 +5172,7 @@
       }
     },
     "purchase.provenance.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
