@@ -40,8 +40,6 @@ struct AssetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                PrivacyToolbarButton()
-
                 Button {
                     router.presentEditor(for: asset.id)
                 } label: {

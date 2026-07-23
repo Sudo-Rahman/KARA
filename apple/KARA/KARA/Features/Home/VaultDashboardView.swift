@@ -64,11 +64,6 @@ struct VaultDashboardView: View {
                     .accessibilityAddTraits(.isHeader)
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                PrivacyToolbarButton()
-                    .tint(theme.goldBright)
-                    .accessibilityIdentifier("vault.privacy-toggle")
-            }
         }
         .accessibilityIdentifier("vault.dashboard")
     }
@@ -144,12 +139,7 @@ struct VaultDashboardView: View {
 
                     Spacer(minLength: KaraSpacing.small)
 
-                    Image(systemName: "sparkles")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(theme.goldBright)
-                        .frame(width: 44, height: 44)
-                        .background(theme.gold.opacity(0.11), in: .circle)
-                        .accessibilityHidden(true)
+                    PrivacyToggleButton()
                 }
 
                 Group {
@@ -175,6 +165,7 @@ struct VaultDashboardView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("vault.estimated-value")
     }
 

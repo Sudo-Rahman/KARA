@@ -19,6 +19,7 @@ final class VaultExperienceUITests: XCTestCase {
         inventoryCard.tap()
 
         XCTAssertTrue(element("inventory.screen", in: app).waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
         capture("vault-02-inventory", in: app)
 
         let featuredAsset = app.buttons["inventory.asset.\(featuredAssetID)"]
@@ -27,6 +28,7 @@ final class VaultExperienceUITests: XCTestCase {
         featuredAsset.tap()
 
         XCTAssertTrue(element("asset-detail.screen", in: app).waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
         capture("vault-03-detail", in: app)
 
         let edit = app.buttons["asset-detail.edit"]
@@ -46,6 +48,7 @@ final class VaultExperienceUITests: XCTestCase {
         documents.tap()
 
         XCTAssertTrue(element("documents.header", in: app).waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
         XCTAssertTrue(app.buttons["Facture Lingotin 50 g.txt"].exists)
         XCTAssertTrue(app.buttons["Certificat d’authenticité.txt"].exists)
         capture("vault-05-linked-documents", in: app)
@@ -65,14 +68,19 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(maskedValue.waitForExistence(timeout: 5))
         capture("vault-05-privacy", in: app)
 
-        privacy.tap()
-
         let simulate = app.buttons["vault.simulate"]
         reveal(simulate, in: app, attempts: 12)
         XCTAssertTrue(simulate.isHittable)
         simulate.tap()
 
-        XCTAssertTrue(element("sale-simulation.screen", in: app).waitForExistence(timeout: 5))
+        let saleScreen = element("sale-simulation.screen", in: app)
+        XCTAssertTrue(saleScreen.waitForExistence(timeout: 5))
+        XCTAssertFalse(saleScreen.buttons["vault.privacy-toggle"].exists)
+
+        let maskedSaleValue = saleScreen.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Valeur masquée"))
+            .firstMatch
+        XCTAssertTrue(maskedSaleValue.waitForExistence(timeout: 5))
 
         let increase = app.buttons["Augmenter la quantité"].firstMatch
         reveal(increase, in: app, attempts: 8)
@@ -88,6 +96,7 @@ final class VaultExperienceUITests: XCTestCase {
             "-KARAUseInMemoryStore",
             "-KARASeedVault",
             "-KARAShowOnboarding",
+            "-kara.privacy.hidesSensitiveValues", "NO",
             "-AppleLanguages", "(fr)",
             "-AppleLocale", "fr_FR",
         ]

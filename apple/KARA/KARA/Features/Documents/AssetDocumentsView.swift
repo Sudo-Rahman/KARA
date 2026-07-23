@@ -331,8 +331,6 @@ struct AssetDocumentsView: View {
     @ToolbarContentBuilder
     private var addToolbarItem: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            PrivacyToolbarButton()
-
             Menu {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     Label(

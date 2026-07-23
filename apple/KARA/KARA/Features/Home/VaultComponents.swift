@@ -168,7 +168,7 @@ struct VaultStatusPill: View {
     }
 }
 
-struct PrivacyToolbarButton: View {
+struct PrivacyToggleButton: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(PrivacyPreferences.self) private var privacyPreferences
 
@@ -177,9 +177,12 @@ struct PrivacyToolbarButton: View {
             privacyPreferences.toggle()
         } label: {
             Image(systemName: privacyPreferences.hidesSensitiveValues ? "eye.slash.fill" : "eye.fill")
-                .font(.body.weight(.semibold))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(theme.goldBright)
                 .contentTransition(.symbolEffect(.replace))
+                .frame(width: 44, height: 44)
+                .background(theme.gold.opacity(0.11), in: .circle)
+                .contentShape(.circle)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(LocalizedStringKey(
@@ -188,7 +191,7 @@ struct PrivacyToolbarButton: View {
                 : "privacy.action.conceal"
         )))
         .accessibilityHint(Text("privacy.action.hint"))
-        .accessibilityIdentifier("privacy.toggle")
+        .accessibilityIdentifier("vault.privacy-toggle")
     }
 }
 

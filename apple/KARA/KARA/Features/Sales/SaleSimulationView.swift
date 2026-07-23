@@ -55,10 +55,6 @@ struct SaleSimulationView: View {
                         dismiss()
                     }
                 }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    PrivacyToolbarButton()
-                }
             }
         }
         .accessibilityIdentifier("sale-simulation.screen")

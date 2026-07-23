@@ -79,11 +79,6 @@ struct InventoryView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("inventory.search.prompt")
         )
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                PrivacyToolbarButton()
-            }
-        }
         .accessibilityIdentifier("inventory.screen")
     }
 
