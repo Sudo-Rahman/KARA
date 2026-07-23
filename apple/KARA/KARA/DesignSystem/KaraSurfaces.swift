@@ -31,9 +31,9 @@ struct KaraCard<Content: View>: View {
                 cardBackground
             }
             .shadow(
-                color: theme.cobalt.opacity(colorSchemeContrast == .increased ? 0.24 : 0.16),
-                radius: 18,
-                y: 8
+                color: theme.cobaltBright.opacity(hasIncreasedContrast ? 0.14 : 0.08),
+                radius: 14,
+                y: 6
             )
     }
 
@@ -45,19 +45,32 @@ struct KaraCard<Content: View>: View {
             shape
                 .fill(theme.surface)
                 .overlay {
+                    cardReflections(shape)
+                }
+                .overlay {
                     cardBorder(shape)
+                }
+                .overlay {
+                    cardInnerHighlight(shape)
                 }
         } else {
             shape
                 .fill(surfaceGradient)
                 .overlay {
+                    cardReflections(shape)
+                }
+                .overlay {
                     cardBorder(shape)
+                }
+                .overlay {
+                    cardInnerHighlight(shape)
                 }
                 .glassEffect(
                     .clear
-                        .tint(theme.cobalt.opacity(0.07))
+                        .tint(theme.cobalt.opacity(hasIncreasedContrast ? 0.10 : 0.05))
                         .interactive(),
-                    in: .rect(cornerRadius: 20)
+                    in: .rect(cornerRadius: 20),
+
                 )
         }
     }
@@ -70,12 +83,32 @@ struct KaraCard<Content: View>: View {
             .allowsHitTesting(false)
     }
 
+    private func cardReflections(
+        _ shape: RoundedRectangle
+    ) -> some View {
+        ZStack {
+            shape.fill(goldReflection)
+            shape.fill(cobaltReflection)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func cardInnerHighlight(
+        _ shape: RoundedRectangle
+    ) -> some View {
+        shape
+            .inset(by: 1)
+            .stroke(innerHighlightGradient, lineWidth: 1)
+            .blur(radius: 0.35)
+            .allowsHitTesting(false)
+    }
+
     private var surfaceGradient: LinearGradient {
         LinearGradient(
             colors: [
-                theme.surface.opacity(0.96),
-                theme.cobalt.opacity(0.10),
-                theme.surface.opacity(0.88),
+                theme.surface.opacity(hasIncreasedContrast ? 1 : 0.92),
+                Color.black.opacity(hasIncreasedContrast ? 0.76 : 0.54),
+                theme.surface.opacity(hasIncreasedContrast ? 0.96 : 0.84),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -83,21 +116,64 @@ struct KaraCard<Content: View>: View {
     }
 
     private var borderGradient: LinearGradient {
-        let emphasized = colorSchemeContrast == .increased
-
         return LinearGradient(
             colors: [
-                Color.white.opacity(emphasized ? 0.40 : 0.20),
-                theme.cobaltBright.opacity(emphasized ? 0.48 : 0.22),
-                theme.gold.opacity(emphasized ? 0.36 : 0.14),
+                Color.white.opacity(hasIncreasedContrast ? 0.52 : 0.24),
+                theme.goldBright.opacity(hasIncreasedContrast ? 0.36 : 0.16),
+                theme.cobaltBright.opacity(hasIncreasedContrast ? 0.48 : 0.22),
+                Color.white.opacity(hasIncreasedContrast ? 0.28 : 0.10),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
     }
 
+    private var goldReflection: RadialGradient {
+        RadialGradient(
+            colors: [
+                theme.goldBright.opacity(hasIncreasedContrast ? 0.14 : 0.06),
+                theme.gold.opacity(hasIncreasedContrast ? 0.06 : 0.03),
+                .clear,
+            ],
+            center: .topLeading,
+            startRadius: 0,
+            endRadius: 260
+        )
+    }
+
+    private var cobaltReflection: RadialGradient {
+        RadialGradient(
+            colors: [
+                theme.cobaltBright.opacity(hasIncreasedContrast ? 0.12 : 0.07),
+                theme.cobalt.opacity(hasIncreasedContrast ? 0.05 : 0.025),
+                .clear,
+            ],
+            center: .bottomTrailing,
+            startRadius: 0,
+            endRadius: 300
+        )
+    }
+
+    private var innerHighlightGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(hasIncreasedContrast ? 0.24 : 0.14),
+                theme.goldBright.opacity(hasIncreasedContrast ? 0.10 : 0.05),
+                .clear,
+                theme.cobaltBright.opacity(hasIncreasedContrast ? 0.10 : 0.05),
+                Color.white.opacity(hasIncreasedContrast ? 0.08 : 0.03),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var hasIncreasedContrast: Bool {
+        colorSchemeContrast == .increased
+    }
+
     private var borderWidth: CGFloat {
-        colorSchemeContrast == .increased ? 1.5 : 1
+        hasIncreasedContrast ? 1.5 : 1
     }
 }
 
