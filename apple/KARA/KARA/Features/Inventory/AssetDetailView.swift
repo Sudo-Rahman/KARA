@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct AssetDetailView: View {
     @Environment(AppRouter.self) private var router
@@ -23,7 +22,7 @@ struct AssetDetailView: View {
 
         ScrollView {
             LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
-                hero(photoData: renderData.objectPhotoData)
+                hero
                     .padding(.top, -1)
 
                 Group {
@@ -81,15 +80,12 @@ struct AssetDetailView: View {
         .accessibilityIdentifier("asset-detail.screen")
     }
 
-    private func hero(photoData: Data?) -> some View {
+    private var hero: some View {
         GeometryReader { proxy in
             ZStack(alignment: .bottomLeading) {
-                AssetDetailHeroImage(
-                    category: asset.category,
-                    photoData: photoData
-                )
+                AssetDetailHeroImage(category: asset.category)
 
-                AssetDetailHeroScrim(hasPersonalPhoto: photoData != nil)
+                AssetDetailHeroScrim()
 
                 VStack(alignment: .leading, spacing: KaraSpacing.small) {
                     heroBadges
@@ -534,7 +530,6 @@ struct AssetDetailView: View {
 
 private struct AssetDetailRenderData {
     let attachments: [AssetAttachment]
-    let objectPhotoData: Data?
 
     init(assetID: UUID, attachments: [AssetAttachment]) {
         let matchingAttachments = attachments
@@ -542,7 +537,6 @@ private struct AssetDetailRenderData {
             .sorted { $0.createdAt > $1.createdAt }
 
         self.attachments = matchingAttachments
-        objectPhotoData = matchingAttachments.first { $0.kind == .objectPhoto }?.data
     }
 }
 
@@ -632,23 +626,14 @@ private struct AssetDetailHeroImage: View {
     @Environment(KaraTheme.self) private var theme
 
     let category: AssetCategory
-    let photoData: Data?
 
     var body: some View {
-        Group {
-            if let photoData, let image = UIImage(data: photoData) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                ZStack {
-                    theme.surface
+        ZStack {
+            theme.surface
 
-                    Image(category.heroImageName)
-                        .resizable()
-                        .scaledToFill()
-                }
-            }
+            Image(category.heroImageName)
+                .resizable()
+                .scaledToFill()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         .clipped()
@@ -659,8 +644,6 @@ private struct AssetDetailHeroImage: View {
 private struct AssetDetailHeroScrim: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
-
-    let hasPersonalPhoto: Bool
 
     var body: some View {
         ZStack {
@@ -701,11 +684,11 @@ private struct AssetDetailHeroScrim: View {
 
     private var leadingOpacity: Double {
         if colorSchemeContrast == .increased { return 1 }
-        return hasPersonalPhoto ? 0.96 : 0.90
+        return 0.90
     }
 
     private var middleOpacity: Double {
         if colorSchemeContrast == .increased { return 0.92 }
-        return hasPersonalPhoto ? 0.82 : 0.72
+        return 0.72
     }
 }
