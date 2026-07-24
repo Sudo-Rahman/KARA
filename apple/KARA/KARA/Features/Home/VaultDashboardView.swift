@@ -6,7 +6,6 @@ struct VaultDashboardView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var selectedHistoryPeriod: PortfolioHistoryPeriod = .twelveMonths
     @State private var selectedMetal: MarketMetal = .gold
 
     let assets: [Asset]
@@ -344,56 +343,10 @@ struct VaultDashboardView: View {
     }
 
     private var historyCard: some View {
-        let points = selectedHistoryPeriod.filter(
-            valuation.history,
-            asOf: historyAsOf
+        ValuationHistoryCard(
+            history: valuation.history,
+            showsUnknownPurchaseDates: valuation.historyUsesUnknownPurchaseDates
         )
-
-        return KaraCard {
-            VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-                VaultSectionHeader("vault.history.title")
-
-                Picker("vault.history.period", selection: $selectedHistoryPeriod) {
-                    ForEach(PortfolioHistoryPeriod.allCases, id: \.self) { period in
-                        Text(LocalizedStringKey(period.localizationKey))
-                            .tag(period)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .frame(minHeight: 44)
-                .tint(theme.goldBright)
-                .accessibilityIdentifier("vault.history.period")
-
-                if points.count >= 2,
-                   let domain = chartDomain(for: points)
-                {
-                    SensitiveValue {
-                        PortfolioHistoryChart(
-                            points: points,
-                            domain: domain,
-                            period: selectedHistoryPeriod
-                        )
-                    }
-                } else {
-                    VStack(alignment: .leading, spacing: KaraSpacing.small) {
-                        Image(systemName: "chart.xyaxis.line")
-                            .font(.title2)
-                            .foregroundStyle(theme.goldBright)
-
-                        Text("vault.history.not-enough-data")
-                            .font(.subheadline)
-                            .foregroundStyle(theme.muted)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 132, alignment: .leading)
-                }
-
-                if valuation.historyUsesUnknownPurchaseDates {
-                    Label("vault.history.unknown-dates", systemImage: "info.circle")
-                        .font(.caption)
-                        .foregroundStyle(theme.muted)
-                }
-            }
-        }
     }
 
     private var primaryActions: some View {
@@ -666,25 +619,6 @@ struct VaultDashboardView: View {
         .accessibilityIdentifier("vault.metal-prices")
     }
 
-    private var historyAsOf: Date {
-        valuation.history.last?.date ?? .now
-    }
-
-    private func chartDomain(
-        for points: [PortfolioHistoryPoint]
-    ) -> ClosedRange<Date>? {
-        guard let end = points.last?.date,
-              let start = selectedHistoryPeriod.startDate(
-                  asOf: end,
-                  earliestHistoryDate: valuation.history.first?.date
-              ),
-              start <= end
-        else {
-            return nil
-        }
-        return start...end
-    }
-
     private var recentAssets: [Asset] {
         Array(assets.sorted { $0.createdAt > $1.createdAt }.prefix(3))
     }
@@ -709,35 +643,6 @@ struct VaultDashboardView: View {
             theme.cobaltBright
         case .palladium:
             Color.cyan
-        }
-    }
-}
-
-extension PortfolioHistoryPeriod {
-    var localizationKey: String {
-        switch self {
-        case .threeMonths: "vault.history.period.3-months"
-        case .sixMonths: "vault.history.period.6-months"
-        case .twelveMonths: "vault.history.period.12-months"
-        case .all: "vault.history.period.all"
-        }
-    }
-
-    var accessibilityLabelKey: String {
-        switch self {
-        case .threeMonths: "vault.history.accessibility-label.3-months"
-        case .sixMonths: "vault.history.accessibility-label.6-months"
-        case .twelveMonths: "vault.history.accessibility-label.12-months"
-        case .all: "vault.history.accessibility-label.all"
-        }
-    }
-
-    var axisMonthStride: Int {
-        switch self {
-        case .threeMonths: 1
-        case .sixMonths: 2
-        case .twelveMonths: 3
-        case .all: 1
         }
     }
 }

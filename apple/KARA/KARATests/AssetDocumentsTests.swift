@@ -58,7 +58,12 @@ struct AssetDocumentsTests {
     func localizesDocumentCategories() throws {
         let requiredKeys = AssetAttachmentKind.allCases.map {
             "documents.kind.\($0.rawValue)"
-        } + ["documents.title", "documents.empty.title", "documents.error.title"]
+        } + [
+            "documents.title",
+            "documents.empty.title",
+            "documents.error.title",
+            "documents.preview.close",
+        ]
 
         for language in ["en", "fr"] {
             let url = try #require(Bundle.main.url(

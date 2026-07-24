@@ -91,10 +91,19 @@ struct AppShellView: View {
             )
         case let .assetDetail(assetID):
             if let asset = asset(withID: assetID) {
+                let detailValuation = valuationEngine.valuate(
+                    assets: [asset.portfolioSnapshot],
+                    market: marketStore.marketSnapshot,
+                    historyMonths: nil,
+                    asOf: valuationAsOf
+                )
                 AssetDetailView(
                     asset: asset,
                     attachments: activeAttachments,
-                    valuation: assetValuation(withID: assetID),
+                    valuation: detailValuation.assetValuations.first,
+                    history: detailValuation.history,
+                    historyUsesUnknownPurchaseDates: detailValuation.historyUsesUnknownPurchaseDates,
+                    valuationAsOf: valuationAsOf,
                     repository: SwiftDataAssetRepository(modelContext: modelContext)
                 )
             } else {
@@ -178,10 +187,6 @@ struct AppShellView: View {
 
     private func asset(withID id: UUID) -> Asset? {
         assets.first { $0.id == id }
-    }
-
-    private func assetValuation(withID id: UUID) -> AssetValuation? {
-        portfolioValuation.assetValuations.first { $0.assetID == id }
     }
 
     private func refreshMarket() async {

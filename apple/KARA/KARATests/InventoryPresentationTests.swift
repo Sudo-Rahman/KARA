@@ -52,4 +52,51 @@ struct InventoryPresentationTests {
 
         #expect(sorted.map(\.id) == [second.id, first.id, missing.id])
     }
+
+    @Test("Asset history is hidden until three calendar months have elapsed")
+    func hidesRecentAssetHistory() {
+        let calendar = utcCalendar
+        let asOf = date(year: 2026, month: 7, day: 24)
+
+        #expect(!AssetDetailPresentation.showsHistory(
+            purchaseDate: date(year: 2026, month: 4, day: 25),
+            asOf: asOf,
+            calendar: calendar
+        ))
+        #expect(AssetDetailPresentation.showsHistory(
+            purchaseDate: date(year: 2026, month: 4, day: 24),
+            asOf: asOf,
+            calendar: calendar
+        ))
+        #expect(AssetDetailPresentation.showsHistory(
+            purchaseDate: date(year: 2026, month: 4, day: 23),
+            asOf: asOf,
+            calendar: calendar
+        ))
+    }
+
+    @Test("An unknown purchase date keeps asset history eligible")
+    func keepsUnknownDateHistoryEligible() {
+        #expect(AssetDetailPresentation.showsHistory(
+            purchaseDate: nil,
+            asOf: date(year: 2026, month: 7, day: 24),
+            calendar: utcCalendar
+        ))
+    }
+
+    @Test("Completeness guidance disappears at one hundred percent")
+    func hidesCompleteAssetGuidance() {
+        #expect(AssetDetailPresentation.showsCompleteness(0.99))
+        #expect(!AssetDetailPresentation.showsCompleteness(1))
+    }
+
+    private func date(year: Int, month: Int, day: Int) -> Date {
+        utcCalendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    private var utcCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
 }

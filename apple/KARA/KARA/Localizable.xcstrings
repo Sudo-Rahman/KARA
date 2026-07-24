@@ -755,6 +755,108 @@
         }
       }
     },
+    "asset-detail.history.accessibility-label.3-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset value evolution over the last three months."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur de l’actif sur les trois derniers mois."
+          }
+        }
+      }
+    },
+    "asset-detail.history.accessibility-label.6-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset value evolution over the last six months."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur de l’actif sur les six derniers mois."
+          }
+        }
+      }
+    },
+    "asset-detail.history.accessibility-label.12-months" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset value evolution over the last twelve months."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur de l’actif sur les douze derniers mois."
+          }
+        }
+      }
+    },
+    "asset-detail.history.accessibility-label.all" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset value evolution since its purchase."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de la valeur de l’actif depuis son achat."
+          }
+        }
+      }
+    },
+    "asset-detail.history.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asset evolution"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Évolution de l’actif"
+          }
+        }
+      }
+    },
+    "asset-detail.history.unknown-date" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a purchase date, the asset is included across the full available period."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans date d’achat, l’actif est inclus sur toute la période disponible."
+          }
+        }
+      }
+    },
     "asset-detail.karat %lld" : {
       "localizations" : {
         "en" : {
@@ -6573,6 +6675,7 @@
       }
     },
     "vault.history.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6589,6 +6692,7 @@
       }
     },
     "vault.history.unknown-dates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

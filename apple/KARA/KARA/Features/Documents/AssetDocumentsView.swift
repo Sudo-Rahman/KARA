@@ -13,18 +13,6 @@ struct AssetDocumentsView: View {
         case failed
     }
 
-    private enum PresentedSheet: Identifiable {
-        case preview(AttachmentPreviewItem)
-        case rename(AssetAttachment)
-
-        var id: String {
-            switch self {
-            case let .preview(item): "preview-\(item.id.uuidString)"
-            case let .rename(attachment): "rename-\(attachment.id.uuidString)"
-            }
-        }
-    }
-
     private struct ScannerRequest: Identifiable {
         let id = UUID()
         let kind: AssetAttachmentKind
@@ -38,7 +26,8 @@ struct AssetDocumentsView: View {
     @State private var attachments: [AssetAttachment] = []
     @State private var selectedFilter: AssetDocumentFilter = .all
     @State private var loadState: LoadState = .loading
-    @State private var presentedSheet: PresentedSheet?
+    @State private var presentedPreview: AttachmentPreviewItem?
+    @State private var attachmentToRename: AssetAttachment?
     @State private var pendingDeletion: AssetAttachment?
     @State private var scannerRequest: ScannerRequest?
     @State private var selectedPhoto: PhotosPickerItem?
@@ -79,18 +68,16 @@ struct AssetDocumentsView: View {
             guard let item else { return }
             Task { await addPhoto(from: item) }
         }
-        .sheet(item: $presentedSheet, onDismiss: removeTemporaryPreview) { sheet in
-            switch sheet {
-            case let .preview(item):
-                AttachmentPreviewSheet(item: item)
-            case let .rename(attachment):
-                RenameAssetAttachmentSheet(
-                    assetID: asset.id,
-                    attachment: attachment,
-                    repository: repository,
-                    onRenamed: loadAttachments
-                )
-            }
+        .sheet(item: $attachmentToRename) { attachment in
+            RenameAssetAttachmentSheet(
+                assetID: asset.id,
+                attachment: attachment,
+                repository: repository,
+                onRenamed: loadAttachments
+            )
+        }
+        .fullScreenCover(item: $presentedPreview, onDismiss: removeTemporaryPreview) { item in
+            AttachmentPreviewSheet(item: item)
         }
         .fullScreenCover(item: $scannerRequest) { request in
             DocumentScannerView { images in
@@ -237,7 +224,7 @@ struct AssetDocumentsView: View {
                             AssetDocumentRow(
                                 attachment: attachment,
                                 onOpen: { openPreview(attachment) },
-                                onRename: { presentedSheet = .rename(attachment) },
+                                onRename: { attachmentToRename = attachment },
                                 onDelete: { pendingDeletion = attachment }
                             )
                         }
@@ -562,11 +549,10 @@ struct AssetDocumentsView: View {
                     )
                 }.value
                 currentPreviewURL = url
-                presentedSheet = .preview(AttachmentPreviewItem(
+                presentedPreview = AttachmentPreviewItem(
                     id: attachmentID,
-                    title: AssetAttachmentFileName.displayName(filename),
                     url: url
-                ))
+                )
             } catch {
                 showsOperationError = true
             }

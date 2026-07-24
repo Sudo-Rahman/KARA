@@ -8,6 +8,9 @@ struct AssetDetailView: View {
     let asset: Asset
     let attachments: [AssetAttachment]
     let valuation: AssetValuation?
+    let history: [PortfolioHistoryPoint]
+    let historyUsesUnknownPurchaseDates: Bool
+    let valuationAsOf: Date
     let repository: any AssetTrashManaging
 
     @State private var deletionRequest: AssetDeletionRequest?
@@ -27,7 +30,18 @@ struct AssetDetailView: View {
 
                 Group {
                     valueCard
-                    completenessCard
+
+                    if AssetDetailPresentation.showsHistory(
+                        purchaseDate: asset.purchaseDate,
+                        asOf: valuationAsOf
+                    ) {
+                        historyCard
+                    }
+
+                    if AssetDetailPresentation.showsCompleteness(completeness) {
+                        completenessCard
+                    }
+
                     compositionCard
                     acquisitionCard
 
@@ -187,6 +201,17 @@ struct AssetDetailView: View {
                 valueMetrics
             }
         }
+    }
+
+    private var historyCard: some View {
+        ValuationHistoryCard(
+            history: history,
+            showsUnknownPurchaseDates: historyUsesUnknownPurchaseDates,
+            titleKey: "asset-detail.history.title",
+            unknownPurchaseDatesKey: "asset-detail.history.unknown-date",
+            accessibilityIdentifier: "asset-detail.history",
+            accessibilityLabelKey: { $0.assetAccessibilityLabelKey }
+        )
     }
 
     @ViewBuilder
@@ -557,6 +582,25 @@ struct AssetDetailView: View {
     private func requestDeletion() {
         deletionRequest = AssetDeletionRequest(id: asset.id, name: asset.name)
         isShowingDeletionConfirmation = true
+    }
+}
+
+nonisolated enum AssetDetailPresentation {
+    static func showsCompleteness(_ completeness: Double) -> Bool {
+        completeness < 1
+    }
+
+    static func showsHistory(
+        purchaseDate: Date?,
+        asOf: Date,
+        calendar: Calendar = .current
+    ) -> Bool {
+        guard let purchaseDate,
+              let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: asOf)
+        else {
+            return true
+        }
+        return purchaseDate <= threeMonthsAgo
     }
 }
 

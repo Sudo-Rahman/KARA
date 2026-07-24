@@ -579,6 +579,23 @@
         }
       }
     },
+    "documents.preview.close" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close preview"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer l’aperçu"
+          }
+        }
+      }
+    },
     "documents.preview.open" : {
       "extractionState" : "stale",
       "localizations" : {

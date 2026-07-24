@@ -173,6 +173,7 @@ struct AssetEditorView: View {
                 AssetEditorCopy.text("asset-editor.save-error.message")
             }
         }
+        .tint(theme.cobaltBright)
     }
 
     private var identitySection: some View {
@@ -869,7 +870,7 @@ private struct AssetEditorField<Content: View>: View {
     var body: some View {
         AssetFieldGroup(
             title: AssetEditorCopy.text(title),
-            helper: helper.map(AssetEditorCopy.text)
+            helper: helper.map { AssetEditorCopy.text($0) }
         ) {
             content
         }

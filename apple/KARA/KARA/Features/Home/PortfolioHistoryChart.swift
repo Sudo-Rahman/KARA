@@ -1,6 +1,105 @@
 import Charts
 import SwiftUI
 
+struct ValuationHistoryCard: View {
+    @Environment(KaraTheme.self) private var theme
+
+    @State private var selectedPeriod: PortfolioHistoryPeriod = .twelveMonths
+
+    let history: [PortfolioHistoryPoint]
+    let showsUnknownPurchaseDates: Bool
+    let titleKey: String
+    let unknownPurchaseDatesKey: String
+    let accessibilityIdentifier: String
+    let accessibilityLabelKey: (PortfolioHistoryPeriod) -> String
+
+    init(
+        history: [PortfolioHistoryPoint],
+        showsUnknownPurchaseDates: Bool,
+        titleKey: String = "vault.history.title",
+        unknownPurchaseDatesKey: String = "vault.history.unknown-dates",
+        accessibilityIdentifier: String = "vault.history",
+        accessibilityLabelKey: @escaping (PortfolioHistoryPeriod) -> String = { $0.accessibilityLabelKey }
+    ) {
+        self.history = history
+        self.showsUnknownPurchaseDates = showsUnknownPurchaseDates
+        self.titleKey = titleKey
+        self.unknownPurchaseDatesKey = unknownPurchaseDatesKey
+        self.accessibilityIdentifier = accessibilityIdentifier
+        self.accessibilityLabelKey = accessibilityLabelKey
+    }
+
+    var body: some View {
+        let points = selectedPeriod.filter(history, asOf: historyAsOf)
+
+        KaraCard {
+            VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+                VaultSectionHeader(LocalizedStringKey(titleKey))
+
+                Picker("vault.history.period", selection: $selectedPeriod) {
+                    ForEach(PortfolioHistoryPeriod.allCases, id: \.self) { period in
+                        Text(LocalizedStringKey(period.localizationKey))
+                            .tag(period)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(minHeight: 44)
+                .tint(theme.goldBright)
+                .accessibilityIdentifier("\(accessibilityIdentifier).period")
+
+                if points.count >= 2,
+                   let domain = chartDomain(for: points)
+                {
+                    SensitiveValue {
+                        PortfolioHistoryChart(
+                            points: points,
+                            domain: domain,
+                            period: selectedPeriod,
+                            accessibilityLabelKey: accessibilityLabelKey(selectedPeriod),
+                            accessibilityIdentifier: "\(accessibilityIdentifier).chart"
+                        )
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: KaraSpacing.small) {
+                        Image(systemName: "chart.xyaxis.line")
+                            .font(.title2)
+                            .foregroundStyle(theme.goldBright)
+
+                        Text("vault.history.not-enough-data")
+                            .font(.subheadline)
+                            .foregroundStyle(theme.muted)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 132, alignment: .leading)
+                }
+
+                if showsUnknownPurchaseDates {
+                    Label(LocalizedStringKey(unknownPurchaseDatesKey), systemImage: "info.circle")
+                        .font(.caption)
+                        .foregroundStyle(theme.muted)
+                }
+            }
+        }
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+
+    private var historyAsOf: Date {
+        history.last?.date ?? .now
+    }
+
+    private func chartDomain(for points: [PortfolioHistoryPoint]) -> ClosedRange<Date>? {
+        guard let end = points.last?.date,
+              let start = selectedPeriod.startDate(
+                  asOf: end,
+                  earliestHistoryDate: history.first?.date
+              ),
+              start <= end
+        else {
+            return nil
+        }
+        return start...end
+    }
+}
+
 struct PortfolioHistoryChart: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -11,6 +110,8 @@ struct PortfolioHistoryChart: View {
     let points: [PortfolioHistoryPoint]
     let domain: ClosedRange<Date>
     let period: PortfolioHistoryPeriod
+    let accessibilityLabelKey: String
+    let accessibilityIdentifier: String
 
     var body: some View {
         Group {
@@ -43,8 +144,8 @@ struct PortfolioHistoryChart: View {
         .onDisappear {
             rawSelectedDate = nil
         }
-        .accessibilityLabel(Text(LocalizedStringKey(period.accessibilityLabelKey)))
-        .accessibilityIdentifier("vault.history.chart")
+        .accessibilityLabel(Text(LocalizedStringKey(accessibilityLabelKey)))
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 
     private var selectedPoint: PortfolioHistoryPoint? {
@@ -241,7 +342,7 @@ struct PortfolioHistoryChart: View {
         }
         .shadow(color: theme.goldBright.opacity(0.16), radius: 10, y: 4)
         .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("vault.history.selection")
+        .accessibilityIdentifier("\(accessibilityIdentifier).selection")
     }
 
     private var allHistoryAxisDates: [Date] {
@@ -287,6 +388,44 @@ nonisolated enum PortfolioHistorySelection {
                 return candidate
             }
             return nearest
+        }
+    }
+}
+
+extension PortfolioHistoryPeriod {
+    var localizationKey: String {
+        switch self {
+        case .threeMonths: "vault.history.period.3-months"
+        case .sixMonths: "vault.history.period.6-months"
+        case .twelveMonths: "vault.history.period.12-months"
+        case .all: "vault.history.period.all"
+        }
+    }
+
+    var accessibilityLabelKey: String {
+        switch self {
+        case .threeMonths: "vault.history.accessibility-label.3-months"
+        case .sixMonths: "vault.history.accessibility-label.6-months"
+        case .twelveMonths: "vault.history.accessibility-label.12-months"
+        case .all: "vault.history.accessibility-label.all"
+        }
+    }
+
+    var assetAccessibilityLabelKey: String {
+        switch self {
+        case .threeMonths: "asset-detail.history.accessibility-label.3-months"
+        case .sixMonths: "asset-detail.history.accessibility-label.6-months"
+        case .twelveMonths: "asset-detail.history.accessibility-label.12-months"
+        case .all: "asset-detail.history.accessibility-label.all"
+        }
+    }
+
+    var axisMonthStride: Int {
+        switch self {
+        case .threeMonths: 1
+        case .sixMonths: 2
+        case .twelveMonths: 3
+        case .all: 1
         }
     }
 }

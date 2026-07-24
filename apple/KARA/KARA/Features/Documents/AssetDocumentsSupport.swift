@@ -94,7 +94,6 @@ nonisolated enum AssetAttachmentFileName {
 
 struct AttachmentPreviewItem: Identifiable {
     let id: UUID
-    let title: String
     let url: URL
 }
 
@@ -103,17 +102,35 @@ struct AttachmentPreviewSheet: View {
     let item: AttachmentPreviewItem
 
     var body: some View {
-        NavigationStack {
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+
             AttachmentQuickLookView(url: item.url)
-                .ignoresSafeArea(edges: .bottom)
-                .navigationTitle(item.title)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(AssetDocumentsCopy.string("documents.close")) { dismiss() }
+                .ignoresSafeArea()
+
+            VStack {
+                HStack {
+                    Spacer()
+
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 44, height: 44)
+                            .contentShape(.circle)
                     }
+                    .foregroundStyle(.white)
+                    .background(.ultraThinMaterial, in: .circle)
+                    .accessibilityLabel(AssetDocumentsCopy.string("documents.preview.close"))
+                    .accessibilityIdentifier("documents.preview.close")
                 }
+
+                Spacer()
+            }
+            .padding(.top, KaraSpacing.small)
+            .padding(.horizontal, KaraSpacing.medium)
         }
+        .preferredColorScheme(.dark)
     }
 }
 
