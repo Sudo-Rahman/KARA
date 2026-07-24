@@ -7,6 +7,13 @@ extension View {
         contentMargins(.horizontal, pageInset, for: .scrollContent)
             .padding(.horizontal, -pageInset)
     }
+
+    /// Lets a horizontal scroller use the full width of its nearest visual
+    /// surface while its resting content stays aligned with the surface inset.
+    func karaSurfaceEdgeHorizontalScroll(surfaceInset: CGFloat) -> some View {
+        contentMargins(.horizontal, surfaceInset, for: .scrollContent)
+            .padding(.horizontal, -surfaceInset)
+    }
 }
 
 struct KaraCard<Content: View>: View {

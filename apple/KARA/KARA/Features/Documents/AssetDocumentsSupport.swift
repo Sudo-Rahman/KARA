@@ -65,6 +65,18 @@ nonisolated enum AssetAttachmentContentKind: Equatable, Sendable {
 }
 
 nonisolated enum AssetAttachmentFileName {
+    static func displayName(_ filename: String) -> String {
+        let component = (filename as NSString).lastPathComponent as NSString
+        guard !component.pathExtension.isEmpty else { return component as String }
+        return component.deletingPathExtension
+    }
+
+    static func replacingDisplayName(in filename: String, with displayName: String) -> String {
+        let fileExtension = ((filename as NSString).lastPathComponent as NSString).pathExtension
+        guard !fileExtension.isEmpty else { return displayName }
+        return "\(displayName).\(fileExtension)"
+    }
+
     static func safeComponent(_ filename: String) -> String {
         let lastComponent = (filename as NSString).lastPathComponent
         let withoutControls = lastComponent

@@ -2,13 +2,15 @@
 
 ## Scroll horizontal bord-à-bord
 
-Tout élément d’interface qui défile horizontalement doit avoir un viewport bord-à-bord : le `ScrollView(.horizontal)` ne doit jamais être rogné par le padding horizontal de la page, d’une section ou d’une surface parente. Pendant le geste, son contenu doit pouvoir atteindre visuellement les limites gauche et droite de l’écran.
+Un scroll horizontal doit occuper toute la largeur de son conteneur visuel : pendant le geste, son contenu peut traverser le padding interne et atteindre visuellement les limites gauche et droite de ce conteneur.
 
-- Conserver l’alignement de repos du premier et du dernier élément avec le contenu de la page en utilisant des marges de contenu, pas en réduisant le viewport du scroll.
-- Utiliser `karaFullBleedHorizontalScroll(pageInset:)` sur chaque scroll horizontal contenu dans une page paddée. `pageInset` est la somme de tous les paddings horizontaux entre le scroll et le bord de l’écran (par exemple padding de page + padding de carte).
+- Le conteneur visuel de référence est la surface la plus proche (carte, champ groupé, panneau, modal). En l’absence de surface, c’est la page ou l’écran. Le viewport peut neutraliser le padding de ce conteneur, mais ne doit jamais franchir son fond ou ses coins arrondis.
+- Conserver l’alignement de repos du premier et du dernier élément avec le contenu paddé du conteneur en utilisant des marges de contenu, pas en réduisant le viewport du scroll.
+- Dans une surface paddée, utiliser `karaSurfaceEdgeHorizontalScroll(surfaceInset:)` avec uniquement le padding interne de cette surface.
+- Au niveau d’une page paddée, utiliser `karaFullBleedHorizontalScroll(pageInset:)` avec la somme des paddings horizontaux entre le scroll et le bord de l’écran.
 - Ajouter au contenu du scroll un léger espace vertical, au minimum 1 pt, pour que les bordures, focus rings et ombres des chips ou cartes ne soient pas coupés.
 - Un pager déjà naturellement plein écran, sans padding horizontal parent, est conforme sans compensation supplémentaire.
-- Lors de l’ajout ou de la modification d’un scroll horizontal, auditer ses ancêtres et vérifier ce comportement sur les deux bords avant de terminer.
+- Lors de l’ajout ou de la modification d’un scroll horizontal, auditer ses ancêtres, identifier la surface visuelle la plus proche, puis vérifier son comportement sur les deux bords avant de terminer.
 
 ## Règles Git
 

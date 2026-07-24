@@ -404,7 +404,6 @@
       }
     },
     "asset-detail.documents.add" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -416,6 +415,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter des documents"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.add-short" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
           }
         }
       }
@@ -469,7 +484,6 @@
       }
     },
     "asset-detail.documents.open" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -497,6 +511,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documents"
+          }
+        }
+      }
+    },
+    "asset-detail.documents.view-all" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View all"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir tout"
           }
         }
       }
@@ -4672,6 +4702,18 @@
     "KARA" : {
 
     },
+    "Laser core date" : {
+
+    },
+    "Laser core value" : {
+
+    },
+    "Laser date" : {
+
+    },
+    "Laser value" : {
+
+    },
     "onboarding.organization.accentTitle" : {
       "localizations" : {
         "en" : {
@@ -5900,6 +5942,12 @@
           }
         }
       }
+    },
+    "Selected date" : {
+
+    },
+    "Selected value" : {
+
     },
     "summary.body" : {
       "localizations" : {

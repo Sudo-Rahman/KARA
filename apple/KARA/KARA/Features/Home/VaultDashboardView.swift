@@ -1,4 +1,3 @@
-import Charts
 import SwiftUI
 
 struct VaultDashboardView: View {
@@ -369,7 +368,11 @@ struct VaultDashboardView: View {
                    let domain = chartDomain(for: points)
                 {
                     SensitiveValue {
-                        portfolioChart(points, domain: domain)
+                        PortfolioHistoryChart(
+                            points: points,
+                            domain: domain,
+                            period: selectedHistoryPeriod
+                        )
                     }
                 } else {
                     VStack(alignment: .leading, spacing: KaraSpacing.small) {
@@ -391,89 +394,6 @@ struct VaultDashboardView: View {
                 }
             }
         }
-    }
-
-    private func portfolioChart(
-        _ points: [PortfolioHistoryPoint],
-        domain: ClosedRange<Date>
-    ) -> some View {
-        Chart(points) { point in
-            AreaMark(
-                x: .value("Date", point.date),
-                y: .value("Value", point.valueEUR.vaultDouble)
-            )
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [theme.cobaltBright.opacity(0.30), theme.cobalt.opacity(0.01)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-
-            LineMark(
-                x: .value("Date", point.date),
-                y: .value("Value", point.valueEUR.vaultDouble)
-            )
-            .foregroundStyle(theme.goldBright)
-            .lineStyle(.init(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-            .interpolationMethod(.catmullRom)
-
-            if point.isCurrent {
-                PointMark(
-                    x: .value("Date", point.date),
-                    y: .value("Value", point.valueEUR.vaultDouble)
-                )
-                .foregroundStyle(theme.goldBright)
-                .symbolSize(58)
-            }
-        }
-        .chartLegend(.hidden)
-        .chartYScale(domain: .automatic(includesZero: false))
-        .chartXScale(domain: domain)
-        .chartXAxis {
-            if selectedHistoryPeriod == .all {
-                AxisMarks(values: allHistoryAxisDates(for: domain)) { value in
-                    AxisValueLabel {
-                        if let date = value.as(Date.self) {
-                            Text(date, format: .dateTime.year())
-                                .font(.caption2)
-                                .foregroundStyle(theme.muted)
-                        }
-                    }
-                }
-            } else {
-                AxisMarks(values: .stride(by: .month, count: selectedHistoryPeriod.axisMonthStride)) { value in
-                    AxisValueLabel {
-                        if let date = value.as(Date.self) {
-                            if isInitialMonth(date, in: domain) || Calendar.current.component(.month, from: date) == 1 {
-                                Text(date, format: .dateTime.month(.abbreviated).year())
-                                    .font(.caption2)
-                                    .foregroundStyle(theme.muted)
-                            } else {
-                                Text(date, format: .dateTime.month(.abbreviated))
-                                    .font(.caption2)
-                                    .foregroundStyle(theme.muted)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
-                AxisGridLine()
-                    .foregroundStyle(theme.muted.opacity(0.16))
-                AxisValueLabel {
-                    if let amount = value.as(Double.self) {
-                        Text(VaultFormatters.currency(Decimal(amount)))
-                            .font(.caption2.monospacedDigit())
-                            .foregroundStyle(theme.muted)
-                    }
-                }
-            }
-        }
-        .frame(height: 190)
-        .accessibilityLabel(Text(LocalizedStringKey(selectedHistoryPeriod.accessibilityLabelKey)))
     }
 
     private var primaryActions: some View {
@@ -765,35 +685,6 @@ struct VaultDashboardView: View {
         return start...end
     }
 
-    private func allHistoryAxisDates(
-        for domain: ClosedRange<Date>
-    ) -> [Date] {
-        let calendar = Calendar.current
-        let firstYear = calendar.component(.year, from: domain.lowerBound)
-        let lastYear = calendar.component(.year, from: domain.upperBound)
-        let yearSpan = max(0, lastYear - firstYear)
-        let yearStep = max(1, Int(ceil(Double(max(yearSpan, 1)) / 4)))
-        var dates = [domain.lowerBound]
-
-        if yearSpan > 0 {
-            for year in stride(from: firstYear + yearStep, to: lastYear, by: yearStep) {
-                if let date = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) {
-                    dates.append(date)
-                }
-            }
-            dates.append(domain.upperBound)
-        }
-
-        return dates
-    }
-
-    private func isInitialMonth(
-        _ date: Date,
-        in domain: ClosedRange<Date>
-    ) -> Bool {
-        Calendar.current.isDate(date, equalTo: domain.lowerBound, toGranularity: .month)
-    }
-
     private var recentAssets: [Asset] {
         Array(assets.sorted { $0.createdAt > $1.createdAt }.prefix(3))
     }
@@ -822,7 +713,7 @@ struct VaultDashboardView: View {
     }
 }
 
-private extension PortfolioHistoryPeriod {
+extension PortfolioHistoryPeriod {
     var localizationKey: String {
         switch self {
         case .threeMonths: "vault.history.period.3-months"

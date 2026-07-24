@@ -412,13 +412,7 @@ struct AssetDetailView: View {
     private func documentsCard(attachments assetAttachments: [AssetAttachment]) -> some View {
         KaraCard {
             VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-                VaultSectionHeader("asset-detail.documents.title", eyebrow: "asset-detail.documents.eyebrow") {
-                    SensitiveValue {
-                        Text("asset-detail.documents.count \(assetAttachments.count)")
-                            .font(.caption.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(theme.muted)
-                    }
-                }
+                documentsHeader(attachments: assetAttachments)
 
                 if assetAttachments.isEmpty {
                     HStack(spacing: KaraSpacing.medium) {
@@ -454,22 +448,60 @@ struct AssetDetailView: View {
                         }
                     }
                 }
-
-                Button {
-                    router.showDocuments(for: asset.id)
-                } label: {
-                    Label(
-                        LocalizedStringKey(assetAttachments.isEmpty
-                            ? "asset-detail.documents.add"
-                            : "asset-detail.documents.open"),
-                        systemImage: "arrow.right"
-                    )
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 48)
-                }
-                .buttonStyle(.glass)
-                .accessibilityIdentifier("asset-detail.documents")
             }
+        }
+    }
+
+    private func documentsHeader(attachments assetAttachments: [AssetAttachment]) -> some View {
+        ViewThatFits(in: .horizontal) {
+            VaultSectionHeader("asset-detail.documents.title", eyebrow: "asset-detail.documents.eyebrow") {
+                documentsHeaderTrailing(attachments: assetAttachments)
+            }
+
+            VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
+                VaultSectionHeader("asset-detail.documents.title", eyebrow: "asset-detail.documents.eyebrow")
+
+                documentsHeaderTrailing(attachments: assetAttachments)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+    }
+
+    private func documentsHeaderTrailing(attachments assetAttachments: [AssetAttachment]) -> some View {
+        let actionTitle: LocalizedStringKey = assetAttachments.isEmpty
+            ? "asset-detail.documents.add-short"
+            : "asset-detail.documents.view-all"
+        let accessibilityTitle: LocalizedStringKey = assetAttachments.isEmpty
+            ? "asset-detail.documents.add"
+            : "asset-detail.documents.open"
+
+        return HStack(spacing: KaraSpacing.small) {
+            if !assetAttachments.isEmpty {
+                SensitiveValue {
+                    Text("asset-detail.documents.count \(assetAttachments.count)")
+                        .font(.caption.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(theme.muted)
+                }
+            }
+
+            Button {
+                router.showDocuments(for: asset.id)
+            } label: {
+                HStack(spacing: KaraSpacing.xSmall) {
+                    Text(actionTitle)
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .accessibilityHidden(true)
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(theme.goldBright)
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(accessibilityTitle))
+            .accessibilityIdentifier("asset-detail.documents")
         }
     }
 

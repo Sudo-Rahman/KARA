@@ -181,8 +181,7 @@ struct AssetCharacteristicsStepView: View {
             AssetFieldLabel("characteristics.gold-purity.title", helper: "characteristics.gold-purity.helper")
 
             AssetGoldPurityPicker(
-                selectedKarat: state.draft.metalKarat,
-                pageInset: KaraSpacing.large + KaraSpacing.medium
+                selectedKarat: state.draft.metalKarat
             ) { purity in
                 state.update(\.metalKarat, to: Optional(purity.karat), field: .metalKarat)
                 state.update(\.finenessPermille, to: Optional(purity.fineness), field: .finenessPermille)

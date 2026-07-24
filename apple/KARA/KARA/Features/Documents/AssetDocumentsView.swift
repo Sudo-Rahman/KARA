@@ -123,7 +123,7 @@ struct AssetDocumentsView: View {
         } message: { attachment in
             Text(String.localizedStringWithFormat(
                 AssetDocumentsCopy.string("documents.delete.body"),
-                attachment.filename
+                AssetAttachmentFileName.displayName(attachment.filename)
             ))
         }
         .alert(
@@ -564,7 +564,7 @@ struct AssetDocumentsView: View {
                 currentPreviewURL = url
                 presentedSheet = .preview(AttachmentPreviewItem(
                     id: attachmentID,
-                    title: filename,
+                    title: AssetAttachmentFileName.displayName(filename),
                     url: url
                 ))
             } catch {
@@ -606,7 +606,7 @@ private struct AssetDocumentRow: View {
                         thumbnail
 
                         VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                            Text(attachment.filename)
+                            Text(displayName)
                                 .font(.headline)
                                 .foregroundStyle(theme.ink)
                                 .lineLimit(2)
@@ -625,7 +625,7 @@ private struct AssetDocumentRow: View {
                     .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(attachment.filename)
+                .accessibilityLabel(displayName)
                 .accessibilityHint(AssetDocumentsCopy.string("documents.preview.open"))
 
                 Menu {
@@ -642,7 +642,7 @@ private struct AssetDocumentRow: View {
                             filename: attachment.filename
                         ),
                         preview: SharePreview(
-                            attachment.filename,
+                            displayName,
                             image: Image(systemName: attachment.kind.documentsSymbolName)
                         )
                     ) {
@@ -710,6 +710,10 @@ private struct AssetDocumentRow: View {
         ))
         return parts.joined(separator: " · ")
     }
+
+    private var displayName: String {
+        AssetAttachmentFileName.displayName(attachment.filename)
+    }
 }
 
 private struct RenameAssetAttachmentSheet: View {
@@ -734,7 +738,7 @@ private struct RenameAssetAttachmentSheet: View {
         self.attachment = attachment
         self.repository = repository
         self.onRenamed = onRenamed
-        _filename = State(initialValue: attachment.filename)
+        _filename = State(initialValue: AssetAttachmentFileName.displayName(attachment.filename))
     }
 
     var body: some View {
@@ -767,7 +771,7 @@ private struct RenameAssetAttachmentSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(AssetDocumentsCopy.string("documents.rename.save"), action: save)
-                        .disabled(filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .disabled(trimmedFilename.isEmpty)
                 }
             }
         }
@@ -779,13 +783,20 @@ private struct RenameAssetAttachmentSheet: View {
             try repository.rename(
                 attachmentID: attachment.id,
                 for: assetID,
-                to: filename
+                to: AssetAttachmentFileName.replacingDisplayName(
+                    in: attachment.filename,
+                    with: trimmedFilename
+                )
             )
             onRenamed()
             dismiss()
         } catch {
             showsError = true
         }
+    }
+
+    private var trimmedFilename: String {
+        filename.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

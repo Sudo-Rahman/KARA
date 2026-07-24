@@ -28,6 +28,32 @@ struct AssetDocumentsTests {
         #expect(AssetAttachmentFileName.safeComponent("..") == "document")
     }
 
+    @Test("Document names hide their extension and preserve it when renamed")
+    func presentsAndRenamesFilenameWithoutExtension() {
+        #expect(AssetAttachmentFileName.displayName("facture.pdf") == "facture")
+        #expect(AssetAttachmentFileName.displayName("archive.tar.gz") == "archive.tar")
+        #expect(AssetAttachmentFileName.displayName("photo") == "photo")
+
+        #expect(
+            AssetAttachmentFileName.replacingDisplayName(
+                in: "facture.pdf",
+                with: "Facture finale"
+            ) == "Facture finale.pdf"
+        )
+        #expect(
+            AssetAttachmentFileName.replacingDisplayName(
+                in: "archive.tar.gz",
+                with: "sauvegarde"
+            ) == "sauvegarde.gz"
+        )
+        #expect(
+            AssetAttachmentFileName.replacingDisplayName(
+                in: "photo",
+                with: "Objet"
+            ) == "Objet"
+        )
+    }
+
     @Test("Every document category has English and French copy in its dedicated table")
     func localizesDocumentCategories() throws {
         let requiredKeys = AssetAttachmentKind.allCases.map {
