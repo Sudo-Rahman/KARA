@@ -595,7 +595,10 @@ struct AssetEditorView: View {
             title: "asset-editor.field.quick-purity",
             helper: "asset-editor.field.quick-purity.helper"
         ) {
-            AssetGoldPurityPicker(selectedKarat: editor.draft.metalKarat) { purity in
+            AssetGoldPurityPicker(
+                selectedKarat: editor.draft.metalKarat,
+                pageInset: KaraSpacing.large + KaraSpacing.medium
+            ) { purity in
                 editor.draft.metalKarat = purity.karat
                 editor.draft.finenessPermille = purity.fineness
             }

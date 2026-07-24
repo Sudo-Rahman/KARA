@@ -204,7 +204,9 @@ struct InventoryView: View {
                     )
                 }
             }
+            .padding(.vertical, 1)
         }
+        .karaFullBleedHorizontalScroll(pageInset: KaraSpacing.medium)
         .scrollIndicators(.hidden)
     }
 

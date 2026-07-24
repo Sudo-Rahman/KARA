@@ -1,5 +1,14 @@
 import SwiftUI
 
+extension View {
+    /// Lets a page-level horizontal scroller reach the screen edges while its
+    /// resting content remains aligned with the surrounding page content.
+    func karaFullBleedHorizontalScroll(pageInset: CGFloat) -> some View {
+        contentMargins(.horizontal, pageInset, for: .scrollContent)
+            .padding(.horizontal, -pageInset)
+    }
+}
+
 struct KaraCard<Content: View>: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency

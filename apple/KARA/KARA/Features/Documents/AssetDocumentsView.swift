@@ -325,7 +325,9 @@ struct AssetDocumentsView: View {
                     .accessibilityIdentifier("documents.filter.\(filter.id)")
                 }
             }
+            .padding(.vertical, 1)
         }
+        .karaFullBleedHorizontalScroll(pageInset: KaraSpacing.large)
     }
 
     @ToolbarContentBuilder

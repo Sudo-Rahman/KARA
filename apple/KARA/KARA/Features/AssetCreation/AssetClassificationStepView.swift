@@ -100,7 +100,7 @@ struct AssetClassificationStepView: View {
                 .padding(.horizontal, 1)
                 .padding(.vertical, KaraSpacing.xSmall)
             }
-            .assetPageHorizontalCarousel()
+            .karaFullBleedHorizontalScroll(pageInset: KaraSpacing.large)
             .scrollIndicators(.hidden)
         }
         .accessibilityIdentifier("classification.metals")
@@ -128,7 +128,7 @@ struct AssetClassificationStepView: View {
                 .padding(.vertical, KaraSpacing.xSmall)
                 .scrollTargetLayout()
             }
-            .assetPageHorizontalCarousel()
+            .karaFullBleedHorizontalScroll(pageInset: KaraSpacing.large)
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .accessibilityIdentifier("classification.presets")
@@ -170,13 +170,6 @@ struct AssetClassificationStepView: View {
         let resource = LocalizedStringResource(String.LocalizationValue(preset.localizationKey))
         let localized = String(localized: resource)
         return localized == preset.localizationKey ? preset.name : localized
-    }
-}
-
-private extension View {
-    func assetPageHorizontalCarousel() -> some View {
-        contentMargins(.horizontal, KaraSpacing.large, for: .scrollContent)
-            .padding(.horizontal, -KaraSpacing.large)
     }
 }
 

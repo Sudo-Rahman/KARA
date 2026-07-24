@@ -429,6 +429,7 @@ struct AssetGoldPurityPicker: View {
     @Environment(KaraTheme.self) private var theme
 
     let selectedKarat: Int?
+    let pageInset: CGFloat
     let onSelect: (AssetGoldPurity) -> Void
 
     var body: some View {
@@ -454,7 +455,9 @@ struct AssetGoldPurityPicker: View {
                     .accessibilityAddTraits(selectedKarat == purity.karat ? .isSelected : [])
                 }
             }
+            .padding(.vertical, 1)
         }
+        .karaFullBleedHorizontalScroll(pageInset: pageInset)
         .scrollIndicators(.hidden)
     }
 }
