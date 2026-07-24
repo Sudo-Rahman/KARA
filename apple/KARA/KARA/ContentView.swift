@@ -34,7 +34,7 @@ struct ContentView: View {
             }
         }
         .background(theme.background)
-        .tint(theme.cobalt)
+        .tint(theme.goldBright)
         .preferredColorScheme(.dark)
         .animation(.easeOut(duration: 0.35), value: flow.destination)
     }
