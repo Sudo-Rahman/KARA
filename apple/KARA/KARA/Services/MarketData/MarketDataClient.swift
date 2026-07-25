@@ -6,6 +6,7 @@ nonisolated enum MarketFetchResult<Value: Sendable>: Sendable {
 }
 
 nonisolated protocol MarketDataClient: Sendable {
+    func bootstrap(etag: String?) async throws -> MarketFetchResult<MarketBootstrap>
     func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote>
     func monthly(etag: String?) async throws -> MarketFetchResult<MonthlyDataset>
     func manifest(etag: String?) async throws -> MarketFetchResult<MarketManifest>
@@ -45,6 +46,22 @@ nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked
     init(baseURL: URL, transport: any APIDataTransport) {
         self.baseURL = baseURL
         self.transport = transport
+    }
+
+    func bootstrap(etag: String?) async throws -> MarketFetchResult<MarketBootstrap> {
+        let response = try await fetch(
+            url: baseURL.appending(path: "v1/market-data/bootstrap.json"),
+            etag: etag
+        )
+        switch response {
+        case let .modified(data, responseETag):
+            let bootstrap = try MarketJSON.decoder
+                .decode(MarketBootstrap.self, from: data)
+                .validated()
+            return .modified(bootstrap, etag: responseETag)
+        case let .notModified(responseETag):
+            return .notModified(etag: responseETag)
+        }
     }
 
     func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote> {

@@ -42,6 +42,17 @@ struct MarketDataDTOTests {
         #expect(manifest.publishedAt == Date(timeIntervalSince1970: 1_784_545_719))
     }
 
+    @Test("A bootstrap validates the manifest and exactly four ordered EUR spots")
+    func validatesBootstrap() throws {
+        let payload = Data(#"{"schemaVersion":1,"manifest":{"schemaVersion":1,"datasetId":"precious-metals-monthly","dataVersion":"abc123","publishedAt":"2026-07-20T11:08:39.000Z","metals":["XAU","XAG","XPT","XPD"],"coverage":{"from":"1987-01","through":"2026-05"},"currencies":{"EUR":{"from":"1999-01","through":"2026-05"}},"file":{"url":"/v1/metals-monthly.json","sha256":"abc123","bytes":408442}},"spots":[{"schemaVersion":1,"metal":"XAU","currency":"EUR","price":"3558.90","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XAG","currency":"EUR","price":"31.20","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XPT","currency":"EUR","price":"1280.00","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XPD","currency":"EUR","price":"990.00","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"}]}"#.utf8)
+
+        let bootstrap = try MarketJSON.decoder.decode(MarketBootstrap.self, from: payload).validated()
+
+        #expect(bootstrap.manifest.dataVersion == "abc123")
+        #expect(bootstrap.spots.map(\.metal) == MarketMetal.allCases)
+        #expect(bootstrap.spots.allSatisfy { $0.currency == .eur })
+    }
+
     @Test("Unknown schema versions are rejected before entering the store")
     func rejectsUnknownSchemaVersion() throws {
         let payload = Data(#"{"schemaVersion":2,"metal":"XAU","currency":"EUR","price":"3558.900966","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"}"#.utf8)

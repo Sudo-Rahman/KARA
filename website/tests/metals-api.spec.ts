@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 test('requires App Attest for every v1 API route', async ({ request }) => {
 	for (const path of [
 		'/v1/manifest.json',
+		'/v1/market-data/bootstrap.json',
 		'/v1/metals-monthly.json',
 		'/v1/metals-spot.json?metal=XAU&currency=EUR',
 		'/en/v1/manifest.json'
@@ -19,6 +20,8 @@ test('requires App Attest for every v1 API route', async ({ request }) => {
 
 	const head = await request.head('/v1/metals-monthly.json');
 	expect(head.status()).toBe(401);
+	const bootstrapHead = await request.head('/v1/market-data/bootstrap.json');
+	expect(bootstrapHead.status()).toBe(401);
 });
 
 test('keeps liveness public', async ({ request }) => {

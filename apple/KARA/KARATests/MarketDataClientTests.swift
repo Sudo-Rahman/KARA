@@ -4,6 +4,32 @@ import Testing
 
 @Suite("Market data client", .serialized)
 struct MarketDataClientTests {
+    @Test("Bootstrap requests one aggregate endpoint and decodes a validated snapshot")
+    func fetchesBootstrap() async throws {
+        let session = URLSession.stubbed { request in
+            #expect(request.url?.path == "/v1/market-data/bootstrap.json")
+            #expect(request.value(forHTTPHeaderField: "If-None-Match") == "bootstrap-tag")
+            return try HTTPStubResponse(
+                status: 200,
+                headers: ["ETag": "fresh-bootstrap-tag"],
+                body: bootstrapPayload()
+            )
+        }
+        let client = URLSessionMarketDataClient(
+            baseURL: URL(string: "https://example.test")!,
+            session: session
+        )
+
+        let result = try await client.bootstrap(etag: "bootstrap-tag")
+
+        guard case let .modified(bootstrap, etag) = result else {
+            Issue.record("Expected a modified bootstrap")
+            return
+        }
+        #expect(bootstrap.spots.map(\.metal) == MarketMetal.allCases)
+        #expect(etag == "fresh-bootstrap-tag")
+    }
+
     @Test("Spot requests send only metal and currency and decode a validated quote")
     func fetchesSpotQuote() async throws {
         let session = URLSession.stubbed { request in
@@ -90,6 +116,10 @@ struct MarketDataClientTests {
             #expect(error == .unexpectedSpotPair(expected: requested, received: received))
         }
     }
+}
+
+private func bootstrapPayload(dataVersion: String = "abc123") -> Data {
+    Data(#"{"schemaVersion":1,"manifest":{"schemaVersion":1,"datasetId":"precious-metals-monthly","dataVersion":"\#(dataVersion)","publishedAt":"2026-07-20T11:08:39.000Z","metals":["XAU","XAG","XPT","XPD"],"coverage":{"from":"1987-01","through":"2026-05"},"currencies":{"EUR":{"from":"1999-01","through":"2026-05"}},"file":{"url":"/v1/metals-monthly.json","sha256":"\#(dataVersion)","bytes":408442}},"spots":[{"schemaVersion":1,"metal":"XAU","currency":"EUR","price":"3558.90","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XAG","currency":"EUR","price":"31.20","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XPT","currency":"EUR","price":"1280.00","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"},{"schemaVersion":1,"metal":"XPD","currency":"EUR","price":"990.00","unit":{"code":"troy_ounce","grams":"31.1034768"},"sourceUpdatedAt":"2026-07-21T09:45:33Z"}]}"#.utf8)
 }
 
 private struct HTTPStubResponse: Sendable {

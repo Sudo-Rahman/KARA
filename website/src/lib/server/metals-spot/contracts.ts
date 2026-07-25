@@ -40,15 +40,21 @@ export const goldApiQuoteSchema = z.object({
 	updatedAtReadable: z.string()
 });
 
-export interface SpotQuote {
-	schemaVersion: 1;
-	metal: Metal;
-	currency: Currency;
-	price: string;
-	unit: {
-		code: 'troy_ounce';
-		grams: '31.1034768';
-	};
-	sourceUpdatedAt: string;
-}
+const spotPriceSchema = z
+	.string()
+	.regex(/^\d+\.\d{6}$/)
+	.refine((value) => Number.isFinite(Number(value)) && Number(value) > 0, 'Price must be positive');
 
+export const spotQuoteSchema = z.object({
+	schemaVersion: z.literal(1),
+	metal: metalSchema,
+	currency: currencySchema,
+	price: spotPriceSchema,
+	unit: z.object({
+		code: z.literal('troy_ounce'),
+		grams: z.literal('31.1034768')
+	}),
+	sourceUpdatedAt: z.iso.datetime({ offset: true })
+});
+
+export type SpotQuote = z.infer<typeof spotQuoteSchema>;

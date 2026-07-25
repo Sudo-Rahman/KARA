@@ -48,6 +48,7 @@ actor AppAttestService {
     private let defaults: UserDefaults
     private var keyGenerationTask: Task<String, any Error>?
     private var registrationTask: Task<String, any Error>?
+    private var assertionTail: Task<Void, Never>?
 
     init(
         provider: any AppAttestProviding = SystemAppAttestProvider(),
@@ -59,10 +60,19 @@ actor AppAttestService {
 
     func keyIdentifier() async throws -> String {
         if let keyId = defaults.string(forKey: StorageKey.keyId) { return keyId }
-        if let keyGenerationTask { return try await keyGenerationTask.value }
-        guard await provider.isSupported() else { throw AppAttestClientError.unsupported }
+        if let keyGenerationTask {
+            let keyId = try await keyGenerationTask.value
+            defaults.set(keyId, forKey: StorageKey.keyId)
+            return keyId
+        }
 
-        let task = Task { try await provider.generateKey() }
+        let provider = provider
+        let task = Task<String, any Error> {
+            guard await provider.isSupported() else {
+                throw AppAttestClientError.unsupported
+            }
+            return try await provider.generateKey()
+        }
         keyGenerationTask = task
         do {
             let keyId = try await task.value
@@ -132,7 +142,30 @@ actor AppAttestService {
     }
 
     func assertion(keyId: String, payload: Data) async throws -> Data {
-        try await provider.generateAssertion(keyId, clientDataHash: Self.sha256(payload))
+        let predecessor = assertionTail
+        let provider = provider
+        let clientDataHash = Self.sha256(payload)
+        let operation = Task<Data, any Error> {
+            if let predecessor {
+                await predecessor.value
+            }
+            try Task.checkCancellation()
+            let assertion = try await provider.generateAssertion(
+                keyId,
+                clientDataHash: clientDataHash
+            )
+            try Task.checkCancellation()
+            return assertion
+        }
+        assertionTail = Task {
+            _ = await operation.result
+        }
+
+        return try await withTaskCancellationHandler {
+            try await operation.value
+        } onCancel: {
+            operation.cancel()
+        }
     }
 
     private static func sha256(_ data: Data) -> Data {

@@ -284,10 +284,49 @@ nonisolated struct MarketManifest: Codable, Equatable, Sendable {
     }
 }
 
+nonisolated struct MarketBootstrap: Codable, Equatable, Sendable {
+    static let expectedPairs = MarketMetal.allCases.map {
+        SpotPair(metal: $0, currency: .eur)
+    }
+
+    let schemaVersion: Int
+    let manifest: MarketManifest
+    let spots: [SpotQuote]
+
+    init(
+        schemaVersion: Int = 1,
+        manifest: MarketManifest,
+        spots: [SpotQuote]
+    ) {
+        self.schemaVersion = schemaVersion
+        self.manifest = manifest
+        self.spots = spots
+    }
+
+    func validated() throws -> Self {
+        guard schemaVersion == 1 else {
+            throw MarketPayloadError.unsupportedSchemaVersion(schemaVersion)
+        }
+        _ = try manifest.validated()
+        let receivedPairs = spots.map(\.id)
+        guard receivedPairs == Self.expectedPairs else {
+            throw MarketPayloadError.invalidBootstrapSpots(
+                expected: Self.expectedPairs,
+                received: receivedPairs
+            )
+        }
+        for (quote, pair) in zip(spots, Self.expectedPairs) {
+            _ = try quote.validated(for: pair)
+        }
+        return self
+    }
+}
+
 nonisolated enum MarketPayloadError: Error, Equatable, Sendable {
     case invalidDecimal(String)
     case unsupportedSchemaVersion(Int)
     case unexpectedSpotPair(expected: SpotPair, received: SpotPair)
+    case invalidBootstrapSpots(expected: [SpotPair], received: [SpotPair])
     case invalidValue
 }
 

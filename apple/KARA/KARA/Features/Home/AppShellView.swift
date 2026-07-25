@@ -276,6 +276,27 @@ private struct PreviewAssetAnalyzer: AssetAnalyzing {
 }
 
 private struct PreviewMarketDataClient: MarketDataClient {
+    func bootstrap(etag: String?) async throws -> MarketFetchResult<MarketBootstrap> {
+        var spots: [SpotQuote] = []
+        for pair in MarketBootstrap.expectedPairs {
+            guard case let .modified(quote, _) = try await spot(for: pair, etag: nil) else {
+                throw CancellationError()
+            }
+            spots.append(quote)
+        }
+        let manifest = MarketManifest(
+            schemaVersion: 1,
+            datasetId: "precious-metals-monthly",
+            dataVersion: "preview",
+            publishedAt: .now,
+            metals: MarketMetal.allCases,
+            coverage: .init(from: "2025-01", through: "2026-07"),
+            currencies: ["EUR": .init(from: "2025-01", through: "2026-07")],
+            file: .init(url: "/v1/metals-monthly.json", sha256: "preview", bytes: 0)
+        )
+        return .modified(MarketBootstrap(manifest: manifest, spots: spots), etag: nil)
+    }
+
     func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote> {
         let ouncePrice: Decimal = switch pair.metal {
         case .gold: 2_247.80
@@ -296,7 +317,13 @@ private struct PreviewMarketDataClient: MarketDataClient {
     }
 
     func monthly(etag: String?) async throws -> MarketFetchResult<MonthlyDataset> {
-        .notModified(etag: nil)
+        .modified(
+            MonthlyDataset(
+                unit: MarketUnit(code: .troyOunce, grams: 31.103_476_8),
+                series: []
+            ),
+            etag: "\"preview\""
+        )
     }
 
     func manifest(etag: String?) async throws -> MarketFetchResult<MarketManifest> {
@@ -305,10 +332,12 @@ private struct PreviewMarketDataClient: MarketDataClient {
 }
 
 private actor PreviewMarketDataCache: MarketDataCaching {
+    func cachedBootstrap() -> CachedMarketResource<MarketBootstrap>? { nil }
+    func saveBootstrap(_ entry: CachedMarketResource<MarketBootstrap>) {}
     func cachedSpot(for pair: SpotPair) -> CachedMarketResource<SpotQuote>? { nil }
     func saveSpot(_ entry: CachedMarketResource<SpotQuote>, for pair: SpotPair) {}
-    func cachedMonthly() -> CachedMarketResource<MonthlyDataset>? { nil }
-    func saveMonthly(_ entry: CachedMarketResource<MonthlyDataset>) {}
+    func cachedMonthly() -> CachedMonthlyResource? { nil }
+    func saveMonthly(_ entry: CachedMonthlyResource) {}
     func cachedManifest() -> CachedMarketResource<MarketManifest>? { nil }
     func saveManifest(_ entry: CachedMarketResource<MarketManifest>) {}
 }
