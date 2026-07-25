@@ -235,6 +235,104 @@ struct PortfolioValuationTests {
         #expect(valuation.history.map(\.totalHeldRecordCount) == [1, 1, 1])
     }
 
+    @Test("History has one anchor at the oldest acquisition's purchase price")
+    func anchorsHistoryAtOldestPurchasePrice() throws {
+        let ounce = Decimal(string: "31.1034768")!
+        let julyThird = utcDate(year: 2026, month: 7, day: 3)
+        let augustTenth = utcDate(year: 2026, month: 8, day: 10)
+        let firstAsset = PortfolioAssetSnapshot(
+            name: "Lingot de juillet",
+            categoryID: "goldBar",
+            metal: .gold,
+            grossWeightGrams: ounce,
+            finenessPermille: 1_000,
+            purchaseCost: 7,
+            purchaseCurrency: .eur,
+            purchaseDate: julyThird
+        )
+        let secondAsset = PortfolioAssetSnapshot(
+            name: "Lingot d'août",
+            categoryID: "goldBar",
+            metal: .gold,
+            grossWeightGrams: ounce,
+            finenessPermille: 1_000,
+            purchaseCost: 13,
+            purchaseCurrency: .eur,
+            purchaseDate: augustTenth
+        )
+        let monthly = MonthlyDataset(
+            unit: MarketUnit(code: .troyOunce, grams: ounce),
+            series: [
+                MonthlySeries(metal: .gold, observations: [
+                    MonthlyObservation(month: "2026-07", prices: ["EUR": 10]),
+                    MonthlyObservation(month: "2026-08", prices: ["EUR": 20]),
+                ]),
+            ]
+        )
+        let market = PortfolioMarketSnapshot(
+            currentQuotes: [makeQuote(metal: .gold, currency: .eur, price: 30)],
+            monthly: monthly
+        )
+        let asOf = utcDate(year: 2026, month: 9, day: 15)
+
+        let assetHistory = PortfolioValuationEngine().valuate(
+            assets: [firstAsset],
+            market: market,
+            historyMonths: nil,
+            asOf: asOf
+        ).history
+        let portfolioHistory = PortfolioValuationEngine().valuate(
+            assets: [firstAsset, secondAsset],
+            market: market,
+            historyMonths: nil,
+            asOf: asOf
+        ).history
+
+        #expect(assetHistory.first?.date == julyThird)
+        #expect(assetHistory.first?.valueEUR == 7)
+        #expect(portfolioHistory.first?.date == julyThird)
+        #expect(portfolioHistory.first?.valueEUR == 7)
+        #expect(portfolioHistory.first?.totalHeldRecordCount == 1)
+        #expect(!portfolioHistory.contains { $0.date == augustTenth })
+    }
+
+    @Test("A current-month acquisition anchors history at its purchase price")
+    func anchorsCurrentMonthHistoryAtPurchasePrice() {
+        let ounce = Decimal(string: "31.1034768")!
+        let purchaseDate = utcDate(year: 2026, month: 9, day: 3)
+        let asset = PortfolioAssetSnapshot(
+            name: "Lingot récent",
+            categoryID: "goldBar",
+            metal: .gold,
+            grossWeightGrams: ounce,
+            finenessPermille: 1_000,
+            purchaseCost: 17,
+            purchaseCurrency: .eur,
+            purchaseDate: purchaseDate
+        )
+        let monthly = MonthlyDataset(
+            unit: MarketUnit(code: .troyOunce, grams: ounce),
+            series: [
+                MonthlySeries(metal: .gold, observations: [
+                    MonthlyObservation(month: "2026-08", prices: ["EUR": 20]),
+                ]),
+            ]
+        )
+        let asOf = utcDate(year: 2026, month: 9, day: 15)
+        let history = PortfolioValuationEngine().valuate(
+            assets: [asset],
+            market: PortfolioMarketSnapshot(
+                currentQuotes: [makeQuote(metal: .gold, currency: .eur, price: 30)],
+                monthly: monthly
+            ),
+            historyMonths: nil,
+            asOf: asOf
+        ).history
+
+        #expect(history.map(\.date) == [purchaseDate, asOf])
+        #expect(history.map(\.valueEUR) == [17, 30])
+    }
+
     @Test("Twelve-month history starts on the first day of the initial calendar month")
     func computesTwelveMonthVisibleStart() throws {
         let start = try #require(
@@ -246,6 +344,39 @@ struct PortfolioValuationTests {
         )
 
         #expect(start == utcDate(year: 2025, month: 8, day: 1))
+    }
+
+    @Test("Full-history chart domain starts on the exact first point")
+    func computesExactFullHistoryStart() throws {
+        let firstPointDate = utcDate(year: 2026, month: 7, day: 3)
+        let start = try #require(
+            PortfolioHistoryPeriod.all.startDate(
+                asOf: utcDate(year: 2026, month: 9, day: 15),
+                earliestHistoryDate: firstPointDate,
+                calendar: utcCalendar
+            )
+        )
+
+        #expect(start == firstPointDate)
+    }
+
+    @Test("A bounded chart domain starts at acquisition when the range includes it")
+    func clampsBoundedDomainToAcquisitionDate() throws {
+        let purchaseDate = utcDate(year: 2026, month: 7, day: 3)
+        let points = [
+            historyPoint(year: 2026, month: 7, day: 3),
+            historyPoint(year: 2026, month: 8, day: 31),
+            historyPoint(year: 2026, month: 9, day: 15),
+        ]
+        let domain = try #require(
+            PortfolioHistoryPeriod.threeMonths.domain(
+                for: points,
+                asOf: utcDate(year: 2026, month: 9, day: 15),
+                calendar: utcCalendar
+            )
+        )
+
+        #expect(domain.lowerBound == purchaseDate)
     }
 
     @Test("Bounded history periods keep only points inside their calendar window")

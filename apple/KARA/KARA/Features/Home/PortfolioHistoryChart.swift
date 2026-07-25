@@ -1,5 +1,6 @@
 import Charts
 import SwiftUI
+import UIKit
 
 struct ValuationHistoryCard: View {
     @Environment(KaraTheme.self) private var theme
@@ -87,16 +88,7 @@ struct ValuationHistoryCard: View {
     }
 
     private func chartDomain(for points: [PortfolioHistoryPoint]) -> ClosedRange<Date>? {
-        guard let end = points.last?.date,
-              let start = selectedPeriod.startDate(
-                  asOf: end,
-                  earliestHistoryDate: history.first?.date
-              ),
-              start <= end
-        else {
-            return nil
-        }
-        return start...end
+        selectedPeriod.domain(for: points, asOf: historyAsOf)
     }
 }
 
@@ -139,10 +131,10 @@ struct PortfolioHistoryChart: View {
             selectionFeedbackTrigger += 1
         }
         .onChange(of: period) {
-            rawSelectedDate = nil
+            endInspection()
         }
         .onDisappear {
-            rawSelectedDate = nil
+            endInspection()
         }
         .accessibilityLabel(Text(LocalizedStringKey(accessibilityLabelKey)))
         .accessibilityIdentifier(accessibilityIdentifier)
@@ -289,16 +281,40 @@ struct PortfolioHistoryChart: View {
                 }
             }
         }
-        .chartXSelection(value: $rawSelectedDate)
-        .chartGesture { proxy in
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    proxy.selectXValue(at: value.location.x)
-                }
-                .onEnded { _ in
-                    rawSelectedDate = nil
-                }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                ChartLongPressOverlay(
+                    minimumDuration: 0.2,
+                    allowableMovement: 10,
+                    onChanged: { location in
+                        selectDate(at: location, proxy: proxy, geometry: geometry)
+                    },
+                    onEnded: endInspection
+                )
+            }
         }
+    }
+
+    private func selectDate(
+        at location: CGPoint,
+        proxy: ChartProxy,
+        geometry: GeometryProxy
+    ) {
+        guard let plotFrame = proxy.plotFrame else { return }
+        let frame = geometry[plotFrame]
+        let plotX = location.x - frame.minX
+        guard plotX >= 0,
+              plotX <= frame.width,
+              let date: Date = proxy.value(atX: plotX)
+        else {
+            return
+        }
+
+        rawSelectedDate = date
+    }
+
+    private func endInspection() {
+        rawSelectedDate = nil
     }
 
     private func laserGradient(progress: CGFloat, opacity: Double) -> LinearGradient {
@@ -367,6 +383,79 @@ struct PortfolioHistoryChart: View {
 
     private func isInitialMonth(_ date: Date) -> Bool {
         Calendar.current.isDate(date, equalTo: domain.lowerBound, toGranularity: .month)
+    }
+}
+
+private struct ChartLongPressOverlay: UIViewRepresentable {
+    let minimumDuration: TimeInterval
+    let allowableMovement: CGFloat
+    let onChanged: (CGPoint) -> Void
+    let onEnded: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onChanged: onChanged, onEnded: onEnded)
+    }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.backgroundColor = .clear
+
+        let recognizer = UILongPressGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleLongPress(_:))
+        )
+        recognizer.minimumPressDuration = minimumDuration
+        recognizer.allowableMovement = allowableMovement
+        recognizer.cancelsTouchesInView = false
+        recognizer.delaysTouchesBegan = false
+        recognizer.delaysTouchesEnded = false
+        recognizer.delegate = context.coordinator
+        view.addGestureRecognizer(recognizer)
+
+        context.coordinator.recognizer = recognizer
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.onChanged = onChanged
+        context.coordinator.onEnded = onEnded
+        context.coordinator.recognizer?.minimumPressDuration = minimumDuration
+        context.coordinator.recognizer?.allowableMovement = allowableMovement
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        weak var recognizer: UILongPressGestureRecognizer?
+        var onChanged: (CGPoint) -> Void
+        var onEnded: () -> Void
+
+        init(
+            onChanged: @escaping (CGPoint) -> Void,
+            onEnded: @escaping () -> Void
+        ) {
+            self.onChanged = onChanged
+            self.onEnded = onEnded
+        }
+
+        @objc func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
+            switch recognizer.state {
+            case .began, .changed:
+                guard let view = recognizer.view else { return }
+                onChanged(recognizer.location(in: view))
+            case .ended, .cancelled, .failed:
+                onEnded()
+            case .possible:
+                break
+            @unknown default:
+                onEnded()
+            }
+        }
+
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
+            true
+        }
     }
 }
 

@@ -126,9 +126,6 @@
         }
       }
     },
-    "18,420 €" : {
-
-    },
     "asset-delete.action.cancel" : {
       "localizations" : {
         "en" : {
@@ -5088,72 +5085,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coffre iCloud indisponible"
-          }
-        }
-      }
-    },
-    "preview.metric.estimated-value" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimated value"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valeur estimée"
-          }
-        }
-      }
-    },
-    "preview.metric.unrealized-gain" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unrealized gain"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plus-value latente"
-          }
-        }
-      }
-    },
-    "preview.metric.updated-today" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updated today"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mis à jour aujourd’hui"
-          }
-        }
-      }
-    },
-    "preview.primary-action.unavailable" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unavailable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Indisponible"
           }
         }
       }

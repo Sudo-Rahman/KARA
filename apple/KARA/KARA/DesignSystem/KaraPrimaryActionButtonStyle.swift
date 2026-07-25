@@ -249,27 +249,3 @@ private struct KaraPrimaryActionGlassEffect: ViewModifier {
         }
     }
 }
-
-#Preview("KARA primary actions") {
-    VStack(spacing: KaraSpacing.large) {
-        Button("classification.continue") {}
-            .buttonStyle(.karaPrimaryAction)
-
-        Button {} label: {
-            ProgressView()
-        }
-        .buttonStyle(.karaPrimaryAction(isLoading: true))
-        .disabled(true)
-
-        Button("preview.primary-action.unavailable") {}
-            .buttonStyle(.karaPrimaryAction)
-            .disabled(true)
-
-        Button("vault.action.simulate") {}
-            .buttonStyle(.karaSecondaryAction)
-    }
-    .padding(KaraSpacing.large)
-    .background(Color("KaraVoid"))
-    .environment(KaraTheme())
-    .preferredColorScheme(.dark)
-}

@@ -183,16 +183,3 @@ private struct OnboardingTitlePage: View {
         .padding(.horizontal, 39)
     }
 }
-
-#Preview("Reference fidelity") {
-    OnboardingView(mode: .firstLaunch, onFinish: { _ in }, onSkip: { _ in })
-        .environment(KaraTheme())
-        .preferredColorScheme(.dark)
-}
-
-#Preview("Accessibility text") {
-    OnboardingView(mode: .firstLaunch, onFinish: { _ in }, onSkip: { _ in })
-        .environment(KaraTheme())
-        .environment(\.dynamicTypeSize, .accessibility3)
-        .preferredColorScheme(.dark)
-}

@@ -13,21 +13,12 @@ struct AppShellView: View {
     ) private var assets: [Asset]
     @Query(sort: \AssetAttachment.createdAt, order: .reverse) private var attachments: [AssetAttachment]
 
-    private let analyzer: any AssetAnalyzing
+    private let analyzer: any AssetAnalyzing = AppleAssetAnalysisService()
     private let valuationEngine = PortfolioValuationEngine()
 
-    @State private var router: AppRouter
-    @State private var marketStore: MarketDataStore
+    @State private var router = AppRouter()
+    @State private var marketStore = MarketDataStore.live()
     @State private var valuationAsOf = Date()
-
-    init(
-        analyzer: any AssetAnalyzing = AppleAssetAnalysisService(),
-        marketStore: MarketDataStore? = nil
-    ) {
-        self.analyzer = analyzer
-        _router = State(initialValue: AppRouter())
-        _marketStore = State(initialValue: marketStore ?? MarketDataStore.live())
-    }
 
     var body: some View {
         @Bindable var router = router
@@ -221,123 +212,4 @@ private struct MissingAssetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme.background.ignoresSafeArea())
     }
-}
-
-#Preview("Vault with one asset") {
-    let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(
-        for: Asset.self,
-        AssetAttachment.self,
-        SavedSeller.self,
-        StorageLocation.self,
-        configurations: configuration
-    )
-    let asset = Asset(
-        name: "Lingotin 20 g",
-        category: .bar,
-        quantity: 1,
-        purchaseDate: Date.now.addingTimeInterval(-86_400 * 180),
-        metal: .gold,
-        weightGrams: 20,
-        finenessPermille: 999.9,
-        pricePaidMinorUnits: 120_000,
-        currencyCode: "EUR",
-        storageLocationName: "Coffre principal",
-        acquisitionMethod: .purchase,
-        tags: ["Long terme"]
-    )
-    container.mainContext.insert(asset)
-
-    return AppShellView(
-        analyzer: PreviewAssetAnalyzer(),
-        marketStore: MarketDataStore(
-            client: PreviewMarketDataClient(),
-            cache: PreviewMarketDataCache()
-        )
-    )
-    .environment(KaraTheme())
-    .environment(PrivacyPreferences(defaults: UserDefaults(suiteName: "kara.preview.vault")!))
-    .modelContainer(container)
-    .preferredColorScheme(.dark)
-}
-
-private struct PreviewAssetAnalyzer: AssetAnalyzing {
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
-    }
-
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
-    }
-}
-
-private struct PreviewMarketDataClient: MarketDataClient {
-    func bootstrap(etag: String?) async throws -> MarketFetchResult<MarketBootstrap> {
-        var spots: [SpotQuote] = []
-        for pair in MarketBootstrap.expectedPairs {
-            guard case let .modified(quote, _) = try await spot(for: pair, etag: nil) else {
-                throw CancellationError()
-            }
-            spots.append(quote)
-        }
-        let manifest = MarketManifest(
-            schemaVersion: 1,
-            datasetId: "precious-metals-monthly",
-            dataVersion: "preview",
-            publishedAt: .now,
-            metals: MarketMetal.allCases,
-            coverage: .init(from: "2025-01", through: "2026-07"),
-            currencies: ["EUR": .init(from: "2025-01", through: "2026-07")],
-            file: .init(url: "/v1/metals-monthly.json", sha256: "preview", bytes: 0)
-        )
-        return .modified(MarketBootstrap(manifest: manifest, spots: spots), etag: nil)
-    }
-
-    func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote> {
-        let ouncePrice: Decimal = switch pair.metal {
-        case .gold: 2_247.80
-        case .silver: 29.40
-        case .platinum: 1_020
-        case .palladium: 980
-        }
-        return .modified(
-            SpotQuote(
-                metal: pair.metal,
-                currency: pair.currency,
-                price: ouncePrice,
-                unit: MarketUnit(code: .troyOunce, grams: 31.103_476_8),
-                sourceUpdatedAt: .now
-            ),
-            etag: nil
-        )
-    }
-
-    func monthly(etag: String?) async throws -> MarketFetchResult<MonthlyDataset> {
-        .modified(
-            MonthlyDataset(
-                unit: MarketUnit(code: .troyOunce, grams: 31.103_476_8),
-                series: []
-            ),
-            etag: "\"preview\""
-        )
-    }
-
-    func manifest(etag: String?) async throws -> MarketFetchResult<MarketManifest> {
-        .notModified(etag: nil)
-    }
-}
-
-private actor PreviewMarketDataCache: MarketDataCaching {
-    func cachedBootstrap() -> CachedMarketResource<MarketBootstrap>? { nil }
-    func saveBootstrap(_ entry: CachedMarketResource<MarketBootstrap>) {}
-    func cachedSpot(for pair: SpotPair) -> CachedMarketResource<SpotQuote>? { nil }
-    func saveSpot(_ entry: CachedMarketResource<SpotQuote>, for pair: SpotPair) {}
-    func cachedMonthly() -> CachedMonthlyResource? { nil }
-    func saveMonthly(_ entry: CachedMonthlyResource) {}
-    func cachedManifest() -> CachedMarketResource<MarketManifest>? { nil }
-    func saveManifest(_ entry: CachedMarketResource<MarketManifest>) {}
 }

@@ -259,28 +259,3 @@ extension KaraMetric where Detail == EmptyView {
         )
     }
 }
-
-#Preview("KARA metrics") {
-    VStack(spacing: KaraSpacing.medium) {
-        KaraCard {
-            KaraMetric(title: "preview.metric.estimated-value", systemImage: "sparkles") {
-                Text("18,420 €")
-                    .monospacedDigit()
-            } detail: {
-                Text("preview.metric.updated-today")
-            }
-        }
-
-        KaraCard {
-            KaraMetric(title: "preview.metric.unrealized-gain", systemImage: "chart.line.uptrend.xyaxis") {
-                Text("+2,115 €")
-                    .monospacedDigit()
-                    .foregroundStyle(.green)
-            }
-        }
-    }
-    .padding(KaraSpacing.large)
-    .background(Color("KaraVoid").ignoresSafeArea())
-    .environment(KaraTheme())
-    .preferredColorScheme(.dark)
-}

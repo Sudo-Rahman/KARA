@@ -160,30 +160,53 @@ nonisolated enum PortfolioHistoryPeriod: String, CaseIterable, Hashable, Sendabl
         earliestHistoryDate: Date?,
         calendar: Calendar = .current
     ) -> Date? {
+        let periodStart: Date?
         switch self {
         case .threeMonths:
-            return calendar.date(
+            periodStart = calendar.date(
                 byAdding: .month,
                 value: -2,
                 to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
             )
         case .sixMonths:
-            return calendar.date(
+            periodStart = calendar.date(
                 byAdding: .month,
                 value: -5,
                 to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
             )
         case .twelveMonths:
-            return calendar.date(
+            periodStart = calendar.date(
                 byAdding: .month,
                 value: -11,
                 to: calendar.dateInterval(of: .month, for: asOf)?.start ?? asOf
             )
         case .all:
-            return earliestHistoryDate.map {
-                calendar.dateInterval(of: .month, for: $0)?.start ?? $0
-            }
+            periodStart = nil
         }
+
+        guard let earliestHistoryDate else { return periodStart }
+        guard let periodStart else { return earliestHistoryDate }
+        return max(periodStart, earliestHistoryDate)
+    }
+
+    func domain(
+        for points: [PortfolioHistoryPoint],
+        asOf: Date,
+        calendar: Calendar = .current
+    ) -> ClosedRange<Date>? {
+        guard let firstPointDate = points.first?.date,
+              let end = points.last?.date,
+              let start = startDate(
+                  asOf: asOf,
+                  earliestHistoryDate: firstPointDate,
+                  calendar: calendar
+              ),
+              start <= end
+        else {
+            return nil
+        }
+
+        return start...end
     }
 
     func filter(
@@ -469,6 +492,41 @@ nonisolated struct PortfolioValuationEngine: Sendable {
         guard requestedPointCount.map({ $0 > 0 }) ?? true, !assets.isEmpty else { return [] }
         var points: [PortfolioHistoryPoint] = []
         let calendar = Self.utcCalendar
+
+        if requestedPointCount != 1,
+           let earliestPurchaseDate = assets
+               .compactMap(\.purchaseDate)
+               .filter({ $0 < asOf })
+               .min()
+        {
+            let earliestPurchasedAssets = assets.filter { $0.purchaseDate == earliestPurchaseDate }
+            let valuationsByAssetID = Dictionary(
+                uniqueKeysWithValues: currentValuations.map { ($0.assetID, $0) }
+            )
+            let purchaseCostsEUR = earliestPurchasedAssets.compactMap { asset -> Decimal? in
+                guard let purchaseCost = asset.purchaseCost,
+                      purchaseCost >= 0,
+                      let purchaseCurrency = asset.purchaseCurrency
+                else {
+                    return nil
+                }
+
+                if purchaseCurrency == .eur {
+                    return purchaseCost
+                }
+                return valuationsByAssetID[asset.id]?.purchaseCostEUR
+            }
+
+            if !purchaseCostsEUR.isEmpty {
+                points.append(PortfolioHistoryPoint(
+                    date: earliestPurchaseDate,
+                    valueEUR: purchaseCostsEUR.sum,
+                    valuedRecordCount: purchaseCostsEUR.count,
+                    totalHeldRecordCount: earliestPurchasedAssets.count,
+                    isCurrent: false
+                ))
+            }
+        }
 
         if requestedPointCount != 1, let monthly = market.monthly {
             let currentMonth = Self.monthIdentifier(for: asOf, calendar: calendar)

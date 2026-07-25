@@ -5,7 +5,6 @@
 //  Created by sr-71 on 7/18/26.
 //
 
-import SwiftData
 import SwiftUI
 
 struct ContentView: View {
@@ -78,20 +77,4 @@ private struct PrivacyShieldView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("privacy.shield.accessibility-label"))
     }
-}
-
-#Preview {
-    ContentView()
-        .environment(
-            AppFlow(
-                defaults: UserDefaults(suiteName: "kara.preview")!,
-                arguments: ["-KARAResetOnboarding"]
-            )
-        )
-        .environment(KaraTheme())
-        .environment(PrivacyPreferences(defaults: UserDefaults(suiteName: "kara.preview.privacy")!))
-        .modelContainer(
-            for: [Asset.self, AssetAttachment.self, SavedSeller.self, StorageLocation.self],
-            inMemory: true
-        )
 }
