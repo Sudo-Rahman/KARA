@@ -20,15 +20,31 @@ nonisolated enum MarketDataClientError: Error, Equatable, Sendable {
 nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked Sendable {
     static let productionBaseURL = URL(string: "https://kara.rahman-dev.ovh")!
 
-    private let baseURL: URL
-    private let session: URLSession
+    private static var configuredBaseURL: URL {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "KARAAPIBaseURL") as? String,
+              let url = URL(string: value),
+              url.scheme == "https" || url.host == "127.0.0.1"
+        else { return productionBaseURL }
+        return url
+    }
 
-    init(
-        baseURL: URL = URLSessionMarketDataClient.productionBaseURL,
-        session: URLSession = .shared
-    ) {
+    private let baseURL: URL
+    private let transport: any APIDataTransport
+
+    init() {
+        let baseURL = Self.configuredBaseURL
         self.baseURL = baseURL
-        self.session = session
+        self.transport = AttestedAPITransport(baseURL: baseURL)
+    }
+
+    init(baseURL: URL, session: URLSession) {
+        self.baseURL = baseURL
+        self.transport = URLSessionAPIDataTransport(session: session)
+    }
+
+    init(baseURL: URL, transport: any APIDataTransport) {
+        self.baseURL = baseURL
+        self.transport = transport
     }
 
     func spot(for pair: SpotPair, etag: String?) async throws -> MarketFetchResult<SpotQuote> {
@@ -90,10 +106,7 @@ nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
 
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw MarketDataClientError.nonHTTPResponse
-        }
+        let (data, httpResponse) = try await transport.data(for: request)
         let responseETag = httpResponse.value(forHTTPHeaderField: "ETag")
         switch httpResponse.statusCode {
         case 200:

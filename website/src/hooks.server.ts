@@ -1,7 +1,10 @@
+import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle, ServerInit } from '@sveltejs/kit';
 import '$lib/config';
+import { authenticateAppAttestRequest } from '$lib/server/app-attest/middleware';
+import { appAttestService } from '$lib/server/app-attest/runtime';
 import { startMetalsDataRefresh } from '$lib/server/metals-data/service';
-import { getTextDirection } from '$lib/paraglide/runtime';
+import { deLocalizeUrl, getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 
 export const init: ServerInit = () => {
@@ -16,4 +19,12 @@ const handleParaglide: Handle = ({ event, resolve }) => paraglideMiddleware(even
 	});
 });
 
-export const handle: Handle = handleParaglide;
+const handleAppAttest: Handle = async ({ event, resolve }) => {
+	if (deLocalizeUrl(event.url).pathname.startsWith('/v1/')) {
+		const rejection = await authenticateAppAttestRequest(event.request, appAttestService);
+		if (rejection) return rejection;
+	}
+	return resolve(event);
+};
+
+export const handle: Handle = sequence(handleAppAttest, handleParaglide);
