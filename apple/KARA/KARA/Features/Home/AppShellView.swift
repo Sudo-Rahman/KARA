@@ -5,6 +5,7 @@ struct AppShellView: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
 
     @Query(
         filter: #Predicate<Asset> { $0.deletedAt == nil },
@@ -13,7 +14,7 @@ struct AppShellView: View {
     ) private var assets: [Asset]
     @Query(sort: \AssetAttachment.createdAt, order: .reverse) private var attachments: [AssetAttachment]
 
-    private let analyzer: any AssetAnalyzing = AppleAssetAnalysisService()
+    private let analyzer: any AssetAnalyzing = RemoteFirstAssetAnalysisService()
     private let valuationEngine = PortfolioValuationEngine()
 
     @State private var router = AppRouter()
@@ -109,6 +110,8 @@ struct AppShellView: View {
             } else {
                 MissingAssetView()
             }
+        case .settings:
+            SettingsView()
         }
     }
 
@@ -142,6 +145,7 @@ struct AppShellView: View {
             AssetCreationFlowView(
                 state: AssetCreationState(
                     analyzer: analyzer,
+                    analysisPreferences: analysisPreferences,
                     saver: SwiftDataAssetRepository(modelContext: modelContext)
                 )
             )

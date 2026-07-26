@@ -21,6 +21,19 @@ Le registre App Attest nécessite également quatre variables privées :
 - `APP_ATTEST_TEAM_ID` : identifiant Apple Developer, actuellement `LBPZB5S37F` ;
 - `APP_ATTEST_BUNDLE_ID` : bundle iOS, actuellement `com.karaprivate.KARA` ;
 - `APP_ATTEST_ENVIRONMENT` : `development` sur le backend de développement et `production` sur le backend TestFlight/App Store.
+- `APP_ATTEST_RATE_LIMIT_HMAC_SECRET` : secret base64 d’au moins 32 octets pour pseudonymiser les IP des routes publiques ;
+- `APP_ATTEST_RATE_LIMIT_REDIS_PREFIX` : espace Redis optionnel pour ces limites.
+
+L’extraction assistée est coupée par défaut et nécessite :
+
+- `ASSET_EXTRACTION_ENABLED=true` : interrupteur serveur, à laisser à `false` tant que le déploiement n’est pas prêt ;
+- `OPENAI_API_KEY` : clé d’un projet OpenAI isolé, restreinte à l’écriture sur Responses et à GPT‑5.6 Sol ;
+- `ASSET_EXTRACTION_HMAC_SECRET` : secret base64 d’au moins 32 octets, généré avec `openssl rand -base64 32` et distinct entre staging et production ;
+- `ASSET_EXTRACTION_REDIS_PREFIX` : espace de clés optionnel, utile si plusieurs environnements partagent Redis.
+
+Le secret HMAC pseudonymise séparément l’installation App Attest et l’adresse IP.
+La clé Apple brute, l’adresse IP brute, les médias et les données extraites ne
+sont jamais utilisés comme clés Redis et ne sont jamais journalisés.
 
 En développement, les valeurs absentes produisent des CTA désactivés et une mention « Bientôt disponible ». Une configuration incomplète ou invalide bloque le build de production.
 
@@ -67,6 +80,17 @@ configurer aucun argument de build. Variables requises :
 - `APP_ATTEST_TEAM_ID` ;
 - `APP_ATTEST_BUNDLE_ID` ;
 - `APP_ATTEST_ENVIRONMENT`.
+- `APP_ATTEST_RATE_LIMIT_HMAC_SECRET` ;
+- `ASSET_EXTRACTION_ENABLED` ;
+- `OPENAI_API_KEY` et `ASSET_EXTRACTION_HMAC_SECRET` lorsque l’extraction est activée ;
+- `BODY_SIZE_LIMIT=11534336` ;
+- `ADDRESS_HEADER=X-Forwarded-For` et `XFF_DEPTH=1` uniquement si la topologie Dokploy comporte exactement un proxy de confiance qui écrase cet en-tête.
+
+Configurer également la limite de corps du proxy Dokploy à 11 Mio. Ne jamais
+faire confiance à un `X-Forwarded-For` transmis directement par Internet : si la
+profondeur change, ajuster `XFF_DEPTH` avant d’utiliser les quotas IP.
+Configurer la rétention des journaux applicatifs Dokploy à 30 jours maximum et
+vérifier que les sauvegardes ou exports de logs respectent la même échéance.
 
 `METALS_DATA_MANIFEST_URL` reste optionnelle. `HOST`, `PORT`, `NODE_ENV` et
 `SHUTDOWN_TIMEOUT` possèdent déjà des valeurs adaptées dans l'image. Une
@@ -94,6 +118,7 @@ docker run --rm --publish 3000:3000 \
 - `/v1/manifest.json` : version et couverture du snapshot mensuel, protégé par App Attest ;
 - `/v1/metals-monthly.json` : historique mensuel complet, protégé par App Attest ;
 - `/v1/metals-spot.json?metal=XAU&currency=EUR` : cours temps réel par once troy, protégé par App Attest.
+- `POST /v1/asset-extraction?kind=object-photo|invoice&locale=<BCP47>` : extraction structurée d’un JPEG ou PDF, protégée par App Attest.
 
 ## App Attest et Redis
 
@@ -108,6 +133,12 @@ Dans Dokploy, utiliser une instance non exposée à Internet, un volume persista
 la journalisation AOF (`appendonly yes`, `appendfsync everysec`) et une sauvegarde
 régulière. Une panne Redis rend `/readyz` indisponible et les routes protégées
 répondent `503`, sans provoquer de rotation de clé côté iOS.
+
+Les routes publiques d’enrôlement sont également en refus fermé et limitées par
+IP pseudonymisée : 30 challenges par minute, puis 5 inscriptions par minute et
+20 inscriptions par heure. Elles renvoient `app_attest_rate_limited` avec
+`Retry-After` lorsqu’une fenêtre est dépassée. `/readyz` vérifie ce limiteur et,
+si l’extraction est activée, le Redis de quotas d’analyse.
 
 Une perte réelle du registre renvoie `unknown_app_attest_key`. L'application crée
 alors automatiquement une nouvelle clé et refait l'attestation une seule fois.
@@ -136,6 +167,62 @@ bypass sur le backend de production.
 Déployer dans l'ordre : Redis, endpoints `/auth/app-attest/**`, version iOS
 compatible, puis protection de `/v1/**`. Le dépôt étant en pré-lancement, la
 protection est actuellement activée sans mode de compatibilité hérité.
+
+## Extraction d’actifs et factures
+
+La route accepte un corps binaire brut et exige un `Content-Length` exact :
+
+- `kind=object-photo` : `image/jpeg`, 4 Mio maximum et 2048 px maximum sur chaque axe ;
+- `kind=invoice` : `application/pdf`, 10 Mio maximum, de 1 à 6 pages, document non chiffré ;
+- `locale` : balise BCP 47 utilisée uniquement pour interpréter les dates et séparateurs imprimés.
+
+Le middleware App Attest lit le flux réseau une seule fois, vérifie le SHA‑256
+signé, puis expose en mémoire le corps et l’identité vérifiée à la route. Le
+client ne peut fournir ni prompt, ni modèle, ni schéma, ni catalogue, ni
+paramètre OpenAI.
+
+Le backend envoie le média inline à la Responses API avec `gpt-5.6-sol`,
+`reasoning.effort: none`, `store: false`, `max_output_tokens: 1200`, un timeout
+de 45 secondes et aucun retry. Images et pages PDF utilisent explicitement le
+niveau de détail `high`. Structured Outputs impose un schéma strict, puis Zod
+valide une seconde fois les dates, enums, bornes, identifiants de preset et le
+montant, ainsi que la cohérence catégorie/métal du preset choisi. Le backend
+convertit ensuite le montant majeur en unités mineures de façon déterministe.
+Lorsque la plateforme serveur signale l’abandon de la requête cliente, ce signal
+est propagé à OpenAI. Cette notification n’est pas garantie après l’envoi du
+média ; l’appel reste alors borné par le timeout maximal de 45 secondes. Les
+verrous Redis de clé App Attest et d’IP sont libérés en fin de traitement et
+expirent automatiquement après 60 secondes si cette libération ne peut aboutir.
+
+Les garde-fous Redis sont atomiques et glissants. Les limites dites « par
+installation » sont techniquement appliquées à la clé App Attest attestée :
+
+- 10 tentatives sur 60 secondes ;
+- 20 requêtes valides réservées pour OpenAI sur 24 heures ;
+- une analyse simultanée, avec verrou expirant automatiquement ;
+- quarantaine de 7 jours pour cette clé dès la 100e tentative sur 24 heures ;
+- par IP pseudonymisée, 60 extractions par minute, 100 réservations OpenAI sur
+  24 heures et au maximum 3 appels OpenAI simultanés ;
+- quarantaine de 7 jours pour l’IP dès sa 100e tentative sur 24 heures, même si
+  les tentatives utilisent des clés App Attest différentes.
+
+Toutes les tentatives attestées, y compris les entrées rejetées, alimentent le
+compteur d’abus de la clé App Attest et celui de l’IP. Une panne Redis refuse la
+requête. Les réponses de quota et de quarantaine incluent `Retry-After`. Toutes
+les réponses de la route portent
+`Cache-Control: no-store`, `X-Content-Type-Options: nosniff` et `X-Request-Id`.
+
+Pour ces quotas, Redis conserve uniquement les pseudonymes HMAC d’installation
+et d’IP avec les marqueurs techniques associés. Les fenêtres et réservations
+expirent au plus tard après 24 heures ; un marqueur de quarantaine associé à une
+clé App Attest ou à une IP peut être conservé 7 jours.
+
+Les journaux techniques Kara sont conservés 30 jours maximum. Ils contiennent
+uniquement l’identifiant de requête, le type et la taille du média, le nombre de
+pages, le statut, la latence et les compteurs de tokens. Ils ne contiennent
+jamais le média, le texte OCR, le nom de fichier, les champs extraits, le numéro
+de série, le keyId App Attest, l’adresse IP, leurs pseudonymes HMAC, les headers
+App Attest ou la réponse OpenAI brute.
 
 ## Cache des métaux
 

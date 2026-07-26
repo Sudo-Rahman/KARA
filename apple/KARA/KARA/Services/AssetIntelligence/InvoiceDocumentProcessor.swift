@@ -5,6 +5,7 @@ import Vision
 
 nonisolated struct PreparedInvoiceDocument: Equatable, Sendable {
     let originalPDFData: Data
+    let analysisPDFData: Data
     let pageCount: Int
     let selectedPageIndices: [Int]
     let extractedText: String
@@ -28,7 +29,10 @@ nonisolated struct InvoiceDocumentProcessor: Sendable {
         self.maximumPageCount = max(1, maximumPageCount)
     }
 
-    func prepare(pdfData: Data) async throws -> PreparedInvoiceDocument {
+    func prepare(
+        pdfData: Data,
+        includingOCR: Bool = true
+    ) async throws -> PreparedInvoiceDocument {
         try Task.checkCancellation()
         guard let document = PDFDocument(data: pdfData) else {
             throw MediaDocumentError.invalidPDF
@@ -50,18 +54,26 @@ nonisolated struct InvoiceDocumentProcessor: Sendable {
         renderedImages.reserveCapacity(indices.count)
         recognizedTexts.reserveCapacity(indices.count)
 
-        for index in indices {
-            try Task.checkCancellation()
-            guard let page = document.page(at: index) else {
-                throw MediaDocumentError.invalidPDF
+        if includingOCR {
+            for index in indices {
+                try Task.checkCancellation()
+                guard let page = document.page(at: index) else {
+                    throw MediaDocumentError.invalidPDF
+                }
+                let rendered = try Self.render(page: page)
+                renderedImages.append(rendered)
+                recognizedTexts.append(try await ocrRecognizer.recognizeText(in: rendered))
             }
-            let rendered = try Self.render(page: page)
-            renderedImages.append(rendered)
-            recognizedTexts.append(try await ocrRecognizer.recognizeText(in: rendered))
         }
 
         return PreparedInvoiceDocument(
             originalPDFData: pdfData,
+            analysisPDFData: try Self.analysisPDFData(
+                document: document,
+                selectedPageIndices: indices,
+                maximumPageCount: maximumPageCount,
+                originalData: pdfData
+            ),
             pageCount: document.pageCount,
             selectedPageIndices: indices,
             extractedText: pageTexts
@@ -74,6 +86,27 @@ nonisolated struct InvoiceDocumentProcessor: Sendable {
                 .filter { !$0.isEmpty }
                 .joined(separator: "\n\n")
         )
+    }
+
+    private static func analysisPDFData(
+        document: PDFDocument,
+        selectedPageIndices: [Int],
+        maximumPageCount: Int,
+        originalData: Data
+    ) throws -> Data {
+        guard document.pageCount > maximumPageCount else { return originalData }
+
+        let analysisDocument = PDFDocument()
+        for (destinationIndex, sourceIndex) in selectedPageIndices.enumerated() {
+            guard let page = document.page(at: sourceIndex)?.copy() as? PDFPage else {
+                throw MediaDocumentError.invalidPDF
+            }
+            analysisDocument.insert(page, at: destinationIndex)
+        }
+        guard analysisDocument.pageCount == selectedPageIndices.count,
+              let data = analysisDocument.dataRepresentation()
+        else { throw MediaDocumentError.encodingFailed }
+        return data
     }
 
     nonisolated static func selectedPageIndices(

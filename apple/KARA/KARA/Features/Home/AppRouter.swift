@@ -5,6 +5,7 @@ enum AppRoute: Hashable {
     case inventory
     case assetDetail(UUID)
     case assetDocuments(UUID)
+    case settings
 }
 
 enum AppSheetDestination: Hashable, Identifiable {
@@ -54,6 +55,10 @@ final class AppRouter {
 
     func showDocuments(for assetID: UUID) {
         path.append(.assetDocuments(assetID))
+    }
+
+    func showSettings() {
+        path.append(.settings)
     }
 
     func presentEditor(for assetID: UUID) {

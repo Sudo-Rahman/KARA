@@ -12,6 +12,7 @@ struct ObjectPhotoStepView: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
 
     let state: AssetCreationState
     let onContinue: () -> Void
@@ -270,16 +271,25 @@ struct ObjectPhotoStepView: View {
             switch phase {
             case .idle:
                 Image(systemName: "photo")
-                Text("asset-flow.analysis.ready")
+                Text(
+                    analysisPreferences.isEnabled
+                        ? "asset-flow.analysis.ready"
+                        : "asset-flow.analysis.disabled"
+                )
             case .analyzing:
                 ProgressView()
                     .controlSize(.small)
                 Text("asset-flow.analysis.in-progress")
-            case .completed:
+            case let .completed(source):
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(theme.goldBright)
-                Text("asset-flow.analysis.completed")
-            case .unavailable:
+                switch source {
+                case .online:
+                    Text("asset-flow.analysis.completed-online")
+                case .offline:
+                    Text("asset-flow.analysis.completed-offline")
+                }
+            case .failed:
                 Image(systemName: "pencil.and.list.clipboard")
                 Text("asset-flow.analysis.manual")
             }
@@ -294,10 +304,16 @@ struct ObjectPhotoStepView: View {
 
     private func analysisAccessibilityValue(_ phase: AssetAnalysisPhase) -> Text {
         switch phase {
-        case .idle: Text("asset-flow.analysis.ready")
+        case .idle:
+            Text(
+                analysisPreferences.isEnabled
+                    ? "asset-flow.analysis.ready"
+                    : "asset-flow.analysis.disabled"
+            )
         case .analyzing: Text("asset-flow.analysis.in-progress")
-        case .completed: Text("asset-flow.analysis.completed")
-        case .unavailable: Text("asset-flow.analysis.manual")
+        case .completed(.online): Text("asset-flow.analysis.completed-online")
+        case .completed(.offline): Text("asset-flow.analysis.completed-offline")
+        case .failed: Text("asset-flow.analysis.manual")
         }
     }
 

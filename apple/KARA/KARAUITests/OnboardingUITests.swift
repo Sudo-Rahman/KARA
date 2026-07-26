@@ -6,12 +6,15 @@ final class OnboardingUITests: XCTestCase {
     }
 
     @MainActor
-    func testPrimaryButtonCompletesAllThreeActsInFrench() {
+    func testPrimaryButtonCompletesAllFourActsInFrench() {
         let app = launch(language: "fr")
         let action = app.buttons["onboarding.primary.action"]
 
         XCTAssertTrue(action.waitForExistence(timeout: 10))
         XCTAssertEqual(action.label, "Commencer")
+        action.tap()
+
+        XCTAssertTrue(waitForLabel("Continuer", on: action))
         action.tap()
 
         XCTAssertTrue(waitForLabel("Continuer", on: action))
@@ -47,6 +50,8 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(action.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Know what\nyou hold."].exists)
         XCTAssertTrue(app.staticTexts["See what it’s worth."].exists)
+        action.tap()
+        XCTAssertTrue(waitForLabel("Continue", on: action))
         action.tap()
         XCTAssertTrue(waitForLabel("Continue", on: action))
         action.tap()

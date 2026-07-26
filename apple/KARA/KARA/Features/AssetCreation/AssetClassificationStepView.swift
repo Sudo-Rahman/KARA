@@ -17,8 +17,8 @@ struct AssetClassificationStepView: View {
             title: "classification.title",
             message: "classification.body"
         ) {
-            if state.objectAnalysisPhase == .completed || state.invoiceAnalysisPhase == .completed {
-                Label("classification.ai-prefill", systemImage: "apple.intelligence")
+            if state.objectAnalysisPhase.isCompleted || state.invoiceAnalysisPhase.isCompleted {
+                Label("classification.ai-prefill", systemImage: "sparkles")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(theme.goldBright)
                     .padding(.horizontal, KaraSpacing.medium)

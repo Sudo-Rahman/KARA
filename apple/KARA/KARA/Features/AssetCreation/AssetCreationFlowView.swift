@@ -3,6 +3,7 @@ import SwiftUI
 struct AssetCreationFlowView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(KaraTheme.self) private var theme
+    @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
 
     @State private var state: AssetCreationState
     @State private var router = AssetCreationRouter()
@@ -53,6 +54,9 @@ struct AssetCreationFlowView: View {
         }
         .onDisappear {
             state.cancelAllWork()
+        }
+        .onChange(of: analysisPreferences.isEnabled) { _, _ in
+            state.analysisPreferenceDidChange()
         }
     }
 

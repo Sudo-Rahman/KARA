@@ -4,7 +4,7 @@ import Testing
 @Suite("Onboarding state")
 struct OnboardingFlowTests {
     @Test
-    func advanceTraversesExactlyThreeSteps() {
+    func advanceTraversesExactlyFourSteps() {
         var state = OnboardingFlowState()
 
         #expect(state.step == .revelation)
@@ -12,16 +12,18 @@ struct OnboardingFlowTests {
         #expect(state.step == .organization)
         #expect(state.advance() == .advanced(.privacy))
         #expect(state.step == .privacy)
+        #expect(state.advance() == .advanced(.intelligence))
+        #expect(state.step == .intelligence)
         #expect(state.advance() == .completed)
-        #expect(state.step == .privacy)
+        #expect(state.step == .intelligence)
     }
 
     @Test
     func buttonAndSwipeUseTheSameSelectionState() {
         var state = OnboardingFlowState()
 
-        state.select(.privacy)
-        #expect(state.step == .privacy)
+        state.select(.intelligence)
+        #expect(state.step == .intelligence)
         #expect(state.advance() == .completed)
     }
 

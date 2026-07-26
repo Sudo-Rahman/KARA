@@ -128,6 +128,22 @@ struct AssetDocumentTests {
 
     @Test
     @MainActor
+    func normalizedObjectJPEGAdaptsCompressionToTheUploadLimit() throws {
+        let noisyImage = makeHighEntropyImage(pixelDimension: 800)
+
+        let data = try MediaDocumentFactory.normalizedObjectJPEG(
+            from: noisyImage,
+            maxPixelDimension: 800,
+            compressionQuality: 0.9,
+            maxByteCount: 100_000
+        )
+
+        #expect(data.count <= 100_000)
+        #expect(data.starts(with: [0xFF, 0xD8]))
+    }
+
+    @Test
+    @MainActor
     func importedImagesAreNormalizedToPDF() throws {
         let imageData = try #require(makeImage(color: .systemGreen).pngData())
 
@@ -157,8 +173,25 @@ struct AssetDocumentTests {
         #expect(prepared.originalPDFData == source)
         #expect(prepared.pageCount == 8)
         #expect(prepared.selectedPageIndices == [0, 1, 2, 5, 6, 7])
+        #expect(PDFDocument(data: prepared.analysisPDFData)?.pageCount == 6)
         #expect(prepared.renderedPageImages.count == 6)
         #expect(prepared.ocrText.components(separatedBy: "texte OCR").count - 1 == 6)
+    }
+
+    @Test
+    @MainActor
+    func remoteInvoicePreparationDoesNotDependOnDeviceOCR() async throws {
+        let source = makeImageOnlyPDF(pageCount: 2)
+        let processor = InvoiceDocumentProcessor(ocrRecognizer: FailingInvoiceOCR())
+
+        let prepared = try await processor.prepare(
+            pdfData: source,
+            includingOCR: false
+        )
+
+        #expect(prepared.analysisPDFData == source)
+        #expect(prepared.renderedPageImages.isEmpty)
+        #expect(prepared.ocrText.isEmpty)
     }
 
     @MainActor
@@ -167,6 +200,34 @@ struct AssetDocumentTests {
             color.setFill()
             context.fill(CGRect(x: 0, y: 0, width: 120, height: 180))
         }
+    }
+
+    @MainActor
+    private func makeHighEntropyImage(pixelDimension: Int) -> UIImage {
+        var state: UInt64 = 0x4B_41_52_41
+        var pixels = [UInt8](repeating: 0, count: pixelDimension * pixelDimension * 4)
+        for offset in stride(from: 0, to: pixels.count, by: 4) {
+            state = state &* 6_364_136_223_846_793_005 &+ 1
+            pixels[offset] = UInt8(truncatingIfNeeded: state >> 24)
+            pixels[offset + 1] = UInt8(truncatingIfNeeded: state >> 32)
+            pixels[offset + 2] = UInt8(truncatingIfNeeded: state >> 40)
+            pixels[offset + 3] = 255
+        }
+        let provider = CGDataProvider(data: Data(pixels) as CFData)!
+        let image = CGImage(
+            width: pixelDimension,
+            height: pixelDimension,
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            bytesPerRow: pixelDimension * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
+        return UIImage(cgImage: image)
     }
 
     @MainActor
@@ -191,5 +252,11 @@ private struct StubInvoiceOCR: InvoiceDocumentOCRRecognizing {
 
     func recognizeText(in imageData: Data) async throws -> String {
         text
+    }
+}
+
+private struct FailingInvoiceOCR: InvoiceDocumentOCRRecognizing {
+    func recognizeText(in imageData: Data) async throws -> String {
+        throw CancellationError()
     }
 }

@@ -52,8 +52,8 @@ struct OnboardingView: View {
 
         return ZStack {
             pager
-                .frame(width: width, height: 154)
-                .position(x: width / 2, y: height * 0.68)
+                .frame(width: width, height: 236)
+                .position(x: width / 2, y: height * 0.66)
 
             progressIndicator
                 .position(
@@ -168,18 +168,67 @@ private struct OnboardingTitlePage: View {
     let step: OnboardingStep
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(step.title)
-                .foregroundStyle(theme.ink)
-                .lineSpacing(-7)
-
-            Text(step.accentTitle)
-                .foregroundStyle(theme.goldBright)
+        Group {
+            if step == .intelligence {
+                ScrollView(.vertical) {
+                    pageContent
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 2)
+                }
+                .scrollIndicators(.visible)
+                .scrollBounceBehavior(.basedOnSize)
+            } else {
+                pageContent
+            }
         }
-        .font(theme.displayFont(size: 39, relativeTo: .largeTitle))
-        .tracking(-1.35)
-        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(.horizontal, 39)
+    }
+
+    private var pageContent: some View {
+        VStack(alignment: .leading, spacing: step == .intelligence ? KaraSpacing.medium : 1) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(step.title)
+                    .foregroundStyle(theme.ink)
+                    .lineSpacing(-7)
+
+                Text(step.accentTitle)
+                    .foregroundStyle(theme.goldBright)
+            }
+            .font(theme.displayFont(size: 39, relativeTo: .largeTitle))
+            .tracking(-1.35)
+
+            if step == .intelligence {
+                AIOnboardingConsentControl()
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct AIOnboardingConsentControl: View {
+    @Environment(KaraTheme.self) private var theme
+    @Environment(AIFormAutofillPreferences.self) private var preferences
+
+    var body: some View {
+        @Bindable var preferences = preferences
+
+        VStack(alignment: .leading, spacing: KaraSpacing.small) {
+            Text("onboarding.intelligence.body")
+                .font(.subheadline)
+                .foregroundStyle(theme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Toggle("onboarding.intelligence.toggle.title", isOn: $preferences.isEnabled)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(theme.ink)
+                .tint(theme.goldBright)
+                .accessibilityIdentifier("onboarding.intelligence.toggle")
+
+            Text("onboarding.intelligence.toggle.detail")
+                .font(.caption)
+                .foregroundStyle(theme.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }

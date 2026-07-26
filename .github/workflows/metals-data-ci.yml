@@ -51,6 +51,16 @@ jobs:
     name: Check SvelteKit API
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     defaults:
       run:
         working-directory: website
@@ -60,6 +70,7 @@ jobs:
       PUBLIC_GOOGLE_PLAY_URL: https://play.google.com/store/apps/details?id=app.kara
       PUBLIC_SUPPORT_EMAIL: support@kara.example
       PUBLIC_LEGAL_NAME: Kara
+      TEST_REDIS_URL: redis://127.0.0.1:6379
 
     steps:
       - name: Check out repository

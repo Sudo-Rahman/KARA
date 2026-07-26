@@ -61,7 +61,15 @@ struct VaultDashboardView: View {
                     .foregroundStyle(theme.goldBright)
                     .accessibilityAddTraits(.isHeader)
             }
-
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    router.showSettings()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel(Text("settings.title"))
+                .accessibilityIdentifier("home.settings")
+            }
         }
         .accessibilityIdentifier("vault.dashboard")
     }

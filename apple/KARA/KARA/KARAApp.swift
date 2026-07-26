@@ -13,6 +13,7 @@ struct KARAApp: App {
     @State private var flow = AppFlow()
     @State private var theme = KaraTheme()
     @State private var privacyPreferences = PrivacyPreferences()
+    @State private var aiFormAutofillPreferences = AIFormAutofillPreferences()
 
     var body: some Scene {
         WindowGroup {
@@ -20,6 +21,7 @@ struct KARAApp: App {
                 .environment(flow)
                 .environment(theme)
                 .environment(privacyPreferences)
+                .environment(aiFormAutofillPreferences)
                 .preferredColorScheme(.dark)
         }
     }

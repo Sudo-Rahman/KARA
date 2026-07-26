@@ -8,6 +8,11 @@ export interface RequestBinding {
 	bodySHA256: string;
 }
 
+export interface AuthenticatedAppAttestRequest {
+	keyId: string;
+	body: Buffer;
+}
+
 export interface ChallengeRecord {
 	id: string;
 	nonce: string;

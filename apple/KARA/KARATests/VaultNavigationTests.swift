@@ -13,11 +13,13 @@ struct VaultNavigationTests {
         router.showInventory()
         router.showAsset(assetID)
         router.showDocuments(for: assetID)
+        router.showSettings()
 
         #expect(router.path == [
             .inventory,
             .assetDetail(assetID),
             .assetDocuments(assetID),
+            .settings,
         ])
 
         router.presentEditor(for: assetID)
@@ -33,6 +35,7 @@ struct VaultNavigationTests {
         #expect(router.path == [
             .inventory,
             .assetDetail(assetID),
+            .assetDocuments(assetID),
         ])
     }
 }

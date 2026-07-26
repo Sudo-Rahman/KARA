@@ -5,6 +5,7 @@ export type AppAttestErrorCode =
 	| 'invalid_app_attest_registration'
 	| 'expired_app_attest_challenge'
 	| 'replayed_app_attest_assertion'
+	| 'app_attest_rate_limited'
 	| 'app_attest_store_unavailable';
 
 export class AppAttestError extends Error {

@@ -11,6 +11,7 @@ struct ContentView: View {
     @Environment(AppFlow.self) private var flow
     @Environment(KaraTheme.self) private var theme
     @Environment(PrivacyPreferences.self) private var privacyPreferences
+    @Environment(AIFormAutofillPreferences.self) private var aiFormAutofillPreferences
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -50,6 +51,7 @@ struct ContentView: View {
     private func skipOnboarding(_ mode: OnboardingMode) {
         switch mode {
         case .firstLaunch:
+            aiFormAutofillPreferences.disable()
             flow.skipOnboarding()
         case .replay:
             flow.finishReplay()

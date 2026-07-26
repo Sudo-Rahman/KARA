@@ -5,12 +5,14 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     case revelation
     case organization
     case privacy
+    case intelligence
 
     var id: String {
         switch self {
         case .revelation: "revelation"
         case .organization: "organization"
         case .privacy: "privacy"
+        case .intelligence: "intelligence"
         }
     }
 
@@ -19,6 +21,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
         case .revelation: "onboarding.revelation.title"
         case .organization: "onboarding.organization.title"
         case .privacy: "onboarding.privacy.title"
+        case .intelligence: "onboarding.intelligence.title"
         }
     }
 
@@ -27,6 +30,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
         case .revelation: "onboarding.revelation.body"
         case .organization: "onboarding.organization.body"
         case .privacy: "onboarding.privacy.body"
+        case .intelligence: "onboarding.intelligence.body"
         }
     }
 
@@ -35,6 +39,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
         case .revelation: "onboarding.revelation.accentTitle"
         case .organization: "onboarding.organization.accentTitle"
         case .privacy: "onboarding.privacy.accentTitle"
+        case .intelligence: "onboarding.intelligence.accentTitle"
         }
     }
 
@@ -43,6 +48,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
         case .revelation: "onboarding.revelation.action"
         case .organization: "onboarding.organization.action"
         case .privacy: "onboarding.privacy.action"
+        case .intelligence: "onboarding.intelligence.action"
         }
     }
 

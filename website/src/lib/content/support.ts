@@ -10,8 +10,8 @@ export const supportContent = {
 		intro:
 			'Kara est encore en préparation : aucune application publique n’est disponible aujourd’hui. Ce centre d’aide présente les choix produit validés, sans faire passer une fonction future pour une fonction déjà livrée.',
 		updatedLabel: 'Informations mises à jour le',
-		updatedDate: '20 juillet 2026',
-		updatedDateIso: '2026-07-20',
+		updatedDate: '25 juillet 2026',
+		updatedDateIso: '2026-07-25',
 		skipLinkLabel: 'Aller au contenu',
 		contentsLabel: 'Accès rapide',
 		backHomeLabel: 'Retour à l’accueil',
@@ -21,7 +21,7 @@ export const supportContent = {
 		alternativeLanguage: 'English',
 		footerTagline: 'Votre patrimoine, clairement.',
 		legalOperatorLabel: 'Site édité par',
-		highlights: ['Pré-lancement transparent', 'Aucun partage d’inventaire', 'Contact direct'],
+		highlights: ['Pré-lancement transparent', 'Inventaire non stocké par Kara', 'Contact direct'],
 		sections: [
 			{
 				kind: 'text',
@@ -56,7 +56,22 @@ export const supportContent = {
 					{
 						question: 'Où mon inventaire sera-t-il conservé ?',
 						answer: [
-							'Il sera géré sur l’appareil. La sauvegarde privée doit utiliser iCloud sur iOS et l’espace AppData de Google Drive sur Android. Aucun serveur Kara ne recevra l’inventaire.'
+							'Il sera géré sur l’appareil. La sauvegarde privée doit utiliser iCloud sur iOS et l’espace AppData de Google Drive sur Android. Kara ne stockera aucune copie de l’inventaire complet.',
+							'Si vous activez le préremplissage par IA, seule la photo ou la copie d’analyse de facture choisie, limitée à six pages, transitera temporairement via Kara vers OpenAI. Le backend Kara ne la stockera pas.'
+						]
+					},
+					{
+						question: 'Le préremplissage par IA sera-t-il obligatoire ?',
+						answer: [
+							'Non. Il sera désactivé par défaut et vous pourrez revenir sur votre choix à tout moment. Son seul objectif sera de proposer des valeurs pour les champs de l’application, sans suivi, publicité ni profilage.',
+							'Les données envoyées par l’API OpenAI standard ne servent pas à entraîner ses modèles par défaut. OpenAI pourra toutefois conserver des journaux anti-abus susceptibles d’inclure ce contenu pendant un maximum de 30 jours. Hors connexion, l’analyse pourra utiliser le modèle local sans envoyer le média.'
+						]
+					},
+					{
+						question: 'Quelles données techniques Kara conservera-t-elle pour une extraction en ligne ?',
+						answer: [
+							'Pour les quotas, les limites dites « par installation » seront techniquement appliquées à la clé App Attest. Redis conservera seulement des pseudonymes HMAC et des marqueurs de fenêtre pendant au plus 24 heures. Un marqueur de quarantaine associé à cette clé ou à l’adresse IP pourra subsister sept jours si le seuil d’abus est atteint. Le keyId et l’adresse IP ne seront pas conservés sous leur forme brute.',
+							'Les journaux opérationnels Kara seront conservés pendant un maximum de 30 jours. Ils pourront contenir l’identifiant de requête, le type et la taille du média, le nombre de pages, le statut, la latence et les jetons traités, mais jamais le média, les champs extraits, le keyId, l’adresse IP ou leurs pseudonymes HMAC.'
 						]
 					},
 					{
@@ -112,7 +127,7 @@ export const supportContent = {
 				id: 'contact',
 				title: 'Une question avant le lancement ?',
 				paragraphs: [
-					'Écrivez-nous directement. Votre logiciel de messagerie s’ouvrira : aucun formulaire serveur ne collecte votre demande sur ce site. Ne joignez aucune information réelle sur votre patrimoine.'
+					'Écrivez-nous directement. Votre logiciel de messagerie s’ouvrira : aucun formulaire serveur ne collecte votre demande sur ce site. Pour signaler un problème d’extraction, indiquez seulement l’identifiant de requête si l’application vous en fournit un ; ne joignez ni média, ni champs extraits, ni identifiant App Attest, ni information réelle sur votre patrimoine.'
 				],
 				emailLabel: 'Écrire au support',
 				emailSubject: 'Question avant le lancement de Kara',
@@ -130,8 +145,8 @@ export const supportContent = {
 		intro:
 			'Kara is still in development: no public app is available today. This help centre presents validated product decisions without describing a future feature as if it had already shipped.',
 		updatedLabel: 'Information updated',
-		updatedDate: 'July 20, 2026',
-		updatedDateIso: '2026-07-20',
+		updatedDate: 'July 25, 2026',
+		updatedDateIso: '2026-07-25',
 		skipLinkLabel: 'Skip to content',
 		contentsLabel: 'Quick access',
 		backHomeLabel: 'Back to home',
@@ -141,7 +156,7 @@ export const supportContent = {
 		alternativeLanguage: 'Français',
 		footerTagline: 'Your wealth, clearly.',
 		legalOperatorLabel: 'Website operated by',
-		highlights: ['Transparent preview', 'No inventory sharing', 'Direct contact'],
+		highlights: ['Transparent preview', 'No inventory stored by Kara', 'Direct contact'],
 		sections: [
 			{
 				kind: 'text',
@@ -176,7 +191,22 @@ export const supportContent = {
 					{
 						question: 'Where will my inventory be stored?',
 						answer: [
-							'It will be managed on the device. Private backup is intended to use iCloud on iOS and Google Drive AppData on Android. No Kara server will receive the inventory.'
+							'It will be managed on the device. Private backup is intended to use iCloud on iOS and Google Drive AppData on Android. Kara will not store a copy of your complete inventory.',
+							'If you enable AI-assisted form filling, only the selected photo or invoice analysis copy, limited to six pages, will temporarily pass through Kara to OpenAI. The Kara backend will not store it.'
+						]
+					},
+					{
+						question: 'Will AI-assisted form filling be required?',
+						answer: [
+							'No. It will be off by default, and you will be able to change your choice at any time. Its sole purpose will be to suggest values for app fields, with no tracking, advertising, or profiling.',
+							'Data submitted through the standard OpenAI API is not used to train its models by default. OpenAI may nevertheless keep abuse-monitoring logs, which may include this content, for up to 30 days. When offline, analysis may use the local model without sending the media.'
+						]
+					},
+					{
+						question: 'What technical data will Kara retain for an online extraction?',
+						answer: [
+							'For quotas, limits described as “per installation” will technically be applied to the App Attest key. Redis will hold only HMAC pseudonyms and window markers for no more than 24 hours. A quarantine marker associated with that key or the IP address may remain for seven days if the abuse threshold is reached. The keyId and IP address will not be retained in raw form.',
+							'Kara operational logs will be retained for no more than 30 days. They may include the request ID, media type and size, page count, status, latency, and token counts, but never the media, extracted fields, keyId, IP address, or their HMAC pseudonyms.'
 						]
 					},
 					{
@@ -232,7 +262,7 @@ export const supportContent = {
 				id: 'contact',
 				title: 'A question before launch?',
 				paragraphs: [
-					'Email us directly. Your mail app opens without a server form collecting your request on this website. Do not attach any real information about your holdings.'
+					'Email us directly. Your mail app opens without a server form collecting your request on this website. To report an extraction issue, provide only the request ID if the app gives you one; do not attach media, extracted fields, an App Attest identifier, or any real information about your holdings.'
 				],
 				emailLabel: 'Email support',
 				emailSubject: 'Question before Kara launches',

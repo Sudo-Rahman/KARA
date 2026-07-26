@@ -28,22 +28,29 @@ struct AssetCreationFlowTests {
     }
 
     @Test
-    func analysisLeavesInventoryMetadataForManualConfirmation() async {
+    func analysisPrefillsSerialNumberButLeavesUserMetadataManual() async {
+        let suggestedPurchaseDate = Date(timeIntervalSince1970: 1_715_644_800)
         let analyzer = SequencedAnalyzer(
             objectSuggestions: [
                 AssetAnalysisSuggestion(
+                    purchaseDate: suggestedPurchaseDate,
                     serialNumber: "AI-123",
                     acquisitionMethod: .inheritance,
                     tags: ["AI tag"]
                 )
             ]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
 
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
 
-        #expect(state.draft.serialNumber.isEmpty)
+        #expect(state.draft.serialNumber == "AI-123")
+        #expect(state.draft.purchaseDate == nil)
         #expect(state.draft.acquisitionMethod == .purchase)
         #expect(state.draft.tags.isEmpty)
     }
@@ -53,6 +60,7 @@ struct AssetCreationFlowTests {
         let analyzer = SuggestedNameAnalyzer()
         let state = AssetCreationState(
             analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
             saver: FailingSaver()
         )
         state.update(\.name, to: "Nom choisi", field: .name)
@@ -60,7 +68,7 @@ struct AssetCreationFlowTests {
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
 
-        #expect(state.objectAnalysisPhase == .completed)
+        #expect(state.objectAnalysisPhase == .completed(.online))
         #expect(state.draft.name == "Nom choisi")
         #expect(state.draft.category == .custom)
     }
@@ -77,7 +85,11 @@ struct AssetCreationFlowTests {
                 AssetAnalysisSuggestion(sellerName: "Nouveau vendeur", invoiceNumber: "NEW-2"),
             ]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
 
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
@@ -107,7 +119,11 @@ struct AssetCreationFlowTests {
                 AssetAnalysisSuggestion(name: "Autre nom détecté"),
             ]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
 
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
@@ -130,7 +146,11 @@ struct AssetCreationFlowTests {
                 AssetAnalysisSuggestion(name: "Nom de la facture", quantity: 3, currencyCode: "CHF")
             ]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
 
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
@@ -164,7 +184,11 @@ struct AssetCreationFlowTests {
                 AssetAnalysisSuggestion(name: "Nouvelle facture"),
             ]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
 
         state.setInvoiceDocument(document(named: "ancienne.pdf"))
         await waitForInvoiceAnalysis(in: state)
@@ -187,7 +211,11 @@ struct AssetCreationFlowTests {
         let analyzer = SequencedAnalyzer(
             objectSuggestions: [AssetAnalysisSuggestion(quantity: 4, currencyCode: "USD")]
         )
-        let state = AssetCreationState(analyzer: analyzer, saver: FailingSaver())
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
+            saver: FailingSaver()
+        )
         state.update(\.quantity, to: 1, field: .quantity)
         state.updateCurrencyCode("EUR")
 
@@ -218,6 +246,7 @@ struct AssetCreationFlowTests {
         let saver = RecordingFailingSaver()
         let state = AssetCreationState(
             analyzer: ImmediateAnalyzer(),
+            analysisPreferences: enabledPreferences(),
             saver: saver
         )
         state.update(\.name, to: "Souverain", field: .name)
@@ -243,6 +272,7 @@ struct AssetCreationFlowTests {
         let state = AssetCreationState(
             draft: AssetDraft(pricePaidMinorUnits: 1_234, currencyCode: "EUR"),
             analyzer: ImmediateAnalyzer(),
+            analysisPreferences: enabledPreferences(),
             saver: FailingSaver()
         )
 
@@ -259,6 +289,7 @@ struct AssetCreationFlowTests {
         let analyzer = CancellableAnalyzer()
         let state = AssetCreationState(
             analyzer: analyzer,
+            analysisPreferences: enabledPreferences(),
             saver: FailingSaver()
         )
         state.setObjectPhoto(Data([0x01]))
@@ -275,11 +306,71 @@ struct AssetCreationFlowTests {
         #expect(state.objectAnalysisPhase == .idle)
     }
 
+    @Test("Disabled autofill stores media without starting any analysis")
+    func disabledAutofillDoesNotAnalyze() async {
+        let preferences = disabledPreferences()
+        let analyzer = CountingAnalyzer()
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: preferences,
+            saver: FailingSaver()
+        )
+
+        state.setObjectPhoto(Data([0x01]))
+        state.setInvoiceDocument(document(named: "facture.pdf"))
+        await Task.yield()
+
+        #expect(state.objectPhotoData != nil)
+        #expect(state.invoiceDocument != nil)
+        #expect(state.objectAnalysisPhase == .idle)
+        #expect(state.invoiceAnalysisPhase == .idle)
+        #expect(await analyzer.callCount() == 0)
+    }
+
+    @Test("Turning autofill off cancels work and removes unconfirmed suggestions")
+    func disablingAutofillCancelsAnalysis() async {
+        let preferences = enabledPreferences()
+        let analyzer = CancellableAnalyzer()
+        let state = AssetCreationState(
+            analyzer: analyzer,
+            analysisPreferences: preferences,
+            saver: FailingSaver()
+        )
+        state.setObjectPhoto(Data([0x01]))
+        await Task.yield()
+
+        preferences.disable()
+        state.analysisPreferenceDidChange()
+        for _ in 0..<100 where !(await analyzer.wasCancelled()) {
+            await Task.yield()
+        }
+
+        #expect(await analyzer.wasCancelled())
+        #expect(state.objectAnalysisPhase == .idle)
+    }
+
     private func makeState() -> AssetCreationState {
         AssetCreationState(
             analyzer: ImmediateAnalyzer(),
+            analysisPreferences: enabledPreferences(),
             saver: FailingSaver()
         )
+    }
+
+    private func enabledPreferences() -> AIFormAutofillPreferences {
+        let suite = "kara.tests.asset-flow.ai.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        let preferences = AIFormAutofillPreferences(defaults: defaults)
+        preferences.isEnabled = true
+        return preferences
+    }
+
+    private func disabledPreferences() -> AIFormAutofillPreferences {
+        let suite = "kara.tests.asset-flow.ai-disabled.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return AIFormAutofillPreferences(defaults: defaults)
     }
 
     private func waitForAnalysis(in state: AssetCreationState) async {
@@ -305,30 +396,33 @@ struct AssetCreationFlowTests {
 }
 
 private struct ImmediateAnalyzer: AssetAnalyzing {
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
     }
 
     func analyzeInvoice(
         _ data: Data,
         filename: String,
         mimeType: String
-    ) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
+    ) async throws -> AssetAnalysisResult {
+        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
     }
 }
 
 private struct SuggestedNameAnalyzer: AssetAnalyzing {
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion(name: "Nom IA", category: .custom)
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+        AssetAnalysisResult(
+            suggestion: AssetAnalysisSuggestion(name: "Nom IA", category: .custom),
+            source: .online
+        )
     }
 
     func analyzeInvoice(
         _ data: Data,
         filename: String,
         mimeType: String
-    ) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
+    ) async throws -> AssetAnalysisResult {
+        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
     }
 }
 
@@ -344,28 +438,32 @@ private actor SequencedAnalyzer: AssetAnalyzing {
         self.invoiceSuggestions = invoiceSuggestions
     }
 
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
-        guard !objectSuggestions.isEmpty else { return AssetAnalysisSuggestion() }
-        return objectSuggestions.removeFirst()
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+        let suggestion = objectSuggestions.isEmpty
+            ? AssetAnalysisSuggestion()
+            : objectSuggestions.removeFirst()
+        return AssetAnalysisResult(suggestion: suggestion, source: .online)
     }
 
     func analyzeInvoice(
         _ data: Data,
         filename: String,
         mimeType: String
-    ) async throws -> AssetAnalysisSuggestion {
-        guard !invoiceSuggestions.isEmpty else { return AssetAnalysisSuggestion() }
-        return invoiceSuggestions.removeFirst()
+    ) async throws -> AssetAnalysisResult {
+        let suggestion = invoiceSuggestions.isEmpty
+            ? AssetAnalysisSuggestion()
+            : invoiceSuggestions.removeFirst()
+        return AssetAnalysisResult(suggestion: suggestion, source: .online)
     }
 }
 
 private actor CancellableAnalyzer: AssetAnalyzing {
     private var cancelled = false
 
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
         do {
             try await Task.sleep(for: .seconds(60))
-            return AssetAnalysisSuggestion()
+            return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
         } catch is CancellationError {
             cancelled = true
             throw CancellationError()
@@ -376,13 +474,33 @@ private actor CancellableAnalyzer: AssetAnalyzing {
         _ data: Data,
         filename: String,
         mimeType: String
-    ) async throws -> AssetAnalysisSuggestion {
-        AssetAnalysisSuggestion()
+    ) async throws -> AssetAnalysisResult {
+        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
     }
 
     func wasCancelled() -> Bool {
         cancelled
     }
+}
+
+private actor CountingAnalyzer: AssetAnalyzing {
+    private var calls = 0
+
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+        calls += 1
+        return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    }
+
+    func analyzeInvoice(
+        _ data: Data,
+        filename: String,
+        mimeType: String
+    ) async throws -> AssetAnalysisResult {
+        calls += 1
+        return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    }
+
+    func callCount() -> Int { calls }
 }
 
 @MainActor

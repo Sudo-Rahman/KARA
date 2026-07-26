@@ -346,6 +346,7 @@ private struct SendableInvoiceImage: @unchecked Sendable {
 
 private struct InvoiceAnalysisStatus: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
 
     let phase: AssetAnalysisPhase
 
@@ -354,16 +355,25 @@ private struct InvoiceAnalysisStatus: View {
             switch phase {
             case .idle:
                 Image(systemName: "doc.text.magnifyingglass")
-                Text("asset-flow.analysis.ready")
+                Text(
+                    analysisPreferences.isEnabled
+                        ? "asset-flow.analysis.ready"
+                        : "asset-flow.analysis.disabled"
+                )
             case .analyzing:
                 ProgressView()
                     .controlSize(.small)
                 Text("asset-flow.analysis.in-progress")
-            case .completed:
+            case let .completed(source):
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(theme.goldBright)
-                Text("asset-flow.analysis.completed")
-            case .unavailable:
+                switch source {
+                case .online:
+                    Text("asset-flow.analysis.completed-online")
+                case .offline:
+                    Text("asset-flow.analysis.completed-offline")
+                }
+            case .failed:
                 Image(systemName: "pencil.and.list.clipboard")
                 Text("asset-flow.analysis.manual")
             }

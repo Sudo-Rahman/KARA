@@ -1343,6 +1343,7 @@
 
     },
     "asset-flow.analysis.completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1354,6 +1355,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suggestions prêtes"
+          }
+        }
+      }
+    },
+    "asset-flow.analysis.completed-offline" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions ready (offline)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions prêtes (hors ligne)"
+          }
+        }
+      }
+    },
+    "asset-flow.analysis.completed-online" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions ready"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions prêtes"
+          }
+        }
+      }
+    },
+    "asset-flow.analysis.disabled" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic suggestions are turned off"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les suggestions automatiques sont désactivées"
           }
         }
       }
@@ -1498,6 +1547,142 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abandonner cet actif ?"
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-daily-limit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The daily limit for automatic suggestions has been reached. Try again tomorrow."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite quotidienne de suggestions automatiques est atteinte. Réessayez demain."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-invalid-input" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo or document cannot be analysed. Choose another file."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette photo ou ce document ne peut pas être analysé. Choisissez un autre fichier."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-payload-too-large" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file is too large to analyse. Choose a smaller file."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier est trop volumineux pour être analysé. Choisissez un fichier plus petit."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-quarantined" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic suggestions are temporarily unavailable for this device."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les suggestions automatiques sont temporairement indisponibles sur cet appareil."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-rate-limited" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please wait a moment before requesting another suggestion."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patientez un instant avant de demander une nouvelle suggestion."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-refused" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic suggestions are not available for this file."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les suggestions automatiques ne sont pas disponibles pour ce fichier."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-technical" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An unexpected error occurred. Please try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une erreur inattendue s’est produite. Réessayez."
+          }
+        }
+      }
+    },
+    "asset-flow.error.analysis-unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic suggestions are temporarily unavailable."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les suggestions automatiques sont temporairement indisponibles."
           }
         }
       }
@@ -3369,13 +3554,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suggested by Apple Intelligence"
+            "value" : "Automatic suggestion"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suggestion d’Apple Intelligence"
+            "value" : "Suggestion automatique"
           }
         }
       }
@@ -4813,6 +4998,102 @@
     "Laser value" : {
 
     },
+    "onboarding.intelligence.accentTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "when you need it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "quand vous en avez besoin."
+          }
+        }
+      }
+    },
+    "onboarding.intelligence.action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add my first item"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter mon premier objet"
+          }
+        }
+      }
+    },
+    "onboarding.intelligence.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kara can suggest fields from a photo or invoice you choose. Change this option at any time in Settings."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kara peut suggérer des champs à partir d’une photo ou facture choisie. Modifiez cette option à tout moment dans les Réglages."
+          }
+        }
+      }
+    },
+    "onboarding.intelligence.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helpful suggestions,"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des suggestions utiles,"
+          }
+        }
+      }
+    },
+    "onboarding.intelligence.toggle.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online: the media passes through Kara to OpenAI, which may keep abuse-monitoring logs for up to 30 days. Kara does not store it. Offline: analysis stays on device."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En ligne : le média transite via Kara vers OpenAI, qui peut garder des journaux anti-abus jusqu’à 30 jours. Kara ne le stocke pas. Hors connexion : l’analyse reste locale."
+          }
+        }
+      }
+    },
+    "onboarding.intelligence.toggle.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable automatic suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer les suggestions automatiques"
+          }
+        }
+      }
+    },
     "onboarding.organization.accentTitle" : {
       "localizations" : {
         "en" : {
@@ -4898,13 +5179,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add my first item"
+            "value" : "Continue"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter mon premier objet"
+            "value" : "Continuer"
           }
         }
       }
@@ -5981,6 +6262,86 @@
     },
     "Selected value" : {
 
+    },
+    "settings.ai.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse a photo or invoice you choose to suggest asset details."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysez une photo ou une facture de votre choix pour suggérer les informations d’un actif."
+          }
+        }
+      }
+    },
+    "settings.ai.privacy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When online, only the selected photo or invoice copy is sent through Kara to OpenAI. Kara does not store it; OpenAI may retain abuse-monitoring logs for up to 30 days. Offline analysis stays on device."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En ligne, seule la photo ou la copie de facture choisie transite via Kara vers OpenAI. Kara ne la stocke pas ; OpenAI peut conserver des journaux anti-abus jusqu’à 30 jours. Hors connexion, l’analyse reste locale."
+          }
+        }
+      }
+    },
+    "settings.ai.section" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions automatiques"
+          }
+        }
+      }
+    },
+    "settings.ai.toggle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable automatic suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer les suggestions automatiques"
+          }
+        }
+      }
+    },
+    "settings.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages"
+          }
+        }
+      }
     },
     "summary.body" : {
       "localizations" : {

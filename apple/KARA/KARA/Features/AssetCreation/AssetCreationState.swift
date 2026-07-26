@@ -44,8 +44,13 @@ final class AssetCreationRouter {
 enum AssetAnalysisPhase: Equatable, Sendable {
     case idle
     case analyzing
-    case completed
-    case unavailable
+    case completed(AssetAnalysisSource)
+    case failed(AssetAnalysisError)
+
+    var isCompleted: Bool {
+        if case .completed = self { return true }
+        return false
+    }
 }
 
 struct AssetCreationIssue: Identifiable, Equatable, Sendable {
@@ -79,6 +84,9 @@ final class AssetCreationState {
     private let analyzer: any AssetAnalyzing
 
     @ObservationIgnored
+    private let analysisPreferences: AIFormAutofillPreferences
+
+    @ObservationIgnored
     private let saver: any AssetSaving
 
     @ObservationIgnored
@@ -105,6 +113,7 @@ final class AssetCreationState {
     init(
         draft: AssetDraft = AssetDraft(),
         analyzer: any AssetAnalyzing,
+        analysisPreferences: AIFormAutofillPreferences,
         saver: any AssetSaving
     ) {
         var initialDraft = draft
@@ -114,6 +123,7 @@ final class AssetCreationState {
         self.draft = initialDraft
         pristineDraft = initialDraft
         self.analyzer = analyzer
+        self.analysisPreferences = analysisPreferences
         self.saver = saver
     }
 
@@ -273,25 +283,37 @@ final class AssetCreationState {
         objectSuggestion = nil
         reapplyAnalysisSuggestions()
         objectPhotoData = data
-        objectAnalysisPhase = .analyzing
         issue = nil
+
+        guard analysisPreferences.isEnabled else {
+            objectAnalysisPhase = .idle
+            return
+        }
+        objectAnalysisPhase = .analyzing
 
         objectAnalysisTask = Task { [weak self, analyzer] in
             do {
-                let suggestion = try await analyzer.analyzeObjectPhoto(data)
+                let result = try await analyzer.analyzeObjectPhoto(data)
                 try Task.checkCancellation()
                 guard let self else { return }
-                objectSuggestion = suggestion
+                objectSuggestion = result.suggestion
                 reapplyAnalysisSuggestions()
-                objectAnalysisPhase = .completed
+                objectAnalysisPhase = .completed(result.source)
             } catch is CancellationError {
                 return
-            } catch {
+            } catch let error as AssetAnalysisError {
                 guard let self, !Task.isCancelled else { return }
-                objectAnalysisPhase = .unavailable
+                objectAnalysisPhase = .failed(error)
                 issue = AssetCreationIssue(
                     kind: .objectAnalysis,
-                    localizationKey: "asset-flow.error.object-analysis"
+                    localizationKey: Self.localizationKey(for: error)
+                )
+            } catch {
+                guard let self, !Task.isCancelled else { return }
+                objectAnalysisPhase = .failed(.technicalFailure)
+                issue = AssetCreationIssue(
+                    kind: .objectAnalysis,
+                    localizationKey: Self.localizationKey(for: .technicalFailure)
                 )
             }
         }
@@ -311,29 +333,41 @@ final class AssetCreationState {
         invoiceSuggestion = nil
         reapplyAnalysisSuggestions()
         invoiceDocument = document
-        invoiceAnalysisPhase = .analyzing
         issue = nil
+
+        guard analysisPreferences.isEnabled else {
+            invoiceAnalysisPhase = .idle
+            return
+        }
+        invoiceAnalysisPhase = .analyzing
 
         invoiceAnalysisTask = Task { [weak self, analyzer] in
             do {
-                let suggestion = try await analyzer.analyzeInvoice(
+                let result = try await analyzer.analyzeInvoice(
                     document.data,
                     filename: document.filename,
                     mimeType: document.mimeType
                 )
                 try Task.checkCancellation()
                 guard let self else { return }
-                invoiceSuggestion = suggestion
+                invoiceSuggestion = result.suggestion
                 reapplyAnalysisSuggestions()
-                invoiceAnalysisPhase = .completed
+                invoiceAnalysisPhase = .completed(result.source)
             } catch is CancellationError {
                 return
-            } catch {
+            } catch let error as AssetAnalysisError {
                 guard let self, !Task.isCancelled else { return }
-                invoiceAnalysisPhase = .unavailable
+                invoiceAnalysisPhase = .failed(error)
                 issue = AssetCreationIssue(
                     kind: .invoiceAnalysis,
-                    localizationKey: "asset-flow.error.invoice-analysis"
+                    localizationKey: Self.localizationKey(for: error)
+                )
+            } catch {
+                guard let self, !Task.isCancelled else { return }
+                invoiceAnalysisPhase = .failed(.technicalFailure)
+                issue = AssetCreationIssue(
+                    kind: .invoiceAnalysis,
+                    localizationKey: Self.localizationKey(for: .technicalFailure)
                 )
             }
         }
@@ -350,7 +384,7 @@ final class AssetCreationState {
 
     private func reapplyAnalysisSuggestions() {
         let manuallyConfirmedMetadata: Set<AssetDraft.Field> = [
-            .serialNumber,
+            .purchaseDate,
             .acquisitionMethod,
             .tags,
         ]
@@ -417,6 +451,42 @@ final class AssetCreationState {
         }
         if invoiceAnalysisPhase == .analyzing {
             invoiceAnalysisPhase = .idle
+        }
+    }
+
+    func analysisPreferenceDidChange() {
+        guard !analysisPreferences.isEnabled else { return }
+        cancelAllWork()
+        objectSuggestion = nil
+        invoiceSuggestion = nil
+        reapplyAnalysisSuggestions()
+        objectAnalysisPhase = .idle
+        invoiceAnalysisPhase = .idle
+        if issue?.kind == .objectAnalysis || issue?.kind == .invoiceAnalysis {
+            issue = nil
+        }
+    }
+
+    private static func localizationKey(for error: AssetAnalysisError) -> String {
+        switch error {
+        case .rateLimited:
+            "asset-flow.error.analysis-rate-limited"
+        case .dailyLimitReached:
+            "asset-flow.error.analysis-daily-limit"
+        case .quarantined:
+            "asset-flow.error.analysis-quarantined"
+        case .payloadTooLarge:
+            "asset-flow.error.analysis-payload-too-large"
+        case .refused:
+            "asset-flow.error.analysis-refused"
+        case .timeout, .unavailable:
+            "asset-flow.error.analysis-unavailable"
+        case .invalidInput:
+            "asset-flow.error.analysis-invalid-input"
+        case .cancelled:
+            "asset-flow.error.analysis-unavailable"
+        case .invalidResponse, .technicalFailure:
+            "asset-flow.error.analysis-technical"
         }
     }
 }
