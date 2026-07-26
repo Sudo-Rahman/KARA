@@ -376,7 +376,6 @@
       }
     },
     "documents.kind.certificate" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -393,7 +392,6 @@
       }
     },
     "documents.kind.invoice" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -410,7 +408,6 @@
       }
     },
     "documents.kind.objectPhoto" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -427,7 +424,6 @@
       }
     },
     "documents.kind.other" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -71,7 +71,10 @@ struct AppShellView: View {
 
             Tab(value: .settings) {
                 NavigationStack {
-                    SettingsView()
+                    SettingsView(
+                        portfolioValuation: valuation,
+                        valuationAsOf: valuationAsOf
+                    )
                 }
             } label: {
                 Label("tabs.settings", systemImage: "gearshape.fill")
@@ -87,6 +90,7 @@ struct AppShellView: View {
             cover(for: destination)
         }
         .task {
+            TemporaryVaultReportFileStore.purgeStaleReports()
             purgeExpiredAssets()
         }
         .onChange(of: scenePhase) { _, phase in

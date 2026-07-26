@@ -75,9 +75,17 @@ struct SettingsView: View {
     @Query(filter: #Predicate<Asset> { $0.deletedAt != nil }) private var trashedAssets: [Asset]
     @Query private var attachments: [AssetAttachment]
 
+    private let portfolioValuation: PortfolioValuation
+    private let valuationAsOf: Date
     private let versionInfo: AppVersionInfo
 
-    init(versionInfo: AppVersionInfo = AppVersionInfo()) {
+    init(
+        portfolioValuation: PortfolioValuation,
+        valuationAsOf: Date,
+        versionInfo: AppVersionInfo = AppVersionInfo()
+    ) {
+        self.portfolioValuation = portfolioValuation
+        self.valuationAsOf = valuationAsOf
         self.versionInfo = versionInfo
     }
 
@@ -213,6 +221,21 @@ struct SettingsView: View {
                 } ?? "—",
                 detail: Text("settings.vault.storage.detail")
             )
+
+            NavigationLink {
+                VaultReportPreviewView(
+                    assets: activeAssets,
+                    attachments: activeAttachments,
+                    portfolioValuation: portfolioValuation,
+                    valuationAsOf: valuationAsOf
+                )
+            } label: {
+                SettingsReportRow(
+                    isEmpty: statistics.activeAssetCount == 0
+                )
+            }
+            .disabled(statistics.activeAssetCount == 0)
+            .accessibilityIdentifier("settings.vault.report")
         } header: {
             Text("settings.vault.section")
         }
@@ -232,6 +255,48 @@ struct SettingsView: View {
         formatter.zeroPadsFractionDigits = false
         return formatter
     }()
+}
+
+private struct SettingsReportRow: View {
+    @Environment(KaraTheme.self) private var theme
+
+    let isEmpty: Bool
+
+    var body: some View {
+        HStack(spacing: KaraSpacing.medium) {
+            SettingsRowIcon(systemImage: "doc.richtext.fill")
+
+            VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
+                Text("settings.vault.report.title")
+                    .foregroundStyle(theme.ink)
+                detail
+                    .font(.caption)
+                    .foregroundStyle(theme.muted)
+            }
+
+            Spacer(minLength: KaraSpacing.small)
+        }
+        .contentShape(.rect)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("settings.vault.report.title"))
+        .accessibilityValue(accessibilityValue)
+    }
+
+    private var detail: Text {
+        if isEmpty {
+            Text("settings.vault.report.empty-detail")
+        } else {
+            Text("settings.vault.report.detail")
+        }
+    }
+
+    private var accessibilityValue: Text {
+        if isEmpty {
+            Text("settings.vault.report.empty-detail")
+        } else {
+            Text("settings.vault.report.detail")
+        }
+    }
 }
 
 private struct SettingsFileCountDetail: View {

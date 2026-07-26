@@ -460,10 +460,12 @@ actor AssetAttachmentByteCountBackfill {
     private static let batchSize = 50
 
     @discardableResult
-    func backfillMissingByteCounts() throws -> Int {
+    func backfillMissingByteCounts() async throws -> Int {
         var updatedAttachmentCount = 0
 
         while true {
+            try Task.checkCancellation()
+
             var descriptor = FetchDescriptor<AssetAttachment>(
                 predicate: #Predicate { $0.dataByteCount == nil }
             )
@@ -472,11 +474,23 @@ actor AssetAttachmentByteCountBackfill {
             let attachments = try modelContext.fetch(descriptor)
             guard !attachments.isEmpty else { return updatedAttachmentCount }
 
+            var pendingUpdates: [(attachment: AssetAttachment, byteCount: Int64)] = []
+            pendingUpdates.reserveCapacity(attachments.count)
             for attachment in attachments {
-                attachment.dataByteCount = Int64(attachment.data.count)
+                try Task.checkCancellation()
+                let byteCount = Int64(attachment.data.count)
+                try Task.checkCancellation()
+                pendingUpdates.append((attachment, byteCount))
+            }
+
+            try Task.checkCancellation()
+            for update in pendingUpdates {
+                update.attachment.dataByteCount = update.byteCount
             }
             try modelContext.save()
             updatedAttachmentCount += attachments.count
+
+            await Task.yield()
         }
     }
 }

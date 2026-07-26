@@ -125,8 +125,11 @@ final class VaultExperienceUITests: XCTestCase {
 
         let aiToggle = app.switches["settings.ai.toggle"]
         let privacyToggle = app.switches["settings.privacy.toggle"]
+        let report = element("settings.vault.report", in: app)
         XCTAssertTrue(aiToggle.exists)
         XCTAssertTrue(privacyToggle.exists)
+        XCTAssertTrue(report.exists)
+        XCTAssertTrue(report.isEnabled)
 
         let trash = element("settings.trash", in: app)
         reveal(trash, in: app, attempts: 8)
@@ -136,6 +139,45 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(element("settings.trash.screen", in: app).waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["La corbeille est vide"].exists)
         capture("vault-08-settings-trash", in: app)
+    }
+
+    @MainActor
+    func testVaultReportPreviewOpensBeforeShareSheet() {
+        let app = launchSeededVault()
+        app.tabBars.buttons["Réglages"].tap()
+
+        let report = element("settings.vault.report", in: app)
+        XCTAssertTrue(report.waitForExistence(timeout: 5))
+        XCTAssertTrue(report.isEnabled)
+        report.tap()
+
+        XCTAssertTrue(
+            element("settings.vault.report.preview", in: app)
+                .waitForExistence(timeout: 5)
+        )
+        XCTAssertFalse(app.tabBars.firstMatch.exists)
+
+        let share = app.buttons["settings.vault.report.preview.share"]
+        // Quick Look exposes its document through a system-owned process, so the
+        // share action is the stable readiness signal for the rendered preview.
+        XCTAssertTrue(share.waitForExistence(timeout: 15))
+        XCTAssertTrue(share.isHittable)
+        share.tap()
+
+        XCTAssertTrue(
+            element("settings.vault.report.share-sheet", in: app)
+                .waitForExistence(timeout: 5)
+        )
+    }
+
+    @MainActor
+    func testVaultReportIsDisabledForAnEmptyVault() {
+        let app = launchEmptyVault()
+        app.tabBars.buttons["Réglages"].tap()
+
+        let report = element("settings.vault.report", in: app)
+        XCTAssertTrue(report.waitForExistence(timeout: 5))
+        XCTAssertFalse(report.isEnabled)
     }
 
     @MainActor
@@ -184,15 +226,28 @@ final class VaultExperienceUITests: XCTestCase {
 
     @MainActor
     private func launchSeededVault() -> XCUIApplication {
+        launchVault(seed: true)
+    }
+
+    @MainActor
+    private func launchEmptyVault() -> XCUIApplication {
+        launchVault(seed: false)
+    }
+
+    @MainActor
+    private func launchVault(seed: Bool) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = [
+        var launchArguments = [
             "-KARAUseInMemoryStore",
-            "-KARASeedVault",
             "-kara.onboarding.hasCompleted", "YES",
             "-kara.privacy.hidesSensitiveValues", "NO",
             "-AppleLanguages", "(fr)",
             "-AppleLocale", "fr_FR",
         ]
+        if seed {
+            launchArguments.append("-KARASeedVault")
+        }
+        app.launchArguments = launchArguments
         app.launch()
 
         XCTAssertTrue(element("vault.dashboard", in: app).waitForExistence(timeout: 10))
