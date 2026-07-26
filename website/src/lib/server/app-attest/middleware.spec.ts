@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { authenticateAppAttestRequest } from './middleware';
 
 describe('App Attest API middleware', () => {
 	it('rejects a protected API request without attestation headers', async () => {
+		const logger = { error: vi.fn(), warn: vi.fn() };
 		const response = await authenticateAppAttestRequest(
 			new Request('https://kara.test/v1/manifest.json'),
-			{} as never
+			{} as never,
+			undefined,
+			logger
 		);
 
 		expect(response?.status).toBe(401);
@@ -16,6 +19,15 @@ describe('App Attest API middleware', () => {
 				message: 'App Attest headers are required'
 			}
 		});
+		expect(logger.warn).toHaveBeenCalledWith(
+			{
+				code: 'app_attest_required',
+				event: 'app_attest.authentication_rejected',
+				status: 401
+			},
+			'App Attest authentication rejected'
+		);
+		expect(logger.error).not.toHaveBeenCalled();
 	});
 
 	it('reads a protected binary body once and exposes the verified principal', async () => {

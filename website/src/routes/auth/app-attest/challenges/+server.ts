@@ -4,17 +4,21 @@ import { challengeRequestSchema } from '$lib/server/app-attest/contracts';
 import { appAttestRouteError, parseJSON } from '$lib/server/app-attest/route';
 import { appAttestService } from '$lib/server/app-attest/runtime';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const input = await parseJSON(request, challengeRequestSchema.parse);
 		const challenge = input.purpose === 'registration'
 			? await appAttestService().createRegistrationChallenge(input.keyId)
 			: await appAttestService().createAssertionChallenge(input.keyId, input.request);
+		locals.logger.info({
+			event: 'app_attest.challenge_created',
+			purpose: input.purpose
+		}, 'App Attest challenge created');
 		return Response.json(challenge, {
 			status: 201,
 			headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 		});
 	} catch (error) {
-		return appAttestRouteError(error);
+		return appAttestRouteError(error, locals.logger);
 	}
 };

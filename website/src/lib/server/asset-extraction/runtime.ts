@@ -5,6 +5,7 @@ import { AnalysisError } from './errors';
 import { createOpenAIAssetExtractor } from './openai';
 import { RedisAnalysisQuotaStore } from './redis-quota';
 import { AssetExtractionService } from './service';
+import { logger } from '../logger';
 
 let service: AssetExtractionService | undefined;
 
@@ -21,7 +22,8 @@ export function assetExtractionService(): AssetExtractionService {
 		service = new AssetExtractionService({
 			hmacSecret: config.hmacSecret,
 			quota: new RedisAnalysisQuotaStore(config.redisURL, config.redisPrefix),
-			extractor: createOpenAIAssetExtractor(config.openAIAPIKey)
+			extractor: createOpenAIAssetExtractor(config.openAIAPIKey),
+			logger: logger.child({ component: 'asset-extraction' })
 		});
 	}
 	return service;

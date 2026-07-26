@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import { createClient } from 'redis';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 import type {
 	AppAttestStore,
@@ -57,14 +59,34 @@ return 'accepted'
 
 export class RedisAppAttestStore implements AppAttestStore {
 	readonly #client: ReturnType<typeof createClient>;
+	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
 	readonly #prefix: string;
 	#connectPromise: Promise<void> | null = null;
+	#available: boolean | undefined;
 
-	constructor(url: string, prefix = 'kara:app-attest') {
+	constructor(
+		url: string,
+		prefix = 'kara:app-attest',
+		logger: Pick<BackendLogger, 'error' | 'info'> = rootLogger.child({ component: 'app-attest.redis' })
+	) {
 		this.#prefix = prefix;
+		this.#logger = logger;
 		this.#client = createClient({ url });
 		this.#client.on('error', (error) => {
-			console.error('[app-attest] Redis unavailable', { name: error.name });
+			if (this.#available === false) return;
+			this.#available = false;
+			this.#logger.error({
+				error: errorSummary(error),
+				event: 'redis.unavailable'
+			}, 'App Attest Redis connection unavailable');
+		});
+		this.#client.on('ready', () => {
+			if (this.#available === true) return;
+			const recovered = this.#available === false;
+			this.#available = true;
+			this.#logger.info({
+				event: recovered ? 'redis.recovered' : 'redis.ready'
+			}, recovered ? 'App Attest Redis connection recovered' : 'App Attest Redis connection ready');
 		});
 	}
 

@@ -1,7 +1,7 @@
 import { AppAttestError } from './errors';
 
-export function appAttestErrorResponse(error: unknown): Response {
-	const known = error instanceof AppAttestError
+export function normalizeAppAttestError(error: unknown): AppAttestError {
+	return error instanceof AppAttestError
 		? error
 		: new AppAttestError(
 			'app_attest_store_unavailable',
@@ -9,6 +9,11 @@ export function appAttestErrorResponse(error: unknown): Response {
 			'App attestation is temporarily unavailable',
 			{ cause: error }
 		);
+
+}
+
+export function appAttestErrorResponse(error: unknown): Response {
+	const known = normalizeAppAttestError(error);
 	return Response.json(
 		{ error: { code: known.code, message: known.message } },
 		{

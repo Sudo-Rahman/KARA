@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { handleSpotRequest, type SpotQuoteProvider } from './handler';
 
@@ -10,10 +10,6 @@ const quote = {
 	unit: { code: 'troy_ounce' as const, grams: '31.1034768' as const },
 	sourceUpdatedAt: '2026-07-20T12:34:56Z'
 };
-
-afterEach(() => {
-	vi.restoreAllMocks();
-});
 
 describe('handleSpotRequest', () => {
 	test('serves a validated quote using normalized query parameters', async () => {
@@ -93,20 +89,23 @@ describe('handleSpotRequest', () => {
 		const provider: SpotQuoteProvider = {
 			get: vi.fn().mockRejectedValue(upstreamError)
 		};
-		const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+		const errorLog = vi.fn();
+		const requestId = '00000000-0000-4000-8000-000000000010';
 		const request = new Request(
 			'https://kara.example/v1/metals-spot.json?metal=XAU&currency=EUR'
 		);
 
-		const response = await handleSpotRequest(request, provider);
+		const response = await handleSpotRequest(request, provider, {
+			logger: { error: errorLog, warn: vi.fn() },
+			requestId
+		});
 		const body = await response.text();
 
 		expect(response.status).toBe(502);
 		expect(body).toContain('SPOT_UNAVAILABLE');
 		expect(body).not.toContain('fetch failed');
-		expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/);
+		expect(response.headers.get('x-request-id')).toBe(requestId);
 		expect(errorLog).toHaveBeenCalledWith(
-			'[metals-spot] Gold API request failed',
 			expect.objectContaining({
 				currency: 'EUR',
 				error: {
@@ -120,10 +119,12 @@ describe('handleSpotRequest', () => {
 					message: 'fetch failed',
 					name: 'TypeError'
 				},
+				event: 'metals_spot.upstream_failed',
 				metal: 'XAU',
-				requestId: response.headers.get('x-request-id'),
-				upstream: 'https://api.gold-api.com'
-			})
+				requestId,
+				upstream: 'gold-api'
+			}),
+			'Gold API request failed'
 		);
 	});
 });

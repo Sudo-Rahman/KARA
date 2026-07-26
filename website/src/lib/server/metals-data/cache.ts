@@ -1,4 +1,6 @@
 import { hashBytes, parseManifest, verifyPublication, type MetalsManifest } from './contracts';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 export interface PublicationBytes {
 	readonly manifestBytes: Uint8Array;
@@ -22,7 +24,7 @@ interface CacheOptions {
 	readonly fallback: PublicationBytes;
 	readonly manifestUrl: string;
 	readonly fetcher?: typeof fetch;
-	readonly logger?: Pick<Console, 'warn'>;
+	readonly logger?: Pick<BackendLogger, 'warn'> & Partial<Pick<BackendLogger, 'info'>>;
 }
 
 const MAX_MANIFEST_BYTES = 1024 * 1024;
@@ -85,7 +87,7 @@ export class MetalsDataCache {
 	readonly #manifestUrl: string;
 	readonly #snapshotUrl: string;
 	readonly #fetcher: typeof fetch;
-	readonly #logger: Pick<Console, 'warn'>;
+	readonly #logger: Pick<BackendLogger, 'warn'> & Partial<Pick<BackendLogger, 'info'>>;
 	#publication: CachedPublication;
 	#refreshInFlight: Promise<RefreshResult> | undefined;
 
@@ -94,7 +96,7 @@ export class MetalsDataCache {
 		this.#manifestUrl = new URL(options.manifestUrl).toString();
 		this.#snapshotUrl = new URL('metals-monthly.json', this.#manifestUrl).toString();
 		this.#fetcher = options.fetcher ?? fetch;
-		this.#logger = options.logger ?? console;
+		this.#logger = options.logger ?? rootLogger.child({ component: 'metals-data' });
 	}
 
 	current(): CachedPublication {
@@ -125,9 +127,18 @@ export class MetalsDataCache {
 				throw new Error('Metals data coverage regression');
 			}
 			this.#publication = candidate;
+			this.#logger.info?.({
+				coverage: candidate.metadata.coverage,
+				dataVersion: candidate.metadata.dataVersion,
+				event: 'metals_data.publication_updated'
+			}, 'Metals data publication updated');
 			return 'updated';
 		} catch (error) {
-			this.#logger.warn('Metals data refresh failed; keeping the last valid publication.', error);
+			this.#logger.warn({
+				error: errorSummary(error),
+				event: 'metals_data.refresh_failed',
+				retainedDataVersion: this.#publication.metadata.dataVersion
+			}, 'Metals data refresh failed; keeping the last valid publication');
 			return 'failed';
 		}
 	}

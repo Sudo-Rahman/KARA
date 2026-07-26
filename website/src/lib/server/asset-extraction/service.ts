@@ -6,6 +6,8 @@ import { pseudonymize } from './identity';
 import { validateAnalysisMedia, type AnalysisKind } from './media';
 import type { ExtractionResult, OpenAIAssetExtractor } from './openai';
 import type { AnalysisQuotaStore, AttemptDecision, ReservationDecision } from './redis-quota';
+import type { BackendLogger } from '../logger';
+import { logger as rootLogger } from '../logger';
 
 export interface AppAttestPrincipal {
 	keyId: string;
@@ -26,9 +28,7 @@ interface SafeAnalysisLog {
 	totalTokens: number | null;
 }
 
-interface AssetExtractionLogger {
-	info(event: SafeAnalysisLog): void;
-}
+type AssetExtractionLogger = Pick<BackendLogger, 'error' | 'info' | 'warn'>;
 
 interface AssetExtractionServiceOptions {
 	hmacSecret: Buffer;
@@ -51,9 +51,7 @@ export class AssetExtractionService {
 		this.#hmacSecret = options.hmacSecret;
 		this.#quota = options.quota;
 		this.#extractor = options.extractor;
-		this.#logger = options.logger ?? {
-			info: (event) => console.info('[asset-extraction] request completed', event)
-		};
+		this.#logger = options.logger ?? rootLogger.child({ component: 'asset-extraction' });
 		this.#now = options.now ?? (() => new Date());
 		this.#requestId = options.requestId ?? randomUUID;
 	}
@@ -66,9 +64,10 @@ export class AssetExtractionService {
 		request: Request;
 		principal: AppAttestPrincipal;
 		clientAddress: string;
+		requestId?: string;
 	}): Promise<Response> {
 		const startedAt = this.#now();
-		const requestId = this.#requestId();
+		const requestId = input.requestId ?? this.#requestId();
 		const installationId = pseudonymize(this.#hmacSecret, 'installation', input.principal.keyId);
 		const ipId = pseudonymize(this.#hmacSecret, 'ip', input.clientAddress);
 		const bytes = Buffer.isBuffer(input.principal.body)
@@ -146,7 +145,8 @@ export class AssetExtractionService {
 				known.retryAfterSeconds
 			);
 		} finally {
-			this.#logger.info({
+			const event: SafeAnalysisLog & { event: string } = {
+				event: 'asset_extraction.request_completed',
 				timestamp: startedAt.toISOString(),
 				requestId,
 				...(kind ? { kind } : {}),
@@ -158,7 +158,14 @@ export class AssetExtractionService {
 				inputTokens: usage.inputTokens,
 				outputTokens: usage.outputTokens,
 				totalTokens: usage.totalTokens
-			});
+			};
+			if (status >= 500) {
+				this.#logger.error(event, 'Asset extraction request failed');
+			} else if (status >= 400) {
+				this.#logger.warn(event, 'Asset extraction request rejected');
+			} else {
+				this.#logger.info(event, 'Asset extraction request completed');
+			}
 		}
 	}
 }

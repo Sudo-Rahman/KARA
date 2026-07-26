@@ -1,5 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { createClient } from 'redis';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -54,14 +56,38 @@ export interface AppAttestIPRateLimitStore {
 
 export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
 	readonly #client: ReturnType<typeof createClient>;
+	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
 	readonly #prefix: string;
 	#connectPromise: Promise<void> | null = null;
+	#available: boolean | undefined;
 
-	constructor(url: string, prefix = 'kara:app-attest:ip-rate-limit') {
+	constructor(
+		url: string,
+		prefix = 'kara:app-attest:ip-rate-limit',
+		logger: Pick<BackendLogger, 'error' | 'info'> = rootLogger.child({
+			component: 'app-attest.rate-limit.redis'
+		})
+	) {
 		this.#prefix = prefix;
+		this.#logger = logger;
 		this.#client = createClient({ url });
 		this.#client.on('error', (error) => {
-			console.error('[app-attest] rate-limit Redis unavailable', { name: error.name });
+			if (this.#available === false) return;
+			this.#available = false;
+			this.#logger.error({
+				error: errorSummary(error),
+				event: 'redis.unavailable'
+			}, 'App Attest rate-limit Redis connection unavailable');
+		});
+		this.#client.on('ready', () => {
+			if (this.#available === true) return;
+			const recovered = this.#available === false;
+			this.#available = true;
+			this.#logger.info({
+				event: recovered ? 'redis.recovered' : 'redis.ready'
+			}, recovered
+				? 'App Attest rate-limit Redis connection recovered'
+				: 'App Attest rate-limit Redis connection ready');
 		});
 	}
 

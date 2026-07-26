@@ -1,4 +1,6 @@
 import { createClient } from 'redis';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 const MINUTE_WINDOW_MS = 60_000;
 const DAY_WINDOW_MS = 86_400_000;
@@ -158,14 +160,38 @@ export interface AnalysisQuotaStore {
 
 export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 	readonly #client: ReturnType<typeof createClient>;
+	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
 	readonly #prefix: string;
 	#connectPromise: Promise<void> | null = null;
+	#available: boolean | undefined;
 
-	constructor(url: string, prefix = 'kara:asset-extraction') {
+	constructor(
+		url: string,
+		prefix = 'kara:asset-extraction',
+		logger: Pick<BackendLogger, 'error' | 'info'> = rootLogger.child({
+			component: 'asset-extraction.redis'
+		})
+	) {
 		this.#prefix = prefix;
+		this.#logger = logger;
 		this.#client = createClient({ url });
 		this.#client.on('error', (error) => {
-			console.error('[asset-extraction] Redis unavailable', { name: error.name });
+			if (this.#available === false) return;
+			this.#available = false;
+			this.#logger.error({
+				error: errorSummary(error),
+				event: 'redis.unavailable'
+			}, 'Asset extraction Redis connection unavailable');
+		});
+		this.#client.on('ready', () => {
+			if (this.#available === true) return;
+			const recovered = this.#available === false;
+			this.#available = true;
+			this.#logger.info({
+				event: recovered ? 'redis.recovered' : 'redis.ready'
+			}, recovered
+				? 'Asset extraction Redis connection recovered'
+				: 'Asset extraction Redis connection ready');
 		});
 	}
 

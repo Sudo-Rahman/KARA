@@ -12,7 +12,10 @@ const provider: MarketDataBootstrapProvider = {
 	get: (metal, currency) => metalsSpotCache().get(metal, currency)
 };
 
-export const GET: RequestHandler = ({ request }) =>
-	handleMarketDataBootstrapRequest(request, provider);
+export const GET: RequestHandler = ({ request, locals }) =>
+	handleMarketDataBootstrapRequest(request, provider, {
+		logger: locals.logger.child({ feature: 'market-data-bootstrap' }),
+		requestId: locals.requestId
+	});
 
 export const HEAD: RequestHandler = GET;

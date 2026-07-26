@@ -38,7 +38,7 @@ function dependencies(overrides: Partial<{
 			usage: { inputTokens: 100, outputTokens: 20, totalTokens: 120 }
 		})
 	};
-	const logger = { info: vi.fn() };
+	const logger = { error: vi.fn(), info: vi.fn(), warn: vi.fn() };
 	const service = new AssetExtractionService({
 		hmacSecret: Buffer.alloc(32, 5), quota, extractor, logger,
 		now: () => new Date('2026-07-25T12:00:00.000Z'),
@@ -92,10 +92,20 @@ describe('asset extraction service', () => {
 		expect(JSON.stringify(logger.info.mock.calls)).not.toContain(quotaIdentity.ipId);
 		expect(JSON.stringify(logger.info.mock.calls)).not.toContain('raw-app-attest-key');
 		expect(JSON.stringify(logger.info.mock.calls)).not.toContain('A-001');
+		expect(logger.info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				code: 'OK',
+				event: 'asset_extraction.request_completed',
+				status: 200
+			}),
+			'Asset extraction request completed'
+		);
+		expect(logger.warn).not.toHaveBeenCalled();
+		expect(logger.error).not.toHaveBeenCalled();
 	});
 
 	test('counts authenticated invalid input but never reserves or calls OpenAI', async () => {
-		const { service, quota, extractor } = dependencies();
+		const { service, quota, extractor, logger } = dependencies();
 		const response = await service.handle({
 			request: new Request(
 				'https://kara.example/v1/asset-extraction?kind=object-photo&locale=fr-FR',
@@ -110,6 +120,10 @@ describe('asset extraction service', () => {
 		expect(quota.recordAttempt).toHaveBeenCalledOnce();
 		expect(quota.reserve).not.toHaveBeenCalled();
 		expect(extractor.extract).not.toHaveBeenCalled();
+		expect(logger.warn).toHaveBeenCalledWith(
+			expect.objectContaining({ code: 'UNSUPPORTED_MEDIA_TYPE', status: 415 }),
+			'Asset extraction request rejected'
+		);
 	});
 
 	test('returns stable quota codes and Retry-After without inspecting media', async () => {
@@ -155,7 +169,7 @@ describe('asset extraction service', () => {
 
 	test('propagates client cancellation and releases installation and IP locks', async () => {
 		const controller = new AbortController();
-		const { service, quota, extractor } = dependencies();
+		const { service, quota, extractor, logger } = dependencies();
 		vi.mocked(extractor.extract).mockImplementation(async ({ signal }) => {
 			await new Promise<void>((_resolve, reject) => {
 				signal.addEventListener('abort', () => reject(
@@ -186,6 +200,10 @@ describe('asset extraction service', () => {
 			expect.stringMatching(/^[a-f0-9]{64}$/),
 			expect.stringMatching(/^[a-f0-9]{64}$/),
 			'00000000-0000-4000-8000-000000000001'
+		);
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({ code: 'ANALYSIS_UNAVAILABLE', status: 503 }),
+			'Asset extraction request failed'
 		);
 	});
 });

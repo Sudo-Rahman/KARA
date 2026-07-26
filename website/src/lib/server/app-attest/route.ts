@@ -1,5 +1,6 @@
 import { AppAttestError } from './errors';
-import { appAttestErrorResponse } from './http';
+import { appAttestErrorResponse, normalizeAppAttestError } from './http';
+import type { BackendLogger } from '../logger';
 
 export async function parseJSON<T>(request: Request, parser: (value: unknown) => T): Promise<T> {
 	try {
@@ -14,6 +15,22 @@ export async function parseJSON<T>(request: Request, parser: (value: unknown) =>
 	}
 }
 
-export function appAttestRouteError(error: unknown): Response {
+export function appAttestRouteError(
+	error: unknown,
+	logger?: Pick<BackendLogger, 'error' | 'warn'>
+): Response {
+	if (logger) {
+		const known = normalizeAppAttestError(error);
+		const context = {
+			code: known.code,
+			event: 'app_attest.operation_failed',
+			status: known.status
+		};
+		if (known.status >= 500) {
+			logger.error(context, 'App Attest operation failed');
+		} else {
+			logger.warn(context, 'App Attest operation rejected');
+		}
+	}
 	return appAttestErrorResponse(error);
 }

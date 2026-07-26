@@ -96,11 +96,12 @@ describe('MetalsDataCache', () => {
 	test('serves its bundled publication immediately when the source is unavailable', async () => {
 		const fallback = publication(1);
 		const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('offline'));
+		const warn = vi.fn();
 		const cache = new MetalsDataCache({
 			fallback,
 			manifestUrl: 'https://example.test/data/v1/manifest.json',
 			fetcher,
-			logger: { warn: vi.fn() }
+			logger: { warn }
 		});
 
 		expect(cache.current().manifest.bytes).toEqual(fallback.manifestBytes);
@@ -108,6 +109,14 @@ describe('MetalsDataCache', () => {
 		await expect(cache.refresh()).resolves.toBe('failed');
 		expect(cache.current().manifest.bytes).toEqual(fallback.manifestBytes);
 		expect(cache.current().data.bytes).toEqual(fallback.dataBytes);
+		expect(warn).toHaveBeenCalledWith(
+			expect.objectContaining({
+				error: { message: 'offline', name: 'Error' },
+				event: 'metals_data.refresh_failed',
+				retainedDataVersion: expect.stringMatching(/^[a-f0-9]{64}$/)
+			}),
+			'Metals data refresh failed; keeping the last valid publication'
+		);
 	});
 
 	test('replaces the complete publication only after validating a changed snapshot', async () => {
@@ -117,11 +126,12 @@ describe('MetalsDataCache', () => {
 			.fn<typeof fetch>()
 			.mockResolvedValueOnce(response(updated.manifestBytes))
 			.mockResolvedValueOnce(response(updated.dataBytes));
+		const info = vi.fn();
 		const cache = new MetalsDataCache({
 			fallback,
 			manifestUrl: 'https://example.test/data/v1/manifest.json',
 			fetcher,
-			logger: { warn: vi.fn() }
+			logger: { info, warn: vi.fn() }
 		});
 
 		await expect(cache.refresh()).resolves.toBe('updated');
@@ -131,6 +141,13 @@ describe('MetalsDataCache', () => {
 			2,
 			'https://example.test/data/v1/metals-monthly.json',
 			expect.objectContaining({ cache: 'no-store', signal: expect.any(AbortSignal) })
+		);
+		expect(info).toHaveBeenCalledWith(
+			expect.objectContaining({
+				dataVersion: cache.current().metadata.dataVersion,
+				event: 'metals_data.publication_updated'
+			}),
+			'Metals data publication updated'
 		);
 	});
 

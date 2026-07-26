@@ -3,6 +3,7 @@ import { env } from '$env/dynamic/private';
 import fallbackData from './fallback/v1/metals-monthly.json?raw';
 import fallbackManifest from './fallback/v1/manifest.json?raw';
 import { MetalsDataCache } from './cache';
+import { logger } from '../logger';
 
 const DEFAULT_MANIFEST_URL =
 	'https://raw.githubusercontent.com/Sudo-Rahman/KARA/main/website/data/v1/manifest.json';
@@ -22,6 +23,10 @@ let refreshTimer: ReturnType<typeof setInterval> | undefined;
 export function startMetalsDataRefresh(): void {
 	if (refreshTimer !== undefined) return;
 
+	logger.info({
+		event: 'metals_data.refresh_scheduled',
+		intervalMilliseconds: REFRESH_INTERVAL_MS
+	}, 'Scheduled metals data refresh');
 	void metalsDataCache.refresh();
 	refreshTimer = setInterval(() => {
 		void metalsDataCache.refresh();

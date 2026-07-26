@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import type { SpotCacheResult } from './cache';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 import {
 	CURRENCIES,
 	METALS,
@@ -14,33 +16,9 @@ export interface SpotQuoteProvider {
 	get(metal: Metal, currency: Currency): Promise<SpotCacheResult>;
 }
 
-interface ErrorWithDiagnostics extends Error {
-	code?: unknown;
-	errno?: unknown;
-	hostname?: unknown;
-	status?: unknown;
-	statusText?: unknown;
-	syscall?: unknown;
-}
-
-function errorDiagnostics(error: unknown, depth = 0): Record<string, unknown> {
-	if (!(error instanceof Error)) {
-		return { message: String(error), name: 'NonError' };
-	}
-
-	const candidate = error as ErrorWithDiagnostics;
-	const diagnostics: Record<string, unknown> = {
-		name: error.name,
-		message: error.message
-	};
-	for (const key of ['code', 'errno', 'hostname', 'status', 'statusText', 'syscall'] as const) {
-		const value = candidate[key];
-		if (typeof value === 'string' || typeof value === 'number') diagnostics[key] = value;
-	}
-	if (error.cause !== undefined && depth < 3) {
-		diagnostics.cause = errorDiagnostics(error.cause, depth + 1);
-	}
-	return diagnostics;
+export interface SpotRequestLogContext {
+	logger?: Pick<BackendLogger, 'error' | 'warn'>;
+	requestId?: string;
 }
 
 function jsonHeaders(bytes: Uint8Array): Headers {
@@ -77,8 +55,11 @@ function normalized(value: string | null): string | undefined {
 
 export async function handleSpotRequest(
 	request: Request,
-	provider: SpotQuoteProvider
+	provider: SpotQuoteProvider,
+	context: SpotRequestLogContext = {}
 ): Promise<Response> {
+	const requestId = context.requestId ?? randomUUID();
+	const logger = context.logger ?? rootLogger.child({ component: 'metals-spot', requestId });
 	const url = new URL(request.url);
 	const metal = metalSchema.safeParse(normalized(url.searchParams.get('metal')));
 	const currency = currencySchema.safeParse(normalized(url.searchParams.get('currency')));
@@ -94,15 +75,14 @@ export async function handleSpotRequest(
 	try {
 		result = await provider.get(metal.data, currency.data);
 	} catch (error) {
-		const requestId = randomUUID();
-		console.error('[metals-spot] Gold API request failed', {
-			timestamp: new Date().toISOString(),
-			requestId,
+		logger.error({
+			error: errorSummary(error),
+			event: 'metals_spot.upstream_failed',
 			metal: metal.data,
 			currency: currency.data,
-			upstream: 'https://api.gold-api.com',
-			error: errorDiagnostics(error)
-		});
+			requestId,
+			upstream: 'gold-api'
+		}, 'Gold API request failed');
 		const response = jsonError(
 			502,
 			'SPOT_UNAVAILABLE',
@@ -118,6 +98,12 @@ export async function handleSpotRequest(
 	headers.set('ETag', etag);
 	headers.set('X-Cache', result.cacheStatus);
 	if (result.cacheStatus === 'STALE') {
+		logger.warn({
+			currency: currency.data,
+			event: 'metals_spot.stale_quote_served',
+			metal: metal.data,
+			requestId
+		}, 'Serving a stale metal spot quote');
 		headers.set('Warning', '110 - "Response is stale"');
 	}
 

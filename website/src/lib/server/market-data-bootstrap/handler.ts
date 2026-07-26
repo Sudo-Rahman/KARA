@@ -4,6 +4,8 @@ import type { MetalsManifest } from '../metals-data/contracts';
 import type { SpotCacheResult, SpotCacheStatus } from '../metals-spot/cache';
 import { METALS, type Currency, type Metal } from '../metals-spot/contracts';
 import { marketDataBootstrapSchema } from './contracts';
+import type { BackendLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 const encoder = new TextEncoder();
 
@@ -61,10 +63,21 @@ export interface MarketDataBootstrapProvider {
 	get(metal: Metal, currency: Currency): Promise<SpotCacheResult>;
 }
 
+export interface MarketDataBootstrapLogContext {
+	logger?: Pick<BackendLogger, 'error' | 'warn'>;
+	requestId?: string;
+}
+
 export async function handleMarketDataBootstrapRequest(
 	request: Request,
-	provider: MarketDataBootstrapProvider
+	provider: MarketDataBootstrapProvider,
+	context: MarketDataBootstrapLogContext = {}
 ): Promise<Response> {
+	const requestId = context.requestId ?? randomUUID();
+	const logger = context.logger ?? rootLogger.child({
+		component: 'market-data-bootstrap',
+		requestId
+	});
 	const manifest = provider.currentManifest();
 	let results: SpotCacheResult[];
 	try {
@@ -76,15 +89,14 @@ export async function handleMarketDataBootstrapRequest(
 			}
 		}));
 	} catch (error) {
-		const requestId = randomUUID();
 		const failed = error instanceof SpotRequestError ? error : undefined;
-		console.error('[market-data-bootstrap] Gold API request failed', {
-			timestamp: new Date().toISOString(),
-			requestId,
+		logger.error({
+			error: errorSummary(failed?.cause ?? error),
+			event: 'market_data_bootstrap.upstream_failed',
 			metal: failed?.metal,
 			currency: 'EUR',
-			error: failed?.cause ?? error
-		});
+			requestId
+		}, 'Market data bootstrap failed while loading spot quotes');
 		const response = jsonError(
 			502,
 			'SPOT_UNAVAILABLE',
@@ -102,7 +114,13 @@ export async function handleMarketDataBootstrapRequest(
 	const headers = responseHeaders(bytes);
 	const cacheStatus = aggregateCacheStatus(results);
 	headers.set('X-Cache', cacheStatus);
-	if (cacheStatus === 'STALE') headers.set('Warning', '110 - "Response is stale"');
+	if (cacheStatus === 'STALE') {
+		logger.warn({
+			event: 'market_data_bootstrap.stale_quotes_served',
+			requestId
+		}, 'Serving a market data bootstrap with stale spot quotes');
+		headers.set('Warning', '110 - "Response is stale"');
+	}
 
 	if (matchesEtag(request.headers.get('if-none-match'), headers.get('etag')!)) {
 		return new Response(null, { status: 304, headers });

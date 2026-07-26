@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import fallbackManifest from '../metals-data/fallback/v1/manifest.json?raw';
 import type { MetalsManifest } from '../metals-data/contracts';
@@ -10,10 +10,6 @@ import {
 } from './handler';
 
 const manifest = JSON.parse(fallbackManifest) as MetalsManifest;
-
-afterEach(() => {
-	vi.restoreAllMocks();
-});
 
 function quote(metal: Metal): SpotQuote {
 	return {
@@ -174,11 +170,16 @@ describe('handleMarketDataBootstrapRequest', () => {
 				return { cacheStatus: 'HIT', quote: quote(metal) };
 			}
 		};
-		const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+		const errorLog = vi.fn();
+		const requestId = '00000000-0000-4000-8000-000000000011';
 
 		const response = await handleMarketDataBootstrapRequest(
 			new Request('https://kara.example/v1/market-data/bootstrap.json'),
-			source
+			source,
+			{
+				logger: { error: errorLog, warn: vi.fn() },
+				requestId
+			}
 		);
 		const body = await response.text();
 
@@ -190,15 +191,16 @@ describe('handleMarketDataBootstrapRequest', () => {
 			}
 		});
 		expect(body).not.toContain('upstream secret failure');
-		expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/);
+		expect(response.headers.get('x-request-id')).toBe(requestId);
 		expect(response.headers.get('cache-control')).toBe('no-store');
 		expect(errorLog).toHaveBeenCalledWith(
-			'[market-data-bootstrap] Gold API request failed',
 			expect.objectContaining({
 				currency: 'EUR',
+				event: 'market_data_bootstrap.upstream_failed',
 				metal: 'XPT',
-				requestId: response.headers.get('x-request-id')
-			})
+				requestId
+			}),
+			'Market data bootstrap failed while loading spot quotes'
 		);
 	});
 });

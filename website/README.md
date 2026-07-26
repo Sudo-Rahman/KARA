@@ -11,6 +11,8 @@ Copier `.env.example` vers `.env` et remplacer les valeurs d’exemple :
 - `PUBLIC_GOOGLE_PLAY_URL` : fiche Google Play officielle ;
 - `PUBLIC_SUPPORT_EMAIL` : adresse ouverte par les liens `mailto:` ;
 - `PUBLIC_LEGAL_NAME` : nom de l’éditeur du site.
+- `LOG_LEVEL` : niveau minimal optionnel (`trace`, `debug`, `info`, `warn`,
+  `error`, `fatal` ou `silent`), `info` par défaut.
 
 `METALS_DATA_MANIFEST_URL` est optionnelle. Elle permet à un fork de remplacer
 la source publique Kara utilisée par le cache des métaux.
@@ -217,12 +219,11 @@ et d’IP avec les marqueurs techniques associés. Les fenêtres et réservation
 expirent au plus tard après 24 heures ; un marqueur de quarantaine associé à une
 clé App Attest ou à une IP peut être conservé 7 jours.
 
-Les journaux techniques Kara sont conservés 30 jours maximum. Ils contiennent
-uniquement l’identifiant de requête, le type et la taille du média, le nombre de
-pages, le statut, la latence et les compteurs de tokens. Ils ne contiennent
-jamais le média, le texte OCR, le nom de fichier, les champs extraits, le numéro
-de série, le keyId App Attest, l’adresse IP, leurs pseudonymes HMAC, les headers
-App Attest ou la réponse OpenAI brute.
+Les journaux d’extraction contiennent uniquement l’identifiant de requête, le
+type et la taille du média, le nombre de pages, le statut, la latence et les
+compteurs de tokens. Ils ne contiennent jamais le média, le texte OCR, le nom de
+fichier, les champs extraits, le numéro de série, le keyId App Attest, l’adresse
+IP, leurs pseudonymes HMAC, les headers App Attest ou la réponse OpenAI brute.
 
 ## Cache des métaux
 
@@ -253,14 +254,39 @@ la transmet uniquement à Gold API dans l'en-tête `x-api-key` ; elle n'est ni
 intégrée au build, ni renvoyée dans les réponses publiques, ni inscrite dans les
 logs applicatifs.
 
+## Journalisation backend
+
+Le backend utilise Pino et écrit un événement JSON par ligne. Chaque événement
+porte au minimum `time`, `level`, `service`, `environment`, `event` et `msg`.
+Les requêtes `/auth/app-attest/**` et `/v1/**` ajoutent `requestId`, `method` et
+`path`; ce même `requestId` est renvoyé dans `X-Request-Id`. Les query strings,
+corps et headers HTTP ne sont pas journalisés.
+
+La journalisation cible les frontières fonctionnelles plutôt que les étapes
+internes : fin des requêtes API, challenges et inscriptions App Attest, rejets
+d’authentification et limites, état des connexions Redis, extraction assistée,
+appels Gold API, fallback stale et rafraîchissement du snapshot mensuel. Les
+routes de santé, pages et assets statiques ne produisent pas de log par requête.
+
+- `info` : démarrage, succès API importants, inscription et publication mise à jour ;
+- `warn` : entrée rejetée, quota atteint, donnée stale servie ou rafraîchissement non critique échoué ;
+- `error` : indisponibilité Redis ou upstream, réponse `5xx` et erreur non gérée.
+
+Une redaction défensive Pino masque également les champs sensibles connus si un
+futur appel tente de les journaliser (`authorization`, cookies, clés API,
+secrets, tokens, keyId App Attest, pseudonymes d’installation ou d’IP). Les logs
+ne doivent jamais recevoir de corps, de média, de réponse upstream brute ou
+d’objet de configuration. En production, conserver le format JSON natif et
+configurer la rétention Dokploy à 30 jours maximum.
+
 ### Diagnostic du cours temps réel
 
-Lorsqu'un appel Gold API échoue, le serveur écrit sur `stderr` un événement
-`[metals-spot] Gold API request failed`. Il contient l'identifiant de requête,
-le métal, la devise, le statut HTTP éventuel et la chaîne limitée des causes
-réseau. La réponse `502` expose le même identifiant dans `X-Request-Id` pour
-retrouver immédiatement le bon événement dans les logs Dokploy. La clé API, les
-headers sortants et le corps de la réponse Gold API ne sont jamais journalisés.
+Lorsqu'un appel Gold API échoue, le serveur écrit l’événement structuré
+`metals_spot.upstream_failed`. Il contient l'identifiant de requête, le métal,
+la devise, le statut HTTP éventuel et la chaîne limitée des causes réseau. La
+réponse `502` expose le même identifiant dans `X-Request-Id` pour retrouver
+immédiatement le bon événement dans les logs Dokploy. La clé API, les headers
+sortants et le corps de la réponse Gold API ne sont jamais journalisés.
 
 ## Scène et confidentialité
 

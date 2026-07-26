@@ -6,7 +6,7 @@ import { decodeBase64 } from '$lib/server/app-attest/http';
 import { appAttestRouteError, parseJSON } from '$lib/server/app-attest/route';
 import { appAttestService } from '$lib/server/app-attest/runtime';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const input = await parseJSON(request, registrationRequestSchema.parse);
 		let attestation: Buffer;
@@ -25,11 +25,12 @@ export const POST: RequestHandler = async ({ request }) => {
 			keyId: input.keyId,
 			attestation
 		});
+		locals.logger.info({ event: 'app_attest.registration_completed' }, 'App Attest key registered');
 		return Response.json(
 			{ registered: true },
 			{ status: 201, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } }
 		);
 	} catch (error) {
-		return appAttestRouteError(error);
+		return appAttestRouteError(error, locals.logger);
 	}
 };
