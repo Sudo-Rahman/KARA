@@ -37,6 +37,35 @@ struct RemoteAssetAnalysisClientTests {
         #expect(request.httpBody == photo)
     }
 
+    @Test("Autoupdating locales are sent as valid BCP-47 identifiers")
+    func normalizesAutoupdatingLocale() async throws {
+        let transport = RecordingAnalysisTransport(
+            statusCode: 200,
+            body: Self.validResponse
+        )
+        let client = RemoteAssetAnalysisClient(
+            baseURL: URL(string: "https://kara.test")!,
+            transport: transport
+        )
+
+        _ = try await client.analyze(
+            kind: .objectPhoto,
+            data: Data([0xFF, 0xD8, 0xFF, 0xD9]),
+            locale: .autoupdatingCurrent
+        )
+
+        let request = try #require(await transport.lastRequest())
+        let url = try #require(request.url)
+        let components = try #require(
+            URLComponents(url: url, resolvingAgainstBaseURL: false)
+        )
+        let locale = try #require(
+            components.queryItems?.first(where: { $0.name == "locale" })?.value
+        )
+        #expect(locale == Locale(identifier: locale).identifier(.bcp47))
+        #expect(!locale.contains("_"))
+    }
+
     @Test("Missing or additional response properties are rejected")
     func responseShapeIsStrict() async throws {
         var missingRoot = try #require(

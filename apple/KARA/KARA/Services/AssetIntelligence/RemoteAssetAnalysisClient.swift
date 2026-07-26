@@ -88,7 +88,7 @@ nonisolated final class RemoteAssetAnalysisClient: RemoteAssetAnalyzing, @unchec
     }
 
     private static func bcp47Identifier(for locale: Locale) -> String {
-        locale.identifier(.bcp47)
+        Locale(identifier: locale.identifier).identifier(.bcp47)
     }
 
     private static func error(for status: Int, data: Data) -> AssetAnalysisError {
