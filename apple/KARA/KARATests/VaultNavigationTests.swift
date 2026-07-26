@@ -5,28 +5,29 @@ import Testing
 @Suite("Vault navigation")
 @MainActor
 struct VaultNavigationTests {
-    @Test("The vault router keeps pushed and modal destinations contextual")
-    func routesInventoryAssetDocumentsAndModals() {
+    @Test("The app exposes three stable top-level tabs in product order")
+    func exposesTopLevelTabs() {
+        #expect(AppTab.allCases == [.vault, .sale, .settings])
+        #expect(Set(AppTab.allCases.map(\.id)).count == AppTab.allCases.count)
+    }
+
+    @Test("The vault router keeps detail and editing destinations contextual")
+    func routesInventoryAssetDocumentsAndEditing() {
         let assetID = UUID()
         let router = AppRouter()
 
         router.showInventory()
         router.showAsset(assetID)
         router.showDocuments(for: assetID)
-        router.showSettings()
 
         #expect(router.path == [
             .inventory,
             .assetDetail(assetID),
             .assetDocuments(assetID),
-            .settings,
         ])
 
         router.presentEditor(for: assetID)
         #expect(router.sheet == .editAsset(assetID))
-
-        router.presentSaleSimulation()
-        #expect(router.sheet == .saleSimulation)
 
         router.presentAssetCreation()
         #expect(router.cover == .assetCreation)
@@ -35,7 +36,6 @@ struct VaultNavigationTests {
         #expect(router.path == [
             .inventory,
             .assetDetail(assetID),
-            .assetDocuments(assetID),
         ])
     }
 }

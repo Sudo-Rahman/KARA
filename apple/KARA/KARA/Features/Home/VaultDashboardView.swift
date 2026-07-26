@@ -61,15 +61,6 @@ struct VaultDashboardView: View {
                     .foregroundStyle(theme.goldBright)
                     .accessibilityAddTraits(.isHeader)
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    router.showSettings()
-                } label: {
-                    Image(systemName: "gearshape")
-                }
-                .accessibilityLabel(Text("settings.title"))
-                .accessibilityIdentifier("home.settings")
-            }
         }
         .accessibilityIdentifier("vault.dashboard")
     }
@@ -358,24 +349,13 @@ struct VaultDashboardView: View {
     }
 
     private var primaryActions: some View {
-        VStack(spacing: KaraSpacing.small) {
-            Button {
-                router.presentAssetCreation()
-            } label: {
-                Label("vault.action.add", systemImage: "plus")
-            }
-            .buttonStyle(.karaPrimaryAction)
-            .accessibilityIdentifier("home.add")
-
-            Button {
-                router.presentSaleSimulation()
-            } label: {
-                Label("vault.action.simulate", systemImage: "equal.circle")
-            }
-            .buttonStyle(.karaSecondaryAction)
-            .disabled(valuation.coverage.valuedRecordCount == 0)
-            .accessibilityIdentifier("vault.simulate")
+        Button {
+            router.presentAssetCreation()
+        } label: {
+            Label("vault.action.add", systemImage: "plus")
         }
+        .buttonStyle(.karaPrimaryAction)
+        .accessibilityIdentifier("home.add")
     }
 
     private var compactMetricCardHeight: CGFloat? {
@@ -588,9 +568,12 @@ struct VaultDashboardView: View {
                                 Spacer(minLength: KaraSpacing.small)
 
                                 VStack(alignment: .trailing, spacing: KaraSpacing.xSmall) {
-                                    Text(quote.sourceUpdatedAt, format: .dateTime.day().month(.abbreviated).hour().minute())
-                                        .font(.caption2)
-                                        .foregroundStyle(theme.muted)
+                                    Text(
+                                        quote.sourceUpdatedAt,
+                                        format: .dateTime.day().month(.abbreviated).hour().minute()
+                                    )
+                                    .font(.caption2)
+                                    .foregroundStyle(theme.muted)
 
                                     if isUsingCachedMarketData {
                                         Label("vault.market.cached", systemImage: "clock.arrow.circlepath")

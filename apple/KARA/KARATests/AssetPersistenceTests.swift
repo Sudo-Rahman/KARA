@@ -43,6 +43,7 @@ struct AssetPersistenceTests {
         #expect(attachments.count == 1)
         #expect(attachments.first?.assetID == savedAsset.id)
         #expect(attachments.first?.data == invoiceData)
+        #expect(attachments.first?.dataByteCount == Int64(invoiceData.count))
         #expect(sellers.first?.normalizedName == "maison lemoine")
         #expect(locations.first?.normalizedName == "coffre personnel")
     }
@@ -212,8 +213,35 @@ struct AssetPersistenceTests {
         #expect(attachments.first?.kind == .certificate)
         #expect(attachments.first?.kindRawValue == "certificate")
         #expect(attachments.first?.filename == "certificat CPOR.pdf")
+        #expect(attachments.first?.dataByteCount == 2)
         #expect(AssetAttachmentKind.objectPhoto.rawValue == "objectPhoto")
         #expect(AssetAttachmentKind.invoice.rawValue == "invoice")
+    }
+
+    @Test("Attachment byte-count metadata is backfilled away from the main context")
+    func backfillsMissingAttachmentByteCountMetadata() async throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let attachment = AssetAttachment(
+            assetID: UUID(),
+            kind: .invoice,
+            filename: "facture.pdf",
+            mimeType: "application/pdf",
+            data: Data([0x25, 0x50, 0x44, 0x46])
+        )
+        attachment.dataByteCount = nil
+        context.insert(attachment)
+        try context.save()
+
+        let backfill = AssetAttachmentByteCountBackfill(modelContainer: container)
+        let updatedAttachmentCount = try await backfill.backfillMissingByteCounts()
+
+        let verificationContext = ModelContext(container)
+        let persistedAttachment = try #require(
+            verificationContext.fetch(FetchDescriptor<AssetAttachment>()).first
+        )
+        #expect(updatedAttachmentCount == 1)
+        #expect(persistedAttachment.dataByteCount == 4)
     }
 
     @Test("Attachment rename and deletion are scoped to their owning asset")

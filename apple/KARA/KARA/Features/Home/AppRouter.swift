@@ -1,23 +1,27 @@
 import Foundation
 import Observation
 
+nonisolated enum AppTab: String, CaseIterable, Identifiable, Sendable {
+    case vault
+    case sale
+    case settings
+
+    var id: Self { self }
+}
+
 enum AppRoute: Hashable {
     case inventory
     case assetDetail(UUID)
     case assetDocuments(UUID)
-    case settings
 }
 
 enum AppSheetDestination: Hashable, Identifiable {
     case editAsset(UUID)
-    case saleSimulation
 
     var id: String {
         switch self {
         case let .editAsset(assetID):
             "edit-asset-\(assetID.uuidString)"
-        case .saleSimulation:
-            "sale-simulation"
         }
     }
 }
@@ -57,16 +61,8 @@ final class AppRouter {
         path.append(.assetDocuments(assetID))
     }
 
-    func showSettings() {
-        path.append(.settings)
-    }
-
     func presentEditor(for assetID: UUID) {
         sheet = .editAsset(assetID)
-    }
-
-    func presentSaleSimulation() {
-        sheet = .saleSimulation
     }
 
     func presentAssetCreation() {

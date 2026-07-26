@@ -247,6 +247,7 @@ struct AssetCharacteristicsStepView: View {
 
             AssetFieldSurface {
                 Toggle("characteristics.gemstones.toggle", isOn: gemstonesBinding)
+                    .tint(theme.cobaltBright)
                     .accessibilityIdentifier("characteristics.gemstones.toggle")
 
                 if hasGemstones {

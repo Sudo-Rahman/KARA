@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SaleSimulationView: View {
     @Environment(KaraTheme.self) private var theme
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let assets: [Asset]
@@ -19,45 +18,42 @@ struct SaleSimulationView: View {
         )
         let currentTotals = totals(for: renderData)
 
-        NavigationStack {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
-                    introduction
-                    totalsCard(currentTotals)
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
+                introduction
+                totalsCard(currentTotals)
 
-                    if renderData.valuedAssets.isEmpty {
-                        unavailableState
-                    } else {
-                        selectionHeader(totals: currentTotals)
+                if renderData.valuedAssets.isEmpty {
+                    unavailableState
+                } else {
+                    selectionHeader(totals: currentTotals)
 
-                        ForEach(renderData.valuedAssets) { asset in
-                            assetSelectionRow(
-                                asset,
-                                valuation: renderData.assetValuations[asset.id],
-                                photoData: renderData.objectPhotoData[asset.id]
-                            )
-                        }
-
-                        disclaimer
+                    ForEach(renderData.valuedAssets) { asset in
+                        assetSelectionRow(
+                            asset,
+                            valuation: renderData.assetValuations[asset.id],
+                            photoData: renderData.objectPhotoData[asset.id]
+                        )
                     }
-                }
-                .padding(.horizontal, KaraSpacing.medium)
-                .padding(.top, KaraSpacing.small)
-                .padding(.bottom, KaraSpacing.xxLarge)
-            }
-            .scrollIndicators(.hidden)
-            .background(theme.background.ignoresSafeArea())
-            .navigationTitle("sale-simulation.title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("sale-simulation.close") {
-                        dismiss()
-                    }
+
+                    disclaimer
                 }
             }
+            .padding(.horizontal, KaraSpacing.medium)
+            .padding(.top, KaraSpacing.small)
+            .padding(.bottom, KaraSpacing.xxLarge)
         }
+        .scrollIndicators(.hidden)
+        .background(theme.background.ignoresSafeArea())
+        .navigationTitle("sale-simulation.title")
+        .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("sale-simulation.screen")
+        .onChange(of: availableQuantities, initial: true) { _, availableQuantities in
+            selectedQuantities = SaleSimulationCalculator.reconciledSelections(
+                selectedQuantities,
+                availableQuantities: availableQuantities
+            )
+        }
     }
 
     private var introduction: some View {
@@ -203,7 +199,10 @@ struct SaleSimulationView: View {
         valuation item: AssetValuation?,
         photoData: Data?
     ) -> some View {
-        let selected = selectedQuantities[asset.id, default: 0]
+        let selected = min(
+            max(0, selectedQuantities[asset.id, default: 0]),
+            max(0, asset.quantity)
+        )
 
         return KaraCard(padding: KaraSpacing.medium) {
             VStack(spacing: KaraSpacing.medium) {
@@ -345,8 +344,15 @@ struct SaleSimulationView: View {
         SaleSimulationCalculator.totals(for: simulationLines(for: renderData))
     }
 
+    private var availableQuantities: [UUID: Int] {
+        Dictionary(uniqueKeysWithValues: assets.map { ($0.id, max(0, $0.quantity)) })
+    }
+
     private func setQuantity(_ quantity: Int, for asset: Asset) {
-        selectedQuantities[asset.id] = min(max(0, quantity), asset.quantity)
+        selectedQuantities[asset.id] = min(
+            max(0, quantity),
+            max(0, asset.quantity)
+        )
     }
 
     private func performanceColor(_ value: Decimal) -> Color {

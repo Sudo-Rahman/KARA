@@ -19,23 +19,63 @@ struct AppShellView: View {
 
     @State private var router = AppRouter()
     @State private var marketStore = MarketDataStore.live()
+    @State private var valuationCache = PortfolioValuationCache()
     @State private var valuationAsOf = Date()
+    @State private var selectedTab: AppTab = .vault
 
     var body: some View {
         @Bindable var router = router
+        let valuation = valuationCache.value(
+            for: PortfolioValuationInput(
+                assets: snapshots,
+                market: marketStore.marketSnapshot,
+                asOf: valuationAsOf
+            ),
+            using: valuationEngine
+        )
+        let attachments = activeAttachments
 
-        NavigationStack(path: $router.path) {
-            VaultDashboardView(
-                assets: assets,
-                attachments: activeAttachments,
-                valuation: portfolioValuation,
-                metalQuotes: metalQuotes,
-                isRefreshing: marketStore.isRefreshing,
-                isUsingCachedMarketData: marketStore.isUsingCachedData,
-                refresh: refreshMarket
-            )
-            .navigationDestination(for: AppRoute.self) { route in
-                destination(for: route)
+        TabView(selection: $selectedTab) {
+            Tab(value: .vault) {
+                NavigationStack(path: $router.path) {
+                    VaultDashboardView(
+                        assets: assets,
+                        attachments: attachments,
+                        valuation: valuation,
+                        metalQuotes: metalQuotes,
+                        isRefreshing: marketStore.isRefreshing,
+                        isUsingCachedMarketData: marketStore.isUsingCachedData,
+                        refresh: refreshMarket
+                    )
+                    .navigationDestination(for: AppRoute.self) { route in
+                        destination(for: route, portfolioValuation: valuation)
+                    }
+                }
+            } label: {
+                Label("tabs.vault", systemImage: "lock.fill")
+                    .accessibilityIdentifier("tab.vault")
+            }
+
+            Tab(value: .sale) {
+                NavigationStack {
+                    SaleSimulationView(
+                        assets: assets,
+                        attachments: attachments,
+                        valuation: valuation
+                    )
+                }
+            } label: {
+                Label("tabs.sale", systemImage: "equal.circle.fill")
+                    .accessibilityIdentifier("tab.sale")
+            }
+
+            Tab(value: .settings) {
+                NavigationStack {
+                    SettingsView()
+                }
+            } label: {
+                Label("tabs.settings", systemImage: "gearshape.fill")
+                    .accessibilityIdentifier("tab.settings")
             }
         }
         .environment(router)
@@ -71,7 +111,10 @@ struct AppShellView: View {
     }
 
     @ViewBuilder
-    private func destination(for route: AppRoute) -> some View {
+    private func destination(
+        for route: AppRoute,
+        portfolioValuation: PortfolioValuation
+    ) -> some View {
         switch route {
         case .inventory:
             InventoryView(
@@ -110,8 +153,6 @@ struct AppShellView: View {
             } else {
                 MissingAssetView()
             }
-        case .settings:
-            SettingsView()
         }
     }
 
@@ -129,12 +170,6 @@ struct AppShellView: View {
                     MissingAssetView()
                 }
             }
-        case .saleSimulation:
-            SaleSimulationView(
-                assets: assets,
-                attachments: activeAttachments,
-                valuation: portfolioValuation
-            )
         }
     }
 
@@ -161,15 +196,6 @@ struct AppShellView: View {
         return attachments.filter { activeAssetIDs.contains($0.assetID) }
     }
 
-    private var portfolioValuation: PortfolioValuation {
-        valuationEngine.valuate(
-            assets: snapshots,
-            market: marketStore.marketSnapshot,
-            historyMonths: nil,
-            asOf: valuationAsOf
-        )
-    }
-
     private var metalQuotes: [MarketMetal: SpotQuote] {
         Dictionary(uniqueKeysWithValues: MarketMetal.allCases.compactMap { metal in
             marketStore.quote(for: metal).map { (metal, $0) }
@@ -193,6 +219,36 @@ struct AppShellView: View {
         let repository = SwiftDataAssetRepository(modelContext: modelContext)
         let cutoff = AssetTrashPolicy.expirationCutoff(asOf: .now)
         try? repository.purgeExpiredAssets(olderThan: cutoff)
+    }
+}
+
+private nonisolated struct PortfolioValuationInput: Equatable, Sendable {
+    let assets: [PortfolioAssetSnapshot]
+    let market: PortfolioMarketSnapshot
+    let asOf: Date
+}
+
+private final class PortfolioValuationCache {
+    private var input: PortfolioValuationInput?
+    private var output: PortfolioValuation?
+
+    func value(
+        for input: PortfolioValuationInput,
+        using engine: PortfolioValuationEngine
+    ) -> PortfolioValuation {
+        if self.input == input, let output {
+            return output
+        }
+
+        let output = engine.valuate(
+            assets: input.assets,
+            market: input.market,
+            historyMonths: nil,
+            asOf: input.asOf
+        )
+        self.input = input
+        self.output = output
+        return output
     }
 }
 

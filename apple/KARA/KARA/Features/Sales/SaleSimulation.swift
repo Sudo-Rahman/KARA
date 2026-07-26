@@ -31,6 +31,22 @@ nonisolated struct SaleSimulationTotals: Equatable, Sendable {
 }
 
 nonisolated enum SaleSimulationCalculator {
+    static func reconciledSelections(
+        _ selections: [UUID: Int],
+        availableQuantities: [UUID: Int]
+    ) -> [UUID: Int] {
+        selections.reduce(into: [:]) { result, selection in
+            guard let availableQuantity = availableQuantities[selection.key] else {
+                return
+            }
+
+            let quantity = min(max(0, selection.value), max(0, availableQuantity))
+            if quantity > 0 {
+                result[selection.key] = quantity
+            }
+        }
+    }
+
     static func totals(for lines: [SaleSimulationLine]) -> SaleSimulationTotals {
         let selectedLines = lines.compactMap { line -> ProratedLine? in
             guard line.availableQuantity > 0 else { return nil }

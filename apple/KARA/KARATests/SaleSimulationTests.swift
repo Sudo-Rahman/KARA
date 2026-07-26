@@ -4,6 +4,30 @@ import Testing
 
 @Suite("Sale simulation")
 struct SaleSimulationTests {
+    @Test("Reconciles persisted selections when inventory quantities change")
+    func reconcilesSelectionsWithInventory() {
+        let reducedAssetID = UUID()
+        let unchangedAssetID = UUID()
+        let removedAssetID = UUID()
+
+        let reconciled = SaleSimulationCalculator.reconciledSelections(
+            [
+                reducedAssetID: 5,
+                unchangedAssetID: 1,
+                removedAssetID: 3,
+            ],
+            availableQuantities: [
+                reducedAssetID: 2,
+                unchangedAssetID: 4,
+            ]
+        )
+
+        #expect(reconciled == [
+            reducedAssetID: 2,
+            unchangedAssetID: 1,
+        ])
+    }
+
     @Test("Prorates current value and cost by selected integer quantity")
     func proratesSelectedObjects() {
         let totals = SaleSimulationCalculator.totals(for: [

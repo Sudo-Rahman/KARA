@@ -222,7 +222,7 @@ private struct AIOnboardingConsentControl: View {
             Toggle("onboarding.intelligence.toggle.title", isOn: $preferences.isEnabled)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(theme.ink)
-                .tint(theme.goldBright)
+                .tint(theme.cobaltBright)
                 .accessibilityIdentifier("onboarding.intelligence.toggle")
 
             Text("onboarding.intelligence.toggle.detail")

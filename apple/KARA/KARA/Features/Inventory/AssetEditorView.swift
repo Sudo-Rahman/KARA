@@ -173,7 +173,6 @@ struct AssetEditorView: View {
                 AssetEditorCopy.text("asset-editor.save-error.message")
             }
         }
-        .tint(theme.cobaltBright)
     }
 
     private var identitySection: some View {
@@ -349,6 +348,7 @@ struct AssetEditorView: View {
                 AssetEditorCopy.string("asset-editor.field.purchase-date-known"),
                 isOn: purchaseDateEnabledBinding
             )
+            .tint(theme.cobaltBright)
             .accessibilityIdentifier("asset-editor.purchase-date-toggle")
 
             if editor.draft.purchaseDate != nil {

@@ -124,6 +124,7 @@ final class AssetAttachment {
     var filename: String = ""
     var mimeType: String = "application/octet-stream"
     var pageCount: Int?
+    var dataByteCount: Int64?
     @Attribute(.externalStorage) var data: Data = Data()
     var createdAt: Date = Date()
 
@@ -148,6 +149,7 @@ final class AssetAttachment {
         self.filename = filename
         self.mimeType = mimeType
         self.pageCount = pageCount
+        dataByteCount = Int64(data.count)
         self.data = data
         self.createdAt = createdAt
     }

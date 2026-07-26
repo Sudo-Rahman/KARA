@@ -12,6 +12,8 @@ final class VaultExperienceUITests: XCTestCase {
         let app = launchSeededVault()
 
         XCTAssertTrue(element("vault.estimated-value", in: app).exists)
+        XCTAssertFalse(app.buttons["home.settings"].exists)
+        XCTAssertFalse(app.buttons["vault.simulate"].exists)
         capture("vault-01-dashboard", in: app)
 
         let inventoryCard = app.buttons["vault.inventory-card"]
@@ -81,10 +83,9 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(maskedValue.waitForExistence(timeout: 5))
         capture("vault-05-privacy", in: app)
 
-        let simulate = app.buttons["vault.simulate"]
-        reveal(simulate, in: app, attempts: 12)
-        XCTAssertTrue(simulate.isHittable)
-        simulate.tap()
+        let saleTab = app.tabBars.buttons["Vente"]
+        XCTAssertTrue(saleTab.waitForExistence(timeout: 5))
+        saleTab.tap()
 
         let saleScreen = element("sale-simulation.screen", in: app)
         XCTAssertTrue(saleScreen.waitForExistence(timeout: 5))
@@ -100,6 +101,41 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(increase.isHittable)
         increase.tap()
         capture("vault-06-sale-simulation", in: app)
+    }
+
+    @MainActor
+    func testHomeDashboardAndSettingsExposeTheirPrimaryContent() {
+        let app = launchSeededVault()
+
+        XCTAssertFalse(app.tabBars.buttons["Analyse"].exists)
+
+        let history = element("vault.history", in: app)
+        reveal(history, in: app, attempts: 10)
+        XCTAssertTrue(history.exists)
+
+        let metalPrices = element("vault.metal-prices", in: app)
+        reveal(metalPrices, in: app, attempts: 16)
+        XCTAssertTrue(metalPrices.exists)
+        capture("vault-07-home-dashboard", in: app)
+
+        let settingsTab = app.tabBars.buttons["Réglages"]
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
+        settingsTab.tap()
+        XCTAssertTrue(element("settings.screen", in: app).waitForExistence(timeout: 5))
+
+        let aiToggle = app.switches["settings.ai.toggle"]
+        let privacyToggle = app.switches["settings.privacy.toggle"]
+        XCTAssertTrue(aiToggle.exists)
+        XCTAssertTrue(privacyToggle.exists)
+
+        let trash = element("settings.trash", in: app)
+        reveal(trash, in: app, attempts: 8)
+        XCTAssertTrue(trash.exists)
+        XCTAssertTrue(trash.isHittable)
+        trash.tap()
+        XCTAssertTrue(element("settings.trash.screen", in: app).waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["La corbeille est vide"].exists)
+        capture("vault-08-settings-trash", in: app)
     }
 
     @MainActor
@@ -143,7 +179,7 @@ final class VaultExperienceUITests: XCTestCase {
             XCTWaiter.wait(for: [removalExpectation], timeout: 5),
             .completed
         )
-        capture("vault-08-after-delete", in: app)
+        capture("vault-09-after-delete", in: app)
     }
 
     @MainActor
@@ -152,20 +188,12 @@ final class VaultExperienceUITests: XCTestCase {
         app.launchArguments = [
             "-KARAUseInMemoryStore",
             "-KARASeedVault",
-            "-KARAShowOnboarding",
+            "-kara.onboarding.hasCompleted", "YES",
             "-kara.privacy.hidesSensitiveValues", "NO",
             "-AppleLanguages", "(fr)",
             "-AppleLocale", "fr_FR",
         ]
         app.launch()
-
-        let action = app.buttons["onboarding.primary.action"]
-        XCTAssertTrue(action.waitForExistence(timeout: 10))
-        action.tap()
-        XCTAssertTrue(waitForLabel("Continuer", on: action))
-        action.tap()
-        XCTAssertTrue(waitForLabel("Ajouter mon premier objet", on: action))
-        action.tap()
 
         XCTAssertTrue(element("vault.dashboard", in: app).waitForExistence(timeout: 10))
         return app
@@ -187,19 +215,6 @@ final class VaultExperienceUITests: XCTestCase {
             .matching(NSPredicate(format: "label == %@", label))
         return matches.allElementsBoundByIndex.first(where: \.isHittable)
             ?? matches.firstMatch
-    }
-
-    @MainActor
-    private func waitForLabel(
-        _ label: String,
-        on element: XCUIElement,
-        timeout: TimeInterval = 5
-    ) -> Bool {
-        let expectation = XCTNSPredicateExpectation(
-            predicate: NSPredicate(format: "label == %@", label),
-            object: element
-        )
-        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
     @MainActor

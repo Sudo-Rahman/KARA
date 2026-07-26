@@ -36,7 +36,6 @@ struct AssetCreationFlowView: View {
             .toolbar(.hidden, for: .navigationBar)
         }
         .background(theme.background.ignoresSafeArea())
-        .tint(theme.cobaltBright)
         .interactiveDismissDisabled()
         .sensoryFeedback(.selection, trigger: router.currentStep)
         .sensoryFeedback(.success, trigger: savedFeedback)

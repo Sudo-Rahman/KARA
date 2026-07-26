@@ -66,6 +66,7 @@ struct AssetPurchaseStepView: View {
 
             AssetFieldSurface {
                 Toggle("details.purchase-date-known", isOn: purchaseDateEnabledBinding)
+                    .tint(theme.cobaltBright)
                     .accessibilityIdentifier("details.purchase-date-toggle")
 
                 if state.draft.purchaseDate != nil {

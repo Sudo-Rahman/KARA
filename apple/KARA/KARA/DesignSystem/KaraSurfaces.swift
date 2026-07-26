@@ -1,6 +1,21 @@
 import SwiftUI
 
 extension View {
+    /// Gives swipe actions in custom scroll containers the same coordinated,
+    /// animated dismissal behavior as native lists on supported systems.
+    @ViewBuilder
+    func karaCoordinatedSwipeActions() -> some View {
+#if compiler(>=6.3)
+        if #available(iOS 27.0, *) {
+            swipeActionsContainer()
+        } else {
+            self
+        }
+#else
+        self
+#endif
+    }
+
     /// Lets a page-level horizontal scroller reach the screen edges while its
     /// resting content remains aligned with the surrounding page content.
     func karaFullBleedHorizontalScroll(pageInset: CGFloat) -> some View {

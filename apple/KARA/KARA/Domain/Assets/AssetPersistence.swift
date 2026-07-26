@@ -265,17 +265,7 @@ final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentMana
             guard let deletedAt = $0.deletedAt else { return false }
             return deletedAt <= cutoff
         }
-        guard !expiredAssets.isEmpty else { return }
-
-        do {
-            for asset in expiredAssets {
-                try deletePermanentlyWithoutSaving(asset)
-            }
-            try saveAction(modelContext)
-        } catch {
-            modelContext.rollback()
-            throw error
-        }
+        try permanentlyDelete(expiredAssets)
     }
 
     func permanentlyDelete(assetID: UUID) throws {
@@ -283,8 +273,23 @@ final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentMana
             throw AssetRepositoryError.assetNotFound(assetID)
         }
 
+        try permanentlyDelete([asset])
+    }
+
+    func permanentlyDeleteAllTrashedAssets() throws {
+        let descriptor = FetchDescriptor<Asset>(
+            predicate: #Predicate { $0.deletedAt != nil }
+        )
+        try permanentlyDelete(modelContext.fetch(descriptor))
+    }
+
+    private func permanentlyDelete(_ assets: [Asset]) throws {
+        guard !assets.isEmpty else { return }
+
         do {
-            try deletePermanentlyWithoutSaving(asset)
+            for asset in assets {
+                try deletePermanentlyWithoutSaving(asset)
+            }
             try saveAction(modelContext)
         } catch {
             modelContext.rollback()
@@ -447,5 +452,31 @@ final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentMana
     private func optionalDisplayName(_ value: String) -> String? {
         let displayName = AssetSuggestionNormalizer.displayName(value)
         return displayName.isEmpty ? nil : displayName
+    }
+}
+
+@ModelActor
+actor AssetAttachmentByteCountBackfill {
+    private static let batchSize = 50
+
+    @discardableResult
+    func backfillMissingByteCounts() throws -> Int {
+        var updatedAttachmentCount = 0
+
+        while true {
+            var descriptor = FetchDescriptor<AssetAttachment>(
+                predicate: #Predicate { $0.dataByteCount == nil }
+            )
+            descriptor.fetchLimit = Self.batchSize
+
+            let attachments = try modelContext.fetch(descriptor)
+            guard !attachments.isEmpty else { return updatedAttachmentCount }
+
+            for attachment in attachments {
+                attachment.dataByteCount = Int64(attachment.data.count)
+            }
+            try modelContext.save()
+            updatedAttachmentCount += attachments.count
+        }
     }
 }

@@ -18,6 +18,7 @@ struct InventoryView: View {
     @State private var deletionRequest: AssetDeletionRequest?
     @State private var isShowingDeletionConfirmation = false
     @State private var isShowingDeletionError = false
+    @State private var legacySwipeDismissalGeneration = 0
 
     var body: some View {
         let renderData = InventoryRenderData(
@@ -66,6 +67,10 @@ struct InventoryView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .id(InventorySwipeRowID(
+                            assetID: asset.id,
+                            dismissalGeneration: legacySwipeDismissalGeneration
+                        ))
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button("asset-delete.action.delete", role: .destructive) {
                                 requestDeletion(of: asset)
@@ -97,7 +102,13 @@ struct InventoryView: View {
             .padding(.top, KaraSpacing.small)
             .padding(.bottom, KaraSpacing.xxLarge)
         }
+        .karaCoordinatedSwipeActions()
         .scrollIndicators(.hidden)
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                dismissLegacySwipeActionsIfNeeded()
+            }
+        )
         .background(theme.background.ignoresSafeArea())
         .navigationTitle("inventory.title")
         .navigationBarTitleDisplayMode(.large)
@@ -441,6 +452,23 @@ struct InventoryView: View {
         deletionRequest = AssetDeletionRequest(id: asset.id, name: asset.name)
         isShowingDeletionConfirmation = true
     }
+
+    private func dismissLegacySwipeActionsIfNeeded() {
+#if compiler(>=6.3)
+        if #available(iOS 27.0, *) {
+            return
+        }
+#endif
+
+        withAnimation(.easeOut(duration: 0.22)) {
+            legacySwipeDismissalGeneration &+= 1
+        }
+    }
+}
+
+private struct InventorySwipeRowID: Hashable {
+    let assetID: UUID
+    let dismissalGeneration: Int
 }
 
 private struct InventoryRenderData {

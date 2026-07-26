@@ -41,6 +41,7 @@ protocol AssetTrashManaging {
     func trashedAssets() throws -> [Asset]
     func purgeExpiredAssets(olderThan cutoff: Date) throws
     func permanentlyDelete(assetID: UUID) throws
+    func permanentlyDeleteAllTrashedAssets() throws
 }
 
 @MainActor
