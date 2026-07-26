@@ -1343,39 +1343,6 @@
 
     },
     "asset-flow.analysis.completed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suggestions ready"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suggestions prêtes"
-          }
-        }
-      }
-    },
-    "asset-flow.analysis.completed-offline" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suggestions ready (offline)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suggestions prêtes (hors ligne)"
-          }
-        }
-      }
-    },
-    "asset-flow.analysis.completed-online" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5067,13 +5034,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Online: the media passes through Kara to OpenAI, which may keep abuse-monitoring logs for up to 30 days. Kara does not store it. Offline: analysis stays on device."
+            "value" : "The media passes through Kara to OpenAI, which may keep abuse-monitoring logs for up to 30 days. Kara does not store it. An internet connection is required."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En ligne : le média transite via Kara vers OpenAI, qui peut garder des journaux anti-abus jusqu’à 30 jours. Kara ne le stocke pas. Hors connexion : l’analyse reste locale."
+            "value" : "Le média transite via Kara vers OpenAI, qui peut garder des journaux anti-abus jusqu’à 30 jours. Kara ne le stocke pas. Une connexion internet est nécessaire."
           }
         }
       }
@@ -6284,13 +6251,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When online, only the selected photo or invoice copy is sent through Kara to OpenAI. Kara does not store it; OpenAI may retain abuse-monitoring logs for up to 30 days. Offline analysis stays on device."
+            "value" : "Only the selected photo or invoice copy is sent through Kara to OpenAI. Kara does not store it; OpenAI may retain abuse-monitoring logs for up to 30 days. An internet connection is required."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En ligne, seule la photo ou la copie de facture choisie transite via Kara vers OpenAI. Kara ne la stocke pas ; OpenAI peut conserver des journaux anti-abus jusqu’à 30 jours. Hors connexion, l’analyse reste locale."
+            "value" : "Seule la photo ou la copie de facture choisie transite via Kara vers OpenAI. Kara ne la stocke pas ; OpenAI peut conserver des journaux anti-abus jusqu’à 30 jours. Une connexion internet est nécessaire."
           }
         }
       }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ASSET_CATALOG, ASSET_PRESET_IDS } from './catalog';
+import { ASSET_CATALOG, ASSET_PRESET_COMPATIBILITY, ASSET_PRESET_IDS } from './catalog';
 
 const text = (maximum: number) => z.string().trim().min(1).max(maximum);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -60,23 +60,61 @@ export const modelSuggestionSchema = modelSuggestionWireSchema.superRefine((sugg
 
 	const presetID = suggestion.presetId?.value;
 	if (presetID !== undefined) {
-		const preset = ASSET_CATALOG.find(([id]) => id === presetID);
-		if (preset && suggestion.category !== null && suggestion.category.value !== preset[2]) {
+		const preset = ASSET_CATALOG.find((entry) => entry.id === presetID);
+		if (preset && suggestion.category !== null && suggestion.category.value !== preset.category) {
 			context.addIssue({
 				code: 'custom',
 				path: ['category', 'value'],
 				message: 'category contradicts presetId'
 			});
 		}
-		if (preset && preset[3] !== null && suggestion.metal !== null && suggestion.metal.value !== preset[3]) {
+		if (preset && preset.metal !== null && suggestion.metal !== null && suggestion.metal.value !== preset.metal) {
 			context.addIssue({
 				code: 'custom',
 				path: ['metal', 'value'],
 				message: 'metal contradicts presetId'
 			});
 		}
+		if (preset && !matchesPresetNumber(suggestion.weightGrams?.value, preset.weightGrams)) {
+			context.addIssue({
+				code: 'custom',
+				path: ['weightGrams', 'value'],
+				message: 'weightGrams contradicts presetId'
+			});
+		}
+		if (preset && !matchesPresetNumber(
+			suggestion.finenessPermille?.value,
+			preset.finenessPermille,
+			ASSET_PRESET_COMPATIBILITY.finenessPermille.relativeTolerance,
+			ASSET_PRESET_COMPATIBILITY.finenessPermille.absoluteTolerance
+		)) {
+			context.addIssue({
+				code: 'custom',
+				path: ['finenessPermille', 'value'],
+				message: 'finenessPermille contradicts presetId'
+			});
+		}
+		if (preset?.metalKarat !== null && suggestion.metalKarat !== null &&
+			suggestion.metalKarat.value !== preset?.metalKarat) {
+			context.addIssue({
+				code: 'custom',
+				path: ['metalKarat', 'value'],
+				message: 'metalKarat contradicts presetId'
+			});
+		}
 	}
 });
+
+function matchesPresetNumber(
+	value: number | undefined,
+	expected: number | null,
+	relativeTolerance: number = ASSET_PRESET_COMPATIBILITY.weightGrams.relativeTolerance,
+	absoluteTolerance: number = ASSET_PRESET_COMPATIBILITY.weightGrams.absoluteTolerance
+): boolean {
+	if (value === undefined || expected === null) return true;
+	const tolerance = Math.max(absoluteTolerance, Math.abs(expected) * relativeTolerance);
+	return Math.abs(value - expected) <= tolerance;
+}
 
 const publicMoneyCandidateSchema = candidateSchema(z.object({
 	minorUnits: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),

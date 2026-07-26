@@ -98,6 +98,7 @@ struct AssetDomainTests {
             name: "Bague solitaire",
             category: .jewelry,
             quantity: 3,
+            pricePaidMinorUnits: 1_000,
             currencyCode: "USD",
             sellerName: "Autre vendeur",
             invoiceNumber: "INV-42"
@@ -106,6 +107,7 @@ struct AssetDomainTests {
         #expect(draft.name == "Bague solitaire")
         #expect(draft.category == .jewelry)
         #expect(draft.quantity == 3)
+        #expect(draft.pricePaidMinorUnits == 1_000)
         #expect(draft.currencyCode == "USD")
         #expect(draft.sellerName == "Maison Lemoine")
         #expect(draft.invoiceNumber.isEmpty)
@@ -115,21 +117,11 @@ struct AssetDomainTests {
     func suggestionResolverUsesHighestConfidence() {
         let object = AssetAnalysisSuggestion(
             weightGrams: 100,
-            fieldAssessments: [
-                .weightGrams: AssetFieldAssessment(
-                    confidencePercent: 82,
-                    evidenceKind: .visibleText
-                )
-            ]
+            confidencePercent: 82
         )
         let invoice = AssetAnalysisSuggestion(
             weightGrams: 50,
-            fieldAssessments: [
-                .weightGrams: AssetFieldAssessment(
-                    confidencePercent: 80,
-                    evidenceKind: .visibleText
-                )
-            ]
+            confidencePercent: 80
         )
 
         let resolved = AssetAnalysisSuggestionResolver.resolve(
@@ -137,8 +129,8 @@ struct AssetDomainTests {
             invoice: invoice
         )
 
-        #expect(resolved.weightGrams == 100)
-        #expect(resolved.assessment(for: .weightGrams)?.confidencePercent == 82)
+        #expect(resolved.weightGrams?.value == 100)
+        #expect(resolved.weightGrams?.assessment.confidencePercent == 82)
     }
 
     @Test("The invoice wins an exact confidence tie")
@@ -151,8 +143,8 @@ struct AssetDomainTests {
             invoice: invoice
         )
 
-        #expect(resolved.weightGrams == 50)
-        #expect(resolved.assessment(for: .weightGrams)?.mediaKind == .invoice)
+        #expect(resolved.weightGrams?.value == 50)
+        #expect(resolved.weightGrams?.assessment.confidencePercent == 80)
     }
 
     @Test("A lone low-confidence candidate still prefills")
@@ -164,8 +156,8 @@ struct AssetDomainTests {
             invoice: nil
         )
 
-        #expect(resolved.weightGrams == 100)
-        #expect(resolved.assessment(for: .weightGrams)?.confidencePercent == 15)
+        #expect(resolved.weightGrams?.value == 100)
+        #expect(resolved.weightGrams?.assessment.confidencePercent == 15)
     }
 
     @Test("An exact preset supplies reversible catalog specifications")
@@ -181,13 +173,12 @@ struct AssetDomainTests {
             invoice: nil
         )
 
-        #expect(resolved.weightGrams == 31.103_476_8)
-        #expect(resolved.metalKarat == 24)
-        #expect(resolved.finenessPermille == 999.9)
-        #expect(resolved.assessment(for: .weightGrams) == AssetFieldAssessment(
+        #expect(resolved.weightGrams?.value == 31.103_476_8)
+        #expect(resolved.metalKarat?.value == 24)
+        #expect(resolved.finenessPermille?.value == 999.9)
+        #expect(resolved.weightGrams?.assessment == AssetFieldAssessment(
             confidencePercent: 91,
-            evidenceKind: .catalogDerived,
-            mediaKind: .objectPhoto
+            evidenceKind: .catalogDerived
         ))
     }
 
@@ -209,8 +200,10 @@ struct AssetDomainTests {
             invoice: invoice
         )
 
-        #expect(resolved.pricePaidMinorUnits == 12_000)
-        #expect(resolved.currencyCode == "CHF")
+        #expect(resolved.pricePaid?.value == AssetAnalysisPrice(
+            minorUnits: 12_000,
+            currency: .swissFranc
+        ))
     }
 
     @Test("A higher-confidence explicit measurement invalidates an incompatible preset")
@@ -231,8 +224,8 @@ struct AssetDomainTests {
         )
 
         #expect(resolved.presetID == nil)
-        #expect(resolved.weightGrams == 50)
-        #expect(resolved.assessment(for: .weightGrams)?.evidenceKind == .visibleText)
+        #expect(resolved.weightGrams?.value == 50)
+        #expect(resolved.weightGrams?.assessment.evidenceKind == .visibleText)
     }
 
     @Test("A manual specification prevents an incompatible AI preset")

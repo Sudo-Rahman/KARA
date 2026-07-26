@@ -64,7 +64,7 @@ export const supportContent = {
 						question: 'Le préremplissage par IA sera-t-il obligatoire ?',
 						answer: [
 							'Non. Il sera désactivé par défaut et vous pourrez revenir sur votre choix à tout moment. Son seul objectif sera de proposer des valeurs pour les champs de l’application, sans suivi, publicité ni profilage.',
-							'Les données envoyées par l’API OpenAI standard ne servent pas à entraîner ses modèles par défaut. OpenAI pourra toutefois conserver des journaux anti-abus susceptibles d’inclure ce contenu pendant un maximum de 30 jours. Hors connexion, l’analyse pourra utiliser le modèle local sans envoyer le média.'
+							'Les données envoyées par l’API OpenAI standard ne servent pas à entraîner ses modèles par défaut. OpenAI pourra toutefois conserver des journaux anti-abus susceptibles d’inclure ce contenu pendant un maximum de 30 jours. Le préremplissage nécessite une connexion internet et n’effectue aucune analyse locale.'
 						]
 					},
 					{
@@ -199,7 +199,7 @@ export const supportContent = {
 						question: 'Will AI-assisted form filling be required?',
 						answer: [
 							'No. It will be off by default, and you will be able to change your choice at any time. Its sole purpose will be to suggest values for app fields, with no tracking, advertising, or profiling.',
-							'Data submitted through the standard OpenAI API is not used to train its models by default. OpenAI may nevertheless keep abuse-monitoring logs, which may include this content, for up to 30 days. When offline, analysis may use the local model without sending the media.'
+							'Data submitted through the standard OpenAI API is not used to train its models by default. OpenAI may nevertheless keep abuse-monitoring logs, which may include this content, for up to 30 days. Form filling requires an internet connection and performs no local analysis.'
 						]
 					},
 					{

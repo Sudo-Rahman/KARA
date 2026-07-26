@@ -5,15 +5,16 @@ import { authenticateAppAttestRequest } from './middleware';
 describe('App Attest API middleware', () => {
 	it('rejects a protected API request without attestation headers', async () => {
 		const logger = { error: vi.fn(), warn: vi.fn() };
-		const response = await authenticateAppAttestRequest(
+		const result = await authenticateAppAttestRequest(
 			new Request('https://kara.test/v1/manifest.json'),
 			{} as never,
-			undefined,
 			logger
 		);
 
-		expect(response?.status).toBe(401);
-		expect(await response?.json()).toEqual({
+		expect(result.authenticated).toBe(false);
+		if (result.authenticated) throw new Error('Expected rejection');
+		expect(result.response.status).toBe(401);
+		expect(await result.response.json()).toEqual({
 			error: {
 				code: 'app_attest_required',
 				message: 'App Attest headers are required'
@@ -46,17 +47,13 @@ describe('App Attest API middleware', () => {
 				bindingBodyHash = (await input.request()).bodySHA256;
 			}
 		};
-		let principal: { keyId: string; body: Buffer } | undefined;
+		const result = await authenticateAppAttestRequest(request, service as never);
 
-		const rejection = await authenticateAppAttestRequest(
-			request,
-			service as never,
-			(value) => { principal = value; }
-		);
-
-		expect(rejection).toBeNull();
-		expect(request.bodyUsed).toBe(true);
+		expect(result.authenticated).toBe(true);
+		if (!result.authenticated) throw new Error('Expected authenticated principal');
+		expect(request.bodyUsed).toBe(false);
 		expect(bindingBodyHash).toMatch(/^[a-f0-9]{64}$/);
-		expect(principal).toEqual({ keyId: 'device-key', body: Buffer.from('binary-media') });
+		expect(result.principal).toEqual({ keyId: 'device-key', body: Buffer.from('binary-media') });
+		expect(await request.text()).toBe('binary-media');
 	});
 });

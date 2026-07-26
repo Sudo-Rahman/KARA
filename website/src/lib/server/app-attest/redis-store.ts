@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { createClient } from 'redis';
 import type { BackendLogger } from '../logger';
-import { errorSummary, logger as rootLogger } from '../logger';
+import { logger as rootLogger } from '../logger';
+import { RedisConnection } from '../redis-connection';
 
 import type {
 	AppAttestStore,
@@ -58,11 +58,8 @@ return 'accepted'
 `;
 
 export class RedisAppAttestStore implements AppAttestStore {
-	readonly #client: ReturnType<typeof createClient>;
-	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
+	readonly #redis: RedisConnection;
 	readonly #prefix: string;
-	#connectPromise: Promise<void> | null = null;
-	#available: boolean | undefined;
 
 	constructor(
 		url: string,
@@ -70,78 +67,55 @@ export class RedisAppAttestStore implements AppAttestStore {
 		logger: Pick<BackendLogger, 'error' | 'info'> = rootLogger.child({ component: 'app-attest.redis' })
 	) {
 		this.#prefix = prefix;
-		this.#logger = logger;
-		this.#client = createClient({ url });
-		this.#client.on('error', (error) => {
-			if (this.#available === false) return;
-			this.#available = false;
-			this.#logger.error({
-				error: errorSummary(error),
-				event: 'redis.unavailable'
-			}, 'App Attest Redis connection unavailable');
-		});
-		this.#client.on('ready', () => {
-			if (this.#available === true) return;
-			const recovered = this.#available === false;
-			this.#available = true;
-			this.#logger.info({
-				event: recovered ? 'redis.recovered' : 'redis.ready'
-			}, recovered ? 'App Attest Redis connection recovered' : 'App Attest Redis connection ready');
+		this.#redis = new RedisConnection(url, logger, {
+			unavailable: 'App Attest Redis connection unavailable',
+			recovered: 'App Attest Redis connection recovered',
+			ready: 'App Attest Redis connection ready'
 		});
 	}
 
 	async ping(): Promise<void> {
-		await this.#ensureConnected();
-		await this.#client.ping();
+		await this.#redis.ping();
 	}
 
 	async close(): Promise<void> {
-		if (this.#client.isOpen) await this.#client.close();
+		await this.#redis.close();
 	}
 
 	async saveChallenge(challenge: ChallengeRecord): Promise<void> {
-		await this.#ensureConnected();
 		const ttl = Math.max(1, new Date(challenge.expiresAt).getTime() - Date.now());
-		await this.#client.pSetEx(this.#challengeKey(challenge.id), ttl, JSON.stringify(challenge));
+		await this.#redis.execute((client) =>
+			client.pSetEx(this.#challengeKey(challenge.id), ttl, JSON.stringify(challenge))
+		);
 	}
 
 	async getChallenge(id: string): Promise<ChallengeRecord | null> {
-		await this.#ensureConnected();
-		return parseJSON<ChallengeRecord>(await this.#client.get(this.#challengeKey(id)));
+		return parseJSON<ChallengeRecord>(
+			await this.#redis.execute((client) => client.get(this.#challengeKey(id)))
+		);
 	}
 
 	async getKey(keyId: string): Promise<RegisteredAppAttestKey | null> {
-		await this.#ensureConnected();
-		return parseJSON<RegisteredAppAttestKey>(await this.#client.get(this.#registeredKey(keyId)));
+		return parseJSON<RegisteredAppAttestKey>(
+			await this.#redis.execute((client) => client.get(this.#registeredKey(keyId)))
+		);
 	}
 
 	async consumeRegistration(
 		challengeId: string,
 		key: RegisteredAppAttestKey
 	): Promise<RegistrationResult> {
-		await this.#ensureConnected();
-		return await this.#client.eval(REGISTER_SCRIPT, {
+		return await this.#redis.execute((client) => client.eval(REGISTER_SCRIPT, {
 			keys: [this.#challengeKey(challengeId), this.#registeredKey(key.keyId)],
 			arguments: [key.keyId, JSON.stringify(key)]
-		}) as RegistrationResult;
+		})) as RegistrationResult;
 	}
 
 	async consumeAssertion(input: AssertionConsumption): Promise<AssertionConsumptionResult> {
-		await this.#ensureConnected();
-		return await this.#client.eval(ASSERT_SCRIPT, {
+		return await this.#redis.execute((client) => client.eval(ASSERT_SCRIPT, {
 			keys: [this.#challengeKey(input.challengeId), this.#registeredKey(input.keyId)],
 			arguments: [input.keyId, String(input.signCount), String(input.recentCounterWindow)]
-		}) as AssertionConsumptionResult;
-	}
-
-	async #ensureConnected(): Promise<void> {
-		if (this.#client.isReady) return;
-		if (!this.#connectPromise) {
-			this.#connectPromise = this.#client.connect().then(() => undefined).finally(() => {
-				this.#connectPromise = null;
-			});
-		}
-		await this.#connectPromise;
+		})) as AssertionConsumptionResult;
 	}
 
 	#challengeKey(id: string): string {

@@ -5,12 +5,18 @@ on:
     branches: [main]
     paths:
       - "website/**"
+      - "apple/KARA/KARA/Domain/Assets/AssetCatalog*.swift"
+      - "shared/asset-catalog.json"
+      - "scripts/generate-asset-catalog.mjs"
       - ".github/workflows/metals-data-ci.yml"
       - ".github/workflows/metals-data-publish.yml"
   pull_request:
     branches: [main]
     paths:
       - "website/**"
+      - "apple/KARA/KARA/Domain/Assets/AssetCatalog*.swift"
+      - "shared/asset-catalog.json"
+      - "scripts/generate-asset-catalog.mjs"
       - ".github/workflows/metals-data-ci.yml"
       - ".github/workflows/metals-data-publish.yml"
 

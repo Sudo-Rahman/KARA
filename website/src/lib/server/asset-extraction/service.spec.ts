@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { modelSuggestionSchema } from './contracts';
+import { AnalysisError } from './errors';
 import { AssetExtractionService } from './service';
 import type { AnalysisQuotaStore } from './redis-quota';
 
@@ -111,6 +112,48 @@ describe('asset extraction service', () => {
 		);
 		expect(logger.warn).not.toHaveBeenCalled();
 		expect(logger.error).not.toHaveBeenCalled();
+	});
+
+	test('keeps a successful extraction when best-effort lock release fails', async () => {
+		const bytes = jpeg();
+		const { service, quota, logger } = dependencies();
+		vi.mocked(quota.release).mockRejectedValue(new Error('Redis unavailable'));
+
+		const response = await service.handle({
+			request: new Request(
+				'https://kara.example/v1/asset-extraction?kind=object-photo&locale=fr-FR',
+				{ method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'Content-Length': String(bytes.length) } }
+			),
+			principal: { keyId: 'raw-key', body: bytes },
+			clientAddress: '203.0.113.10'
+		});
+
+		expect(response.status).toBe(200);
+		expect(logger.error).toHaveBeenCalledWith(
+			expect.objectContaining({ event: 'asset_extraction.lock_release_failed' }),
+			'Asset extraction lock release failed'
+		);
+	});
+
+	test('preserves an extraction failure when lock release also fails', async () => {
+		const bytes = jpeg();
+		const { service, quota, extractor } = dependencies();
+		vi.mocked(extractor.extract).mockRejectedValue(
+			new AnalysisError('ANALYSIS_REFUSED', 422, 'The document could not be analyzed')
+		);
+		vi.mocked(quota.release).mockRejectedValue(new Error('Redis unavailable'));
+
+		const response = await service.handle({
+			request: new Request(
+				'https://kara.example/v1/asset-extraction?kind=object-photo&locale=fr-FR',
+				{ method: 'POST', headers: { 'Content-Type': 'image/jpeg', 'Content-Length': String(bytes.length) } }
+			),
+			principal: { keyId: 'raw-key', body: bytes },
+			clientAddress: '203.0.113.10'
+		});
+
+		expect(response.status).toBe(422);
+		expect(await response.json()).toMatchObject({ error: { code: 'ANALYSIS_REFUSED' } });
 	});
 
 	test('counts authenticated invalid input but never reserves or calls OpenAI', async () => {

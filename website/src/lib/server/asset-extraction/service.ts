@@ -7,7 +7,7 @@ import { validateAnalysisMedia, type AnalysisKind } from './media';
 import type { ExtractionResult, OpenAIAssetExtractor } from './openai';
 import type { AnalysisQuotaStore, AttemptDecision, ReservationDecision } from './redis-quota';
 import type { BackendLogger } from '../logger';
-import { logger as rootLogger } from '../logger';
+import { errorSummary, logger as rootLogger } from '../logger';
 
 export interface AppAttestPrincipal {
 	keyId: string;
@@ -78,8 +78,9 @@ export class AssetExtractionService {
 		let usage: ExtractionResult['usage'] = {
 			inputTokens: null, outputTokens: null, totalTokens: null
 		};
-		let status = 500;
-		let code: 'OK' | AnalysisError['code'] = 'ANALYSIS_UNAVAILABLE';
+	let status = 500;
+	let code: 'OK' | AnalysisError['code'] = 'ANALYSIS_UNAVAILABLE';
+	let failure: Record<string, unknown> | undefined;
 
 		try {
 			const nowMilliseconds = startedAt.getTime();
@@ -127,7 +128,11 @@ export class AssetExtractionService {
 				try {
 					await this.#quota.release(installationId, ipId, reservation.lockToken);
 				} catch (error) {
-					throw unavailable(error);
+					this.#logger.error({
+						error: errorSummary(error),
+						event: 'asset_extraction.lock_release_failed',
+						requestId
+					}, 'Asset extraction lock release failed');
 				}
 			}
 
@@ -138,6 +143,7 @@ export class AssetExtractionService {
 			const known = error instanceof AnalysisError ? error : unavailable(error);
 			status = known.status;
 			code = known.code;
+			if (known.cause !== undefined) failure = errorSummary(known.cause);
 			return jsonResponse(
 				{ error: { code: known.code, message: known.message } },
 				known.status,
@@ -155,6 +161,7 @@ export class AssetExtractionService {
 				latencyMilliseconds: Math.max(0, this.#now().getTime() - startedAt.getTime()),
 				status,
 				code,
+				...(failure ? { error: failure } : {}),
 				inputTokens: usage.inputTokens,
 				outputTokens: usage.outputTokens,
 				totalTokens: usage.totalTokens

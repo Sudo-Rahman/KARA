@@ -68,7 +68,7 @@ struct AssetCreationFlowTests {
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
 
-        #expect(state.objectAnalysisPhase == .completed(.online))
+        #expect(state.objectAnalysisPhase == .completed)
         #expect(state.draft.name == "Nom choisi")
         #expect(state.draft.category == .custom)
     }
@@ -416,33 +416,22 @@ struct AssetCreationFlowTests {
 }
 
 private struct ImmediateAnalyzer: AssetAnalyzing {
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
-        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
+        AssetAnalysisSuggestion()
     }
 
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisResult {
-        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    func analyzeInvoice(_ document: PreparedMediaDocument) async throws -> AssetAnalysisSuggestion {
+        AssetAnalysisSuggestion()
     }
 }
 
 private struct SuggestedNameAnalyzer: AssetAnalyzing {
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
-        AssetAnalysisResult(
-            suggestion: AssetAnalysisSuggestion(name: "Nom IA", category: .custom),
-            source: .online
-        )
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
+        AssetAnalysisSuggestion(name: "Nom IA", category: .custom)
     }
 
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisResult {
-        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    func analyzeInvoice(_ document: PreparedMediaDocument) async throws -> AssetAnalysisSuggestion {
+        AssetAnalysisSuggestion()
     }
 }
 
@@ -458,44 +447,36 @@ private actor SequencedAnalyzer: AssetAnalyzing {
         self.invoiceSuggestions = invoiceSuggestions
     }
 
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
         let suggestion = objectSuggestions.isEmpty
             ? AssetAnalysisSuggestion()
             : objectSuggestions.removeFirst()
-        return AssetAnalysisResult(suggestion: suggestion, source: .online)
+        return suggestion
     }
 
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisResult {
+    func analyzeInvoice(_ document: PreparedMediaDocument) async throws -> AssetAnalysisSuggestion {
         let suggestion = invoiceSuggestions.isEmpty
             ? AssetAnalysisSuggestion()
             : invoiceSuggestions.removeFirst()
-        return AssetAnalysisResult(suggestion: suggestion, source: .online)
+        return suggestion
     }
 }
 
 private actor CancellableAnalyzer: AssetAnalyzing {
     private var cancelled = false
 
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
         do {
             try await Task.sleep(for: .seconds(60))
-            return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+            return AssetAnalysisSuggestion()
         } catch is CancellationError {
             cancelled = true
             throw CancellationError()
         }
     }
 
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisResult {
-        AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+    func analyzeInvoice(_ document: PreparedMediaDocument) async throws -> AssetAnalysisSuggestion {
+        AssetAnalysisSuggestion()
     }
 
     func wasCancelled() -> Bool {
@@ -506,18 +487,14 @@ private actor CancellableAnalyzer: AssetAnalyzing {
 private actor CountingAnalyzer: AssetAnalyzing {
     private var calls = 0
 
-    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisResult {
+    func analyzeObjectPhoto(_ data: Data) async throws -> AssetAnalysisSuggestion {
         calls += 1
-        return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+        return AssetAnalysisSuggestion()
     }
 
-    func analyzeInvoice(
-        _ data: Data,
-        filename: String,
-        mimeType: String
-    ) async throws -> AssetAnalysisResult {
+    func analyzeInvoice(_ document: PreparedMediaDocument) async throws -> AssetAnalysisSuggestion {
         calls += 1
-        return AssetAnalysisResult(suggestion: AssetAnalysisSuggestion(), source: .online)
+        return AssetAnalysisSuggestion()
     }
 
     func callCount() -> Int { calls }

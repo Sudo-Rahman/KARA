@@ -22,11 +22,14 @@ struct RemoteAssetAnalysisClientTests {
             locale: Locale(identifier: "fr_FR")
         )
 
-        #expect(suggestion.name == "Lingotin 10 g")
-        #expect(suggestion.category == .bar)
-        #expect(suggestion.serialNumber == "00-AbC-42")
-        #expect(suggestion.pricePaidMinorUnits == 239_001)
-        #expect(suggestion.assessment(for: .weightGrams)?.confidencePercent == 99)
+        #expect(suggestion.name?.value == "Lingotin 10 g")
+        #expect(suggestion.category?.value == .bar)
+        #expect(suggestion.serialNumber?.value == "00-AbC-42")
+        #expect(suggestion.pricePaid?.value == AssetAnalysisPrice(
+            minorUnits: 239_001,
+            currency: .euro
+        ))
+        #expect(suggestion.weightGrams?.assessment.confidencePercent == 99)
         let request = try #require(await transport.lastRequest())
         #expect(request.httpMethod == "POST")
         #expect(request.url?.path == "/v1/asset-extraction")
@@ -161,8 +164,8 @@ struct RemoteAssetAnalysisClientTests {
             data: Data([0x01]),
             locale: Locale(identifier: "fr_FR")
         )
-        #expect(result.presetID == "gold-bar-1oz")
-        #expect(result.weightGrams == 31.1)
+        #expect(result.presetID?.value == "gold-bar-1oz")
+        #expect(result.weightGrams?.value == 31.1)
     }
 
     @Test("Stable backend error codes become user-facing analysis errors")

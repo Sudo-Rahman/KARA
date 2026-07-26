@@ -1,6 +1,6 @@
-import { createClient } from 'redis';
 import type { BackendLogger } from '../logger';
-import { errorSummary, logger as rootLogger } from '../logger';
+import { logger as rootLogger } from '../logger';
+import { RedisConnection } from '../redis-connection';
 
 const MINUTE_WINDOW_MS = 60_000;
 const DAY_WINDOW_MS = 86_400_000;
@@ -159,11 +159,8 @@ export interface AnalysisQuotaStore {
 }
 
 export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
-	readonly #client: ReturnType<typeof createClient>;
-	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
+	readonly #redis: RedisConnection;
 	readonly #prefix: string;
-	#connectPromise: Promise<void> | null = null;
-	#available: boolean | undefined;
 
 	constructor(
 		url: string,
@@ -173,35 +170,19 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 		})
 	) {
 		this.#prefix = prefix;
-		this.#logger = logger;
-		this.#client = createClient({ url });
-		this.#client.on('error', (error) => {
-			if (this.#available === false) return;
-			this.#available = false;
-			this.#logger.error({
-				error: errorSummary(error),
-				event: 'redis.unavailable'
-			}, 'Asset extraction Redis connection unavailable');
-		});
-		this.#client.on('ready', () => {
-			if (this.#available === true) return;
-			const recovered = this.#available === false;
-			this.#available = true;
-			this.#logger.info({
-				event: recovered ? 'redis.recovered' : 'redis.ready'
-			}, recovered
-				? 'Asset extraction Redis connection recovered'
-				: 'Asset extraction Redis connection ready');
+		this.#redis = new RedisConnection(url, logger, {
+			unavailable: 'Asset extraction Redis connection unavailable',
+			recovered: 'Asset extraction Redis connection recovered',
+			ready: 'Asset extraction Redis connection ready'
 		});
 	}
 
 	async ping(): Promise<void> {
-		await this.#ensureConnected();
-		await this.#client.ping();
+		await this.#redis.ping();
 	}
 
 	async close(): Promise<void> {
-		if (this.#client.isOpen) await this.#client.close();
+		await this.#redis.close();
 	}
 
 	async recordAttempt(input: {
@@ -212,8 +193,7 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 	}): Promise<AttemptDecision> {
 		assertPseudonym(input.installationId);
 		assertPseudonym(input.ipId);
-		await this.#ensureConnected();
-		const result = await this.#client.eval(ATTEMPT_SCRIPT, {
+		const result = await this.#redis.execute((client) => client.eval(ATTEMPT_SCRIPT, {
 			keys: [
 				this.#key(input.installationId, 'attempts:minute'),
 				this.#key(input.installationId, 'attempts:day'),
@@ -226,7 +206,7 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 				String(input.nowMilliseconds), input.requestId,
 				String(MINUTE_WINDOW_MS), String(DAY_WINDOW_MS), String(QUARANTINE_MS)
 			]
-		});
+		}));
 		return parseAttemptDecision(result);
 	}
 
@@ -238,8 +218,7 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 	}): Promise<ReservationDecision> {
 		assertPseudonym(input.installationId);
 		assertPseudonym(input.ipId);
-		await this.#ensureConnected();
-		const result = await this.#client.eval(RESERVE_SCRIPT, {
+		const result = await this.#redis.execute((client) => client.eval(RESERVE_SCRIPT, {
 			keys: [
 				this.#key(input.installationId, 'quarantine'),
 				this.#key(input.installationId, 'reservations:day'),
@@ -252,7 +231,7 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 				String(input.nowMilliseconds), input.requestId,
 				String(DAY_WINDOW_MS), String(CONCURRENCY_LOCK_MS)
 			]
-		});
+		}));
 		const decision = parseReservationDecision(result);
 		return decision.kind === 'accepted' ? { ...decision, lockToken: input.requestId } : decision;
 	}
@@ -260,24 +239,13 @@ export class RedisAnalysisQuotaStore implements AnalysisQuotaStore {
 	async release(installationId: string, ipId: string, lockToken: string): Promise<void> {
 		assertPseudonym(installationId);
 		assertPseudonym(ipId);
-		await this.#ensureConnected();
-		await this.#client.eval(RELEASE_SCRIPT, {
+		await this.#redis.execute((client) => client.eval(RELEASE_SCRIPT, {
 			keys: [
 				this.#key(installationId, 'concurrent'),
 				`${this.#prefix}:ip:${ipId}:concurrent`
 			],
 			arguments: [lockToken]
-		});
-	}
-
-	async #ensureConnected(): Promise<void> {
-		if (this.#client.isReady) return;
-		if (!this.#connectPromise) {
-			this.#connectPromise = this.#client.connect().then(() => undefined).finally(() => {
-				this.#connectPromise = null;
-			});
-		}
-		await this.#connectPromise;
+		}));
 	}
 
 	#key(installationId: string, suffix: string): string {

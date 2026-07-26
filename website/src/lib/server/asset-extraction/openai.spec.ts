@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
+import { APIConnectionTimeoutError, APIUserAbortError } from 'openai';
 
 import { OpenAIAssetExtractor, SYSTEM_PROMPT, type ResponsesBoundary } from './openai';
 
@@ -145,16 +146,14 @@ describe('OpenAI asset extractor', () => {
 		).rejects.toMatchObject({ code: 'ANALYSIS_UNAVAILABLE', status: 503 });
 		expect(throttled).toHaveBeenCalledOnce();
 
-		const timedOut = vi.fn().mockRejectedValue(Object.assign(new Error('deadline'), {
-			name: 'APIConnectionTimeoutError'
-		}));
+		const timedOut = vi.fn().mockRejectedValue(new APIConnectionTimeoutError());
 		await expect(
 			new OpenAIAssetExtractor({ parse: timedOut } as ResponsesBoundary).extract(input)
 		).rejects.toMatchObject({ code: 'ANALYSIS_TIMEOUT', status: 504 });
 		expect(timedOut).toHaveBeenCalledOnce();
 	});
 
-	test('combines client cancellation with the independent 45-second timeout signal', async () => {
+	test('passes client cancellation to the SDK without misclassifying it as a timeout', async () => {
 		const controller = new AbortController();
 		let upstreamSignal: AbortSignal | undefined;
 		const parse = vi.fn().mockImplementation(async (
@@ -163,9 +162,7 @@ describe('OpenAI asset extractor', () => {
 		) => {
 			upstreamSignal = options.signal;
 			await new Promise<void>((_resolve, reject) => {
-				options.signal.addEventListener('abort', () => reject(
-					Object.assign(new Error('aborted'), { name: 'AbortError' })
-				), { once: true });
+				options.signal.addEventListener('abort', () => reject(new APIUserAbortError()), { once: true });
 			});
 			throw new Error('unreachable');
 		});
@@ -182,7 +179,7 @@ describe('OpenAI asset extractor', () => {
 		await vi.waitFor(() => expect(parse).toHaveBeenCalledOnce());
 		controller.abort();
 
-		await expect(promise).rejects.toMatchObject({ code: 'ANALYSIS_TIMEOUT', status: 504 });
+		await expect(promise).rejects.toMatchObject({ code: 'ANALYSIS_UNAVAILABLE', status: 503 });
 		expect(upstreamSignal?.aborted).toBe(true);
 	});
 });

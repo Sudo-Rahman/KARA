@@ -29,7 +29,7 @@ Le registre App Attest nécessite également quatre variables privées :
 L’extraction assistée est coupée par défaut et nécessite :
 
 - `ASSET_EXTRACTION_ENABLED=true` : interrupteur serveur, à laisser à `false` tant que le déploiement n’est pas prêt ;
-- `OPENAI_API_KEY` : clé d’un projet OpenAI isolé, restreinte à l’écriture sur Responses et à GPT‑5.6 Sol ;
+- `OPENAI_API_KEY` : clé d’un projet OpenAI isolé, restreinte à l’écriture sur Responses et à GPT‑5.6 Luna ;
 - `ASSET_EXTRACTION_HMAC_SECRET` : secret base64 d’au moins 32 octets, généré avec `openssl rand -base64 32` et distinct entre staging et production ;
 - `ASSET_EXTRACTION_REDIS_PREFIX` : espace de clés optionnel, utile si plusieurs environnements partagent Redis.
 

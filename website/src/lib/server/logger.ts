@@ -79,6 +79,7 @@ export function errorSummary(error: unknown, depth = 0): Record<string, unknown>
 		code?: unknown;
 		errno?: unknown;
 		hostname?: unknown;
+		requestID?: unknown;
 		status?: unknown;
 		statusText?: unknown;
 		syscall?: unknown;
@@ -87,7 +88,7 @@ export function errorSummary(error: unknown, depth = 0): Record<string, unknown>
 		name: error.name,
 		message: error.message
 	};
-	for (const key of ['code', 'errno', 'hostname', 'status', 'statusText', 'syscall'] as const) {
+	for (const key of ['code', 'errno', 'hostname', 'requestID', 'status', 'statusText', 'syscall'] as const) {
 		const value = candidate[key];
 		if (typeof value === 'string' || typeof value === 'number') summary[key] = value;
 	}

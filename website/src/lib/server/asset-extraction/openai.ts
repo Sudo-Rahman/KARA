@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { APIConnectionTimeoutError, APIError, APIUserAbortError } from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import type {
 	ResponseCreateParamsNonStreaming,
@@ -137,7 +137,7 @@ export class OpenAIAssetExtractor {
 					format: zodTextFormat(modelSuggestionWireSchema, 'asset_extraction')
 				}
 			}, {
-				signal: AbortSignal.any([input.signal, AbortSignal.timeout(OPENAI_TIMEOUT_MS)])
+				signal: input.signal
 			});
 		} catch (error) {
 			throw upstreamError(error);
@@ -213,16 +213,38 @@ function containsRefusal(value: unknown): boolean {
 
 function upstreamError(error: unknown): AnalysisError {
 	if (error instanceof AnalysisError) return error;
-	const candidate = error as { name?: unknown; status?: unknown; code?: unknown };
-	if (candidate?.name === 'AbortError' || candidate?.name === 'APIConnectionTimeoutError') {
-		return new AnalysisError('ANALYSIS_TIMEOUT', 504, 'The analysis service timed out');
+	const cause = sanitizedUpstreamCause(error);
+	if (error instanceof APIConnectionTimeoutError) {
+		return new AnalysisError(
+			'ANALYSIS_TIMEOUT', 504, 'The analysis service timed out', undefined, { cause }
+		);
 	}
-	if (candidate?.status === 403 || candidate?.code === 'content_filter') {
-		return new AnalysisError('ANALYSIS_REFUSED', 422, 'The document could not be analyzed');
+	if (error instanceof APIUserAbortError) {
+		return new AnalysisError(
+			'ANALYSIS_UNAVAILABLE', 503, 'The analysis service is temporarily unavailable',
+			undefined, { cause }
+		);
+	}
+	if (error instanceof APIError && (error.status === 403 || error.code === 'content_filter')) {
+		return new AnalysisError(
+			'ANALYSIS_REFUSED', 422, 'The document could not be analyzed', undefined, { cause }
+		);
 	}
 	return new AnalysisError(
 		'ANALYSIS_UNAVAILABLE',
 		503,
-		'The analysis service is temporarily unavailable'
+		'The analysis service is temporarily unavailable',
+		undefined,
+		{ cause }
 	);
+}
+
+function sanitizedUpstreamCause(error: unknown): Error {
+	const source = error instanceof APIError ? error : undefined;
+	return Object.assign(new Error('OpenAI request failed'), {
+		name: error instanceof Error ? error.constructor.name : 'UnknownOpenAIError',
+		...(source?.status === undefined ? {} : { status: source.status }),
+		...(source?.code ? { code: source.code } : {}),
+		...(source?.requestID ? { requestID: source.requestID } : {})
+	});
 }

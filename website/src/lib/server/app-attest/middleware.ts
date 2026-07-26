@@ -14,9 +14,11 @@ const ASSERTION_HEADER = 'X-Kara-App-Attest-Assertion';
 export async function authenticateAppAttestRequest(
 	request: Request,
 	service: AppAttestAuthService | (() => AppAttestAuthService),
-	onAuthenticated?: (principal: AuthenticatedAppAttestRequest) => void,
 	logger?: Pick<BackendLogger, 'error' | 'warn'>
-): Promise<Response | null> {
+): Promise<
+	| { authenticated: true; principal: AuthenticatedAppAttestRequest }
+	| { authenticated: false; response: Response }
+> {
 	const keyId = request.headers.get(KEY_ID_HEADER)?.trim();
 	const challengeId = request.headers.get(CHALLENGE_ID_HEADER)?.trim();
 	const encodedAssertion = request.headers.get(ASSERTION_HEADER)?.trim();
@@ -27,7 +29,7 @@ export async function authenticateAppAttestRequest(
 			'App Attest headers are required'
 		);
 		logRejection(logger, error);
-		return appAttestErrorResponse(error);
+		return { authenticated: false, response: appAttestErrorResponse(error) };
 	}
 
 	try {
@@ -38,16 +40,15 @@ export async function authenticateAppAttestRequest(
 			challengeId,
 			assertion: decodeBase64(encodedAssertion, ASSERTION_HEADER),
 			request: async () => {
-				body = await requestBody(request);
+				body = await requestBody(request.clone());
 				return requestBinding(request, body);
 			}
 		});
 		if (!body) body = Buffer.alloc(0);
-		onAuthenticated?.({ keyId, body });
-		return null;
+		return { authenticated: true, principal: { keyId, body } };
 	} catch (error) {
 		logRejection(logger, error);
-		return appAttestErrorResponse(error);
+		return { authenticated: false, response: appAttestErrorResponse(error) };
 	}
 }
 

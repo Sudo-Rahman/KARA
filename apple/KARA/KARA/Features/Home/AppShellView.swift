@@ -14,7 +14,7 @@ struct AppShellView: View {
     ) private var assets: [Asset]
     @Query(sort: \AssetAttachment.createdAt, order: .reverse) private var attachments: [AssetAttachment]
 
-    private let analyzer: any AssetAnalyzing = RemoteFirstAssetAnalysisService()
+    private let analyzer: any AssetAnalyzing = RemoteAssetAnalysisService()
     private let valuationEngine = PortfolioValuationEngine()
 
     @State private var router = AppRouter()

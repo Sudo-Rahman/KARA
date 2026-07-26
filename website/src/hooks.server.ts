@@ -21,7 +21,6 @@ const handleRequestLogging: Handle = async ({ event, resolve }) => {
 	const requestId = randomUUID();
 	const pathname = deLocalizeUrl(event.url).pathname;
 	const shouldLog = pathname.startsWith('/v1/') || pathname.startsWith('/auth/app-attest/');
-	const shouldLogCompletion = shouldLog && pathname !== '/v1/asset-extraction';
 	const startedAt = performance.now();
 	event.locals.requestId = requestId;
 	event.locals.logger = logger.child({
@@ -35,7 +34,6 @@ const handleRequestLogging: Handle = async ({ event, resolve }) => {
 	if (!shouldLog) return response;
 
 	response.headers.set('X-Request-Id', requestId);
-	if (!shouldLogCompletion) return response;
 	const context = {
 		event: 'http.request.completed',
 		latencyMilliseconds: Math.max(0, Math.round(performance.now() - startedAt)),
@@ -61,7 +59,6 @@ const handleParaglide: Handle = ({ event, resolve }) => paraglideMiddleware(even
 
 const handleAppAttest: Handle = async ({ event, resolve }) => {
 	const pathname = deLocalizeUrl(event.url).pathname;
-	const isAssetExtraction = pathname === '/v1/asset-extraction';
 	const publicEndpoint = pathname === '/auth/app-attest/challenges'
 		? 'challenge'
 		: pathname === '/auth/app-attest/registrations'
@@ -103,24 +100,17 @@ const handleAppAttest: Handle = async ({ event, resolve }) => {
 		}
 	}
 	if (pathname.startsWith('/v1/')) {
-		const rejection = await authenticateAppAttestRequest(
+		const authentication = await authenticateAppAttestRequest(
 			event.request,
 			appAttestService,
-			(principal) => { event.locals.appAttest = principal; },
 			event.locals.logger
 		);
-		if (rejection) {
-			if (isAssetExtraction) rejection.headers.set('X-Request-Id', event.locals.requestId);
-			return rejection;
+		if (!authentication.authenticated) {
+			return authentication.response;
 		}
+		event.locals.appAttest = authentication.principal;
 	}
-	const response = await resolve(event);
-	if (isAssetExtraction) {
-		if (!response.headers.has('X-Request-Id')) response.headers.set('X-Request-Id', event.locals.requestId);
-		response.headers.set('Cache-Control', 'no-store');
-		response.headers.set('X-Content-Type-Options', 'nosniff');
-	}
-	return response;
+	return resolve(event);
 };
 
 export const handle: Handle = sequence(handleRequestLogging, handleAppAttest, handleParaglide);

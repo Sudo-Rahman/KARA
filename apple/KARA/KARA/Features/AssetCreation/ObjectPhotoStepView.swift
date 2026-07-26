@@ -280,15 +280,10 @@ struct ObjectPhotoStepView: View {
                 ProgressView()
                     .controlSize(.small)
                 Text("asset-flow.analysis.in-progress")
-            case let .completed(source):
+            case .completed:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(theme.goldBright)
-                switch source {
-                case .online:
-                    Text("asset-flow.analysis.completed-online")
-                case .offline:
-                    Text("asset-flow.analysis.completed-offline")
-                }
+                Text("asset-flow.analysis.completed")
             case .failed:
                 Image(systemName: "pencil.and.list.clipboard")
                 Text("asset-flow.analysis.manual")
@@ -311,8 +306,7 @@ struct ObjectPhotoStepView: View {
                     : "asset-flow.analysis.disabled"
             )
         case .analyzing: Text("asset-flow.analysis.in-progress")
-        case .completed(.online): Text("asset-flow.analysis.completed-online")
-        case .completed(.offline): Text("asset-flow.analysis.completed-offline")
+        case .completed: Text("asset-flow.analysis.completed")
         case .failed: Text("asset-flow.analysis.manual")
         }
     }

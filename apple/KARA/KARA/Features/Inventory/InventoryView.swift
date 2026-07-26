@@ -71,7 +71,7 @@ struct InventoryView: View {
                                 requestDeletion(of: asset)
                             }
                             .accessibilityIdentifier("inventory.asset.delete.\(asset.id.uuidString)")
-                        } onPresentationChanged: { _ in }
+                        }
                         .contextMenu {
                             Button {
                                 router.presentEditor(for: asset.id)
@@ -98,7 +98,6 @@ struct InventoryView: View {
             .padding(.bottom, KaraSpacing.xxLarge)
         }
         .scrollIndicators(.hidden)
-        .swipeActionsContainer()
         .background(theme.background.ignoresSafeArea())
         .navigationTitle("inventory.title")
         .navigationBarTitleDisplayMode(.large)

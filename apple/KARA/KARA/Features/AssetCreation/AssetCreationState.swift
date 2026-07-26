@@ -44,7 +44,7 @@ final class AssetCreationRouter {
 enum AssetAnalysisPhase: Equatable, Sendable {
     case idle
     case analyzing
-    case completed(AssetAnalysisSource)
+    case completed
     case failed(AssetAnalysisError)
 
     var isCompleted: Bool {
@@ -69,12 +69,73 @@ struct AssetCreationIssue: Identifiable, Equatable, Sendable {
 @MainActor
 @Observable
 final class AssetCreationState {
+    private enum AnalysisTarget: CaseIterable {
+        case objectPhoto
+        case invoice
+
+        var slotKeyPath: ReferenceWritableKeyPath<AssetCreationState, AnalysisSlot> {
+            switch self {
+            case .objectPhoto: \.objectAnalysis
+            case .invoice: \.invoiceAnalysis
+            }
+        }
+
+        var issueKind: AssetCreationIssue.Kind {
+            switch self {
+            case .objectPhoto: .objectAnalysis
+            case .invoice: .invoiceAnalysis
+            }
+        }
+    }
+
+    private struct AnalysisSlot {
+        var phase: AssetAnalysisPhase = .idle
+        var suggestion: AssetAnalysisSuggestion?
+        var task: Task<Void, Never>?
+
+        mutating func cancel() {
+            task?.cancel()
+            task = nil
+        }
+
+        @discardableResult
+        mutating func replace(isEnabled: Bool) -> Bool {
+            cancel()
+            suggestion = nil
+            phase = isEnabled ? .analyzing : .idle
+            return isEnabled
+        }
+
+        mutating func attach(_ task: Task<Void, Never>) {
+            self.task = task
+        }
+
+        mutating func remove() {
+            replace(isEnabled: false)
+        }
+
+        mutating func complete(with suggestion: AssetAnalysisSuggestion) {
+            task = nil
+            self.suggestion = suggestion
+            phase = .completed
+        }
+
+        mutating func fail(with error: AssetAnalysisError) {
+            task = nil
+            phase = .failed(error)
+        }
+
+        mutating func disable() {
+            remove()
+        }
+    }
+
     private(set) var step: AssetCreationStep = .objectPhoto
     var draft: AssetDraft
     private(set) var objectPhotoData: Data?
     private(set) var invoiceDocument: PreparedMediaDocument?
-    private(set) var objectAnalysisPhase: AssetAnalysisPhase = .idle
-    private(set) var invoiceAnalysisPhase: AssetAnalysisPhase = .idle
+    private var objectAnalysis = AnalysisSlot()
+    private var invoiceAnalysis = AnalysisSlot()
     private(set) var issue: AssetCreationIssue?
     private(set) var isSaving = false
     private(set) var savedAsset: Asset?
@@ -93,19 +154,7 @@ final class AssetCreationState {
     private let pristineDraft: AssetDraft
 
     @ObservationIgnored
-    private var objectAnalysisTask: Task<Void, Never>?
-
-    @ObservationIgnored
-    private var invoiceAnalysisTask: Task<Void, Never>?
-
-    @ObservationIgnored
     private var analysisSuggestedFields: Set<AssetDraft.Field> = []
-
-    @ObservationIgnored
-    private var objectSuggestion: AssetAnalysisSuggestion?
-
-    @ObservationIgnored
-    private var invoiceSuggestion: AssetAnalysisSuggestion?
 
     init(
         draft: AssetDraft = AssetDraft(),
@@ -126,6 +175,14 @@ final class AssetCreationState {
 
     var canAdvanceFromDetails: Bool {
         draft.isValid
+    }
+
+    var objectAnalysisPhase: AssetAnalysisPhase {
+        objectAnalysis.phase
+    }
+
+    var invoiceAnalysisPhase: AssetAnalysisPhase {
+        invoiceAnalysis.phase
     }
 
     @discardableResult
@@ -276,107 +333,99 @@ final class AssetCreationState {
     }
 
     func setObjectPhoto(_ data: Data) {
-        objectAnalysisTask?.cancel()
-        objectSuggestion = nil
-        reapplyAnalysisSuggestions()
         objectPhotoData = data
-        issue = nil
-
-        guard analysisPreferences.isEnabled else {
-            objectAnalysisPhase = .idle
-            return
-        }
-        objectAnalysisPhase = .analyzing
-
-        objectAnalysisTask = Task { [weak self, analyzer] in
-            do {
-                let result = try await analyzer.analyzeObjectPhoto(data)
-                try Task.checkCancellation()
-                guard let self else { return }
-                objectSuggestion = result.suggestion
-                reapplyAnalysisSuggestions()
-                objectAnalysisPhase = .completed(result.source)
-            } catch is CancellationError {
-                return
-            } catch let error as AssetAnalysisError {
-                guard let self, !Task.isCancelled else { return }
-                objectAnalysisPhase = .failed(error)
-                issue = AssetCreationIssue(
-                    kind: .objectAnalysis,
-                    localizationKey: Self.localizationKey(for: error)
-                )
-            } catch {
-                guard let self, !Task.isCancelled else { return }
-                objectAnalysisPhase = .failed(.technicalFailure)
-                issue = AssetCreationIssue(
-                    kind: .objectAnalysis,
-                    localizationKey: Self.localizationKey(for: .technicalFailure)
-                )
-            }
+        replaceAnalysis(for: .objectPhoto) { [analyzer] in
+            try await analyzer.analyzeObjectPhoto(data)
         }
     }
 
     func removeObjectPhoto() {
-        objectAnalysisTask?.cancel()
-        objectAnalysisTask = nil
-        objectSuggestion = nil
-        reapplyAnalysisSuggestions()
         objectPhotoData = nil
-        objectAnalysisPhase = .idle
+        removeAnalysis(for: .objectPhoto)
     }
 
     func setInvoiceDocument(_ document: PreparedMediaDocument) {
-        invoiceAnalysisTask?.cancel()
-        invoiceSuggestion = nil
-        reapplyAnalysisSuggestions()
         invoiceDocument = document
-        issue = nil
-
-        guard analysisPreferences.isEnabled else {
-            invoiceAnalysisPhase = .idle
-            return
-        }
-        invoiceAnalysisPhase = .analyzing
-
-        invoiceAnalysisTask = Task { [weak self, analyzer] in
-            do {
-                let result = try await analyzer.analyzeInvoice(
-                    document.data,
-                    filename: document.filename,
-                    mimeType: document.mimeType
-                )
-                try Task.checkCancellation()
-                guard let self else { return }
-                invoiceSuggestion = result.suggestion
-                reapplyAnalysisSuggestions()
-                invoiceAnalysisPhase = .completed(result.source)
-            } catch is CancellationError {
-                return
-            } catch let error as AssetAnalysisError {
-                guard let self, !Task.isCancelled else { return }
-                invoiceAnalysisPhase = .failed(error)
-                issue = AssetCreationIssue(
-                    kind: .invoiceAnalysis,
-                    localizationKey: Self.localizationKey(for: error)
-                )
-            } catch {
-                guard let self, !Task.isCancelled else { return }
-                invoiceAnalysisPhase = .failed(.technicalFailure)
-                issue = AssetCreationIssue(
-                    kind: .invoiceAnalysis,
-                    localizationKey: Self.localizationKey(for: .technicalFailure)
-                )
-            }
+        replaceAnalysis(for: .invoice) { [analyzer] in
+            try await analyzer.analyzeInvoice(document)
         }
     }
 
     func removeInvoiceDocument() {
-        invoiceAnalysisTask?.cancel()
-        invoiceAnalysisTask = nil
-        invoiceSuggestion = nil
-        reapplyAnalysisSuggestions()
         invoiceDocument = nil
-        invoiceAnalysisPhase = .idle
+        removeAnalysis(for: .invoice)
+    }
+
+    private func replaceAnalysis(
+        for target: AnalysisTarget,
+        operation: @escaping @Sendable () async throws -> AssetAnalysisSuggestion
+    ) {
+        let shouldStart = withAnalysisSlot(for: target) {
+            $0.replace(isEnabled: analysisPreferences.isEnabled)
+        }
+        reapplyAnalysisSuggestions()
+        issue = nil
+
+        guard shouldStart else { return }
+        let task = startAnalysis(for: target, operation: operation)
+        withAnalysisSlot(for: target) { $0.attach(task) }
+    }
+
+    private func removeAnalysis(for target: AnalysisTarget) {
+        withAnalysisSlot(for: target) { $0.remove() }
+        reapplyAnalysisSuggestions()
+        clearAnalysisIssue(for: target)
+    }
+
+    private func startAnalysis(
+        for target: AnalysisTarget,
+        operation: @escaping @Sendable () async throws -> AssetAnalysisSuggestion
+    ) -> Task<Void, Never> {
+        Task { [weak self] in
+            do {
+                let suggestion = try await operation()
+                try Task.checkCancellation()
+                self?.completeAnalysis(suggestion, for: target)
+            } catch is CancellationError {
+                return
+            } catch let error as AssetAnalysisError {
+                guard !Task.isCancelled else { return }
+                self?.failAnalysis(error, for: target)
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.failAnalysis(.technicalFailure, for: target)
+            }
+        }
+    }
+
+    private func completeAnalysis(
+        _ suggestion: AssetAnalysisSuggestion,
+        for target: AnalysisTarget
+    ) {
+        withAnalysisSlot(for: target) { $0.complete(with: suggestion) }
+        reapplyAnalysisSuggestions()
+    }
+
+    private func failAnalysis(_ error: AssetAnalysisError, for target: AnalysisTarget) {
+        withAnalysisSlot(for: target) { $0.fail(with: error) }
+        issue = AssetCreationIssue(
+            kind: target.issueKind,
+            localizationKey: Self.localizationKey(for: error)
+        )
+    }
+
+    private func clearAnalysisIssue(for target: AnalysisTarget) {
+        if issue?.kind == target.issueKind {
+            issue = nil
+        }
+    }
+
+    @discardableResult
+    private func withAnalysisSlot<Result>(
+        for target: AnalysisTarget,
+        _ update: (inout AnalysisSlot) -> Result
+    ) -> Result {
+        update(&self[keyPath: target.slotKeyPath])
     }
 
     private func reapplyAnalysisSuggestions() {
@@ -384,19 +433,11 @@ final class AssetCreationState {
         analysisSuggestedFields.removeAll()
 
         let resolved = AssetAnalysisSuggestionResolver.resolve(
-            objectPhoto: objectSuggestion,
-            invoice: invoiceSuggestion,
+            objectPhoto: objectAnalysis.suggestion,
+            invoice: invoiceAnalysis.suggestion,
             preserving: draft
         )
-        var excludedFields: Set<AssetDraft.Field> = []
-        let moneyFields: Set<AssetDraft.Field> = [.pricePaidMinorUnits, .currencyCode]
-        if !draft.manuallyEditedFields.isDisjoint(with: moneyFields) {
-            excludedFields.formUnion(moneyFields)
-        }
-        analysisSuggestedFields = draft.merge(
-            suggestion: resolved,
-            excluding: excludedFields
-        )
+        analysisSuggestedFields = draft.merge(suggestion: resolved)
     }
 
     func reportMediaFailure() {
@@ -432,27 +473,22 @@ final class AssetCreationState {
     }
 
     func cancelAllWork() {
-        objectAnalysisTask?.cancel()
-        invoiceAnalysisTask?.cancel()
-        objectAnalysisTask = nil
-        invoiceAnalysisTask = nil
-
-        if objectAnalysisPhase == .analyzing {
-            objectAnalysisPhase = .idle
-        }
-        if invoiceAnalysisPhase == .analyzing {
-            invoiceAnalysisPhase = .idle
+        for target in AnalysisTarget.allCases {
+            withAnalysisSlot(for: target) { slot in
+                slot.cancel()
+                if slot.phase == .analyzing {
+                    slot.phase = .idle
+                }
+            }
         }
     }
 
     func analysisPreferenceDidChange() {
         guard !analysisPreferences.isEnabled else { return }
-        cancelAllWork()
-        objectSuggestion = nil
-        invoiceSuggestion = nil
+        for target in AnalysisTarget.allCases {
+            withAnalysisSlot(for: target) { $0.disable() }
+        }
         reapplyAnalysisSuggestions()
-        objectAnalysisPhase = .idle
-        invoiceAnalysisPhase = .idle
         if issue?.kind == .objectAnalysis || issue?.kind == .invoiceAnalysis {
             issue = nil
         }
@@ -474,8 +510,6 @@ final class AssetCreationState {
             "asset-flow.error.analysis-unavailable"
         case .invalidInput:
             "asset-flow.error.analysis-invalid-input"
-        case .cancelled:
-            "asset-flow.error.analysis-unavailable"
         case .invalidResponse, .technicalFailure:
             "asset-flow.error.analysis-technical"
         }

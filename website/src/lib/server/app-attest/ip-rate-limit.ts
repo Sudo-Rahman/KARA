@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
-import { createClient } from 'redis';
 import type { BackendLogger } from '../logger';
-import { errorSummary, logger as rootLogger } from '../logger';
+import { logger as rootLogger } from '../logger';
+import { RedisConnection } from '../redis-connection';
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
@@ -55,11 +55,8 @@ export interface AppAttestIPRateLimitStore {
 }
 
 export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
-	readonly #client: ReturnType<typeof createClient>;
-	readonly #logger: Pick<BackendLogger, 'error' | 'info'>;
+	readonly #redis: RedisConnection;
 	readonly #prefix: string;
-	#connectPromise: Promise<void> | null = null;
-	#available: boolean | undefined;
 
 	constructor(
 		url: string,
@@ -69,35 +66,19 @@ export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
 		})
 	) {
 		this.#prefix = prefix;
-		this.#logger = logger;
-		this.#client = createClient({ url });
-		this.#client.on('error', (error) => {
-			if (this.#available === false) return;
-			this.#available = false;
-			this.#logger.error({
-				error: errorSummary(error),
-				event: 'redis.unavailable'
-			}, 'App Attest rate-limit Redis connection unavailable');
-		});
-		this.#client.on('ready', () => {
-			if (this.#available === true) return;
-			const recovered = this.#available === false;
-			this.#available = true;
-			this.#logger.info({
-				event: recovered ? 'redis.recovered' : 'redis.ready'
-			}, recovered
-				? 'App Attest rate-limit Redis connection recovered'
-				: 'App Attest rate-limit Redis connection ready');
+		this.#redis = new RedisConnection(url, logger, {
+			unavailable: 'App Attest rate-limit Redis connection unavailable',
+			recovered: 'App Attest rate-limit Redis connection recovered',
+			ready: 'App Attest rate-limit Redis connection ready'
 		});
 	}
 
 	async ping(): Promise<void> {
-		await this.#ensureConnected();
-		await this.#client.ping();
+		await this.#redis.ping();
 	}
 
 	async close(): Promise<void> {
-		if (this.#client.isOpen) await this.#client.close();
+		await this.#redis.close();
 	}
 
 	async consume(input: {
@@ -111,8 +92,7 @@ export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
 		}
 		const minuteLimit = input.endpoint === 'challenge' ? 30 : 5;
 		const hourLimit = input.endpoint === 'registration' ? 20 : 0;
-		await this.#ensureConnected();
-		const result = await this.#client.eval(LIMIT_SCRIPT, {
+		const result = await this.#redis.execute((client) => client.eval(LIMIT_SCRIPT, {
 			keys: [
 				`${this.#prefix}:${input.endpoint}:${input.ipId}:minute`,
 				`${this.#prefix}:${input.endpoint}:${input.ipId}:hour`
@@ -121,7 +101,7 @@ export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
 				String(input.nowMilliseconds), input.requestId,
 				String(MINUTE_MS), String(minuteLimit), String(HOUR_MS), String(hourLimit)
 			]
-		});
+		}));
 		if (result === 'accepted') return { kind: 'accepted' };
 		if (typeof result === 'string' && result.startsWith('limited|')) {
 			const retryAfterSeconds = Number(result.slice('limited|'.length));
@@ -132,15 +112,6 @@ export class RedisAppAttestIPRateLimiter implements AppAttestIPRateLimitStore {
 		throw new Error('Redis returned an invalid App Attest rate-limit decision');
 	}
 
-	async #ensureConnected(): Promise<void> {
-		if (this.#client.isReady) return;
-		if (!this.#connectPromise) {
-			this.#connectPromise = this.#client.connect().then(() => undefined).finally(() => {
-				this.#connectPromise = null;
-			});
-		}
-		await this.#connectPromise;
-	}
 }
 
 export class AppAttestIPRateLimiter {

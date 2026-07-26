@@ -162,36 +162,24 @@ struct AssetDocumentTests {
 
     @Test
     @MainActor
-    func invoicePreparationPreservesPDFAndLimitsRenderedPagesToSix() async throws {
+    func invoicePreparationLimitsUploadToSixPages() throws {
         let source = makeImageOnlyPDF(pageCount: 8)
-        let processor = InvoiceDocumentProcessor(
-            ocrRecognizer: StubInvoiceOCR(text: "texte OCR")
-        )
+        let processor = InvoiceDocumentProcessor()
 
-        let prepared = try await processor.prepare(pdfData: source)
+        let prepared = try processor.prepare(pdfData: source)
 
-        #expect(prepared.originalPDFData == source)
-        #expect(prepared.pageCount == 8)
-        #expect(prepared.selectedPageIndices == [0, 1, 2, 5, 6, 7])
-        #expect(PDFDocument(data: prepared.analysisPDFData)?.pageCount == 6)
-        #expect(prepared.renderedPageImages.count == 6)
-        #expect(prepared.ocrText.components(separatedBy: "texte OCR").count - 1 == 6)
+        #expect(PDFDocument(data: prepared)?.pageCount == 6)
     }
 
     @Test
     @MainActor
-    func remoteInvoicePreparationDoesNotDependOnDeviceOCR() async throws {
+    func shortInvoicePreparationPreservesOriginalBytes() throws {
         let source = makeImageOnlyPDF(pageCount: 2)
-        let processor = InvoiceDocumentProcessor(ocrRecognizer: FailingInvoiceOCR())
+        let processor = InvoiceDocumentProcessor()
 
-        let prepared = try await processor.prepare(
-            pdfData: source,
-            includingOCR: false
-        )
+        let prepared = try processor.prepare(pdfData: source)
 
-        #expect(prepared.analysisPDFData == source)
-        #expect(prepared.renderedPageImages.isEmpty)
-        #expect(prepared.ocrText.isEmpty)
+        #expect(prepared == source)
     }
 
     @MainActor
@@ -244,19 +232,5 @@ struct AssetDocumentTests {
                 )
             }
         }
-    }
-}
-
-private struct StubInvoiceOCR: InvoiceDocumentOCRRecognizing {
-    let text: String
-
-    func recognizeText(in imageData: Data) async throws -> String {
-        text
-    }
-}
-
-private struct FailingInvoiceOCR: InvoiceDocumentOCRRecognizing {
-    func recognizeText(in imageData: Data) async throws -> String {
-        throw CancellationError()
     }
 }

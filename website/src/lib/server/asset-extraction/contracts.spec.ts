@@ -88,6 +88,28 @@ describe('asset extraction output contract', () => {
 		}).success).toBe(false);
 	});
 
+	test('applies the same preset specification tolerances as the iOS client', () => {
+		for (const contradiction of [
+			{ weightGrams: candidate(20) },
+			{ finenessPermille: candidate(900) },
+			{ metalKarat: candidate(22) }
+		]) {
+			expect(modelSuggestionSchema.safeParse({
+				...emptyModelSuggestion,
+				presetId: candidate('gold-bar-10g'),
+				...contradiction
+			}).success).toBe(false);
+		}
+
+		expect(modelSuggestionSchema.safeParse({
+			...emptyModelSuggestion,
+			presetId: candidate('gold-bar-10g'),
+			weightGrams: candidate(10.09),
+			finenessPermille: candidate(999),
+			metalKarat: candidate(24)
+		}).success).toBe(true);
+	});
+
 	test('requires every public property and rejects additions', () => {
 		const response = toPublicExtraction(modelSuggestionSchema.parse(emptyModelSuggestion));
 		expect(publicExtractionSchema.parse(response)).toEqual(response);
