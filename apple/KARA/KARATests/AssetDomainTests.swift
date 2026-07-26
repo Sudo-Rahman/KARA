@@ -281,20 +281,20 @@ struct AssetDomainTests {
         #expect(draft.manuallyEditedFields.isEmpty)
     }
 
-    @Test("Analysis suggestions merge serial, acquisition and normalized tags")
+    @Test("Analysis suggestions merge metadata and leave manual tags unchanged")
     func mergesInventoryMetadataSuggestions() {
-        var draft = AssetDraft()
+        var draft = AssetDraft(tags: ["Famille"])
+        draft.markAsManuallyEdited(.tags)
 
         let applied = draft.merge(suggestion: AssetAnalysisSuggestion(
             serialNumber: "SERIE-42",
-            acquisitionMethod: .inheritance,
-            tags: [" Famille ", "long   terme", "FAMILLE"]
+            acquisitionMethod: .inheritance
         ))
 
         #expect(draft.serialNumber == "SERIE-42")
         #expect(draft.acquisitionMethod == .inheritance)
-        #expect(draft.tags == ["Famille", "long terme"])
-        #expect(applied.isSuperset(of: [.serialNumber, .acquisitionMethod, .tags]))
+        #expect(draft.tags == ["Famille"])
+        #expect(applied == [.serialNumber, .acquisitionMethod])
     }
 
     @Test("Catalog presets copy authoritative bullion specifications")

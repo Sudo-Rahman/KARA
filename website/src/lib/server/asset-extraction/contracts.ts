@@ -23,7 +23,6 @@ function candidateSchema<Value extends z.ZodType>(value: Value) {
 }
 
 const textCandidateSchema = (maximum: number) => candidateSchema(text(maximum));
-const tagCandidateSchema = candidateSchema(text(80)).unwrap();
 const moneyValueSchema = z.object({
 	amount: z.number().finite().nonnegative().max(maximumMajorAmount),
 	currencyCode: z.enum(['EUR', 'USD', 'CHF', 'GBP'])
@@ -46,8 +45,7 @@ export const modelSuggestionWireSchema = z.object({
 	storageLocationName: textCandidateSchema(200),
 	invoiceNumber: textCandidateSchema(200),
 	serialNumber: textCandidateSchema(200),
-	acquisitionMethod: candidateSchema(z.enum(['purchase', 'gift', 'inheritance', 'exchange', 'other'])),
-	tags: z.array(tagCandidateSchema).max(20)
+	acquisitionMethod: candidateSchema(z.enum(['purchase', 'gift', 'inheritance', 'exchange', 'other']))
 }).strict();
 
 export const modelSuggestionSchema = modelSuggestionWireSchema.superRefine((suggestion, context) => {

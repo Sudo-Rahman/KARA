@@ -109,8 +109,6 @@ nonisolated struct GeneratedAssetAnalysis {
     @Guide(description: "Value is one of: purchase, gift, inheritance, exchange, other.")
     var acquisitionMethod: GeneratedStringCandidate?
 
-    var tags: [GeneratedStringCandidate]
-
     init(
         name: GeneratedStringCandidate? = nil,
         category: GeneratedStringCandidate? = nil,
@@ -128,8 +126,7 @@ nonisolated struct GeneratedAssetAnalysis {
         storageLocationName: GeneratedStringCandidate? = nil,
         invoiceNumber: GeneratedStringCandidate? = nil,
         serialNumber: GeneratedStringCandidate? = nil,
-        acquisitionMethod: GeneratedStringCandidate? = nil,
-        tags: [GeneratedStringCandidate] = []
+        acquisitionMethod: GeneratedStringCandidate? = nil
     ) {
         self.name = name
         self.category = category
@@ -148,7 +145,6 @@ nonisolated struct GeneratedAssetAnalysis {
         self.invoiceNumber = invoiceNumber
         self.serialNumber = serialNumber
         self.acquisitionMethod = acquisitionMethod
-        self.tags = tags
     }
 }
 
@@ -191,8 +187,9 @@ nonisolated struct FoundationModelAssetAnalyzer: AssetModelAnalyzing {
         and 1-59 for weak but meaningful support. Normalize kg and mg to grams and one troy ounce \
         to 31.1034768 grams. Treat 999, 999.9, and 999.99 as fineness per thousand. Keep metal \
         karat separate from gemstone carat weight. Use a preset only for an exact catalog match. \
-        Infer acquisition method and concise tags when context supports them. Preserve serial and \
-        invoice identifiers exactly; never invent missing characters.
+        Infer acquisition method when context supports it. Tags are strictly manual: never \
+        generate or infer them. Preserve serial and invoice identifiers exactly; never invent \
+        missing characters.
         """
 
     private static func promptText(for input: AssetModelAnalysisInput) -> String {
@@ -373,21 +370,6 @@ nonisolated struct FoundationModelAssetAnalyzer: AssetModelAnalyzing {
             assessments[.currencyCode] = assessment
         }
 
-        let tagCandidates = generated.tags.compactMap { tag -> AssetAnalysisTagCandidate? in
-            guard let value = normalizedText(tag.value),
-                  let assessment = assessment(
-                    confidencePercent: tag.confidencePercent,
-                    evidenceKind: tag.evidenceKind
-                  )
-            else { return nil }
-            return AssetAnalysisTagCandidate(value: value, assessment: assessment)
-        }
-        if let bestTag = tagCandidates.max(by: {
-            $0.assessment.confidencePercent < $1.assessment.confidencePercent
-        }) {
-            assessments[.tags] = bestTag.assessment
-        }
-
         return AssetAnalysisSuggestion(
             name: name,
             category: category,
@@ -407,9 +389,7 @@ nonisolated struct FoundationModelAssetAnalyzer: AssetModelAnalyzing {
             invoiceNumber: invoiceNumber,
             serialNumber: serialNumber,
             acquisitionMethod: acquisitionMethod,
-            tags: tagCandidates.map(\.value),
-            fieldAssessments: assessments,
-            tagCandidates: tagCandidates
+            fieldAssessments: assessments
         )
     }
 

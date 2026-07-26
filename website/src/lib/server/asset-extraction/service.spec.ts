@@ -17,7 +17,7 @@ const emptySuggestion = modelSuggestionSchema.parse({
 	metal: null, weightGrams: null, metalKarat: null, finenessPermille: null,
 	gemstoneCaratWeight: null, gemstoneClarity: null, pricePaid: null,
 	sellerName: null, storageLocationName: null, invoiceNumber: null,
-	serialNumber: null, acquisitionMethod: null, tags: []
+	serialNumber: null, acquisitionMethod: null
 });
 
 const visibleCandidate = <Value>(value: Value, confidencePercent = 95) => ({

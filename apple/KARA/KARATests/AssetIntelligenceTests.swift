@@ -127,8 +127,7 @@ struct AssetIntelligenceTests {
             storageLocationName: .init(value: " ", confidencePercent: 10, evidenceKind: "context_inference"),
             invoiceNumber: .init(value: " ML2024-05872 ", confidencePercent: 99, evidenceKind: "visible_text"),
             serialNumber: .init(value: " 00-AbC-42 ", confidencePercent: 99, evidenceKind: "visible_text"),
-            acquisitionMethod: .init(value: "purchase", confidencePercent: 85, evidenceKind: "context_inference"),
-            tags: [.init(value: "Or d’investissement", confidencePercent: 75, evidenceKind: "context_inference")]
+            acquisitionMethod: .init(value: "purchase", confidencePercent: 85, evidenceKind: "context_inference")
         )
 
         let suggestion = FoundationModelAssetAnalyzer.suggestion(from: generated)
@@ -148,7 +147,6 @@ struct AssetIntelligenceTests {
         #expect(suggestion.invoiceNumber == "ML2024-05872")
         #expect(suggestion.serialNumber == "00-AbC-42")
         #expect(suggestion.acquisitionMethod == .purchase)
-        #expect(suggestion.tags == ["Or d’investissement"])
         #expect(suggestion.assessment(for: .finenessPermille)?.confidencePercent == 99)
     }
 

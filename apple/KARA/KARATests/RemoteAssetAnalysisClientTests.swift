@@ -202,8 +202,7 @@ struct RemoteAssetAnalysisClientTests {
         "storageLocationName": null,
         "invoiceNumber": {"value":"ML-42","confidencePercent":99,"evidenceKind":"visible_text"},
         "serialNumber": {"value":"00-AbC-42","confidencePercent":99,"evidenceKind":"visible_text"},
-        "acquisitionMethod": {"value":"purchase","confidencePercent":85,"evidenceKind":"context_inference"},
-        "tags": [{"value":"Or d’investissement","confidencePercent":80,"evidenceKind":"context_inference"}]
+        "acquisitionMethod": {"value":"purchase","confidencePercent":85,"evidenceKind":"context_inference"}
       }
     }
     """#.utf8)

@@ -19,8 +19,7 @@ const emptySuggestion = {
 	storageLocationName: null,
 	invoiceNumber: null,
 	serialNumber: null,
-	acquisitionMethod: null,
-	tags: []
+	acquisitionMethod: null
 };
 
 const visibleCandidate = <Value>(value: Value, confidencePercent = 95) => ({
@@ -30,6 +29,11 @@ const visibleCandidate = <Value>(value: Value, confidencePercent = 95) => ({
 });
 
 describe('OpenAI asset extractor', () => {
+	test('keeps tags outside the extraction schema and prompt', () => {
+		expect(SYSTEM_PROMPT).toContain('Tags are strictly manual');
+		expect(SYSTEM_PROMPT).toContain('never generate, infer, or return tags');
+	});
+
 	test('sends one high-detail inline JPEG to GPT-5.6 Luna using strict Responses output', async () => {
 		const parse = vi.fn().mockResolvedValue({
 			output_parsed: { ...emptySuggestion, serialNumber: visibleCandidate('A-001') },

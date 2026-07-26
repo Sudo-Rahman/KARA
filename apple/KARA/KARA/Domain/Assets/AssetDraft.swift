@@ -28,11 +28,6 @@ nonisolated struct AssetFieldAssessment: Equatable, Sendable {
     }
 }
 
-nonisolated struct AssetAnalysisTagCandidate: Equatable, Sendable {
-    let value: String
-    let assessment: AssetFieldAssessment
-}
-
 nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
     var name: String?
     var category: AssetCategory?
@@ -52,9 +47,7 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
     var invoiceNumber: String?
     var serialNumber: String?
     var acquisitionMethod: AssetAcquisitionMethod?
-    var tags: [String]?
     var fieldAssessments: [AssetDraft.Field: AssetFieldAssessment]
-    var tagCandidates: [AssetAnalysisTagCandidate]
 
     init(
         name: String? = nil,
@@ -75,11 +68,9 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         invoiceNumber: String? = nil,
         serialNumber: String? = nil,
         acquisitionMethod: AssetAcquisitionMethod? = nil,
-        tags: [String]? = nil,
         confidencePercent: Int = 100,
         evidenceKind: AssetAnalysisEvidenceKind = .visibleText,
-        fieldAssessments: [AssetDraft.Field: AssetFieldAssessment] = [:],
-        tagCandidates: [AssetAnalysisTagCandidate]? = nil
+        fieldAssessments: [AssetDraft.Field: AssetFieldAssessment] = [:]
     ) {
         self.name = name
         self.category = category
@@ -99,7 +90,6 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         self.invoiceNumber = invoiceNumber
         self.serialNumber = serialNumber
         self.acquisitionMethod = acquisitionMethod
-        self.tags = tags
         let fallbackAssessment = AssetFieldAssessment(
             confidencePercent: confidencePercent,
             evidenceKind: evidenceKind
@@ -128,11 +118,7 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         register(.invoiceNumber, when: invoiceNumber != nil)
         register(.serialNumber, when: serialNumber != nil)
         register(.acquisitionMethod, when: acquisitionMethod != nil)
-        register(.tags, when: tags?.isEmpty == false)
         self.fieldAssessments = assessments
-        self.tagCandidates = tagCandidates ?? tags?.map {
-            AssetAnalysisTagCandidate(value: $0, assessment: assessments[.tags] ?? fallbackAssessment)
-        } ?? []
     }
 
     func assessment(for field: AssetDraft.Field) -> AssetFieldAssessment? {
@@ -145,11 +131,6 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
             var stamped = assessment
             stamped.mediaKind = mediaKind
             return stamped
-        }
-        result.tagCandidates = result.tagCandidates.map { candidate in
-            var assessment = candidate.assessment
-            assessment.mediaKind = mediaKind
-            return AssetAnalysisTagCandidate(value: candidate.value, assessment: assessment)
         }
         return result
     }
@@ -232,13 +213,6 @@ nonisolated enum AssetAnalysisSuggestionResolver {
             assessments[.pricePaidMinorUnits] = money.assessment
             assessments[.currencyCode] = money.assessment
         }
-        let resolvedTags = selectTags(object: object, invoice: invoice)
-        if let bestTagAssessment = resolvedTags.map(\.assessment).max(by: {
-            $0.confidencePercent < $1.confidencePercent
-        }) {
-            assessments[.tags] = bestTagAssessment
-        }
-
         var result = AssetAnalysisSuggestion(
             name: selected(.name, { $0.name }),
             category: selected(.category, { $0.category }),
@@ -258,9 +232,7 @@ nonisolated enum AssetAnalysisSuggestionResolver {
             invoiceNumber: selected(.invoiceNumber, { $0.invoiceNumber }),
             serialNumber: selected(.serialNumber, { $0.serialNumber }),
             acquisitionMethod: selected(.acquisitionMethod, { $0.acquisitionMethod }),
-            tags: resolvedTags.isEmpty ? nil : resolvedTags.map(\.value),
-            fieldAssessments: assessments,
-            tagCandidates: resolvedTags
+            fieldAssessments: assessments
         )
         if !presetIsConsistent(in: result) {
             result.presetID = nil
@@ -343,40 +315,6 @@ nonisolated enum AssetAnalysisSuggestionResolver {
         case let (.some(object), .none): return object
         case let (.none, .some(invoice)): return invoice
         case (.none, .none): return nil
-        }
-    }
-
-    private static func selectTags(
-        object: AssetAnalysisSuggestion?,
-        invoice: AssetAnalysisSuggestion?
-    ) -> [AssetAnalysisTagCandidate] {
-        var candidatesByKey: [String: AssetAnalysisTagCandidate] = [:]
-        func merge(_ candidates: [AssetAnalysisTagCandidate], invoiceWinsTies: Bool) {
-            for candidate in candidates {
-                let value = AssetSuggestionNormalizer.displayName(candidate.value)
-                guard !value.isEmpty else { continue }
-                let key = AssetSuggestionNormalizer.normalizedName(value)
-                let normalized = AssetAnalysisTagCandidate(value: value, assessment: candidate.assessment)
-                guard let existing = candidatesByKey[key] else {
-                    candidatesByKey[key] = normalized
-                    continue
-                }
-                if normalized.assessment.confidencePercent > existing.assessment.confidencePercent
-                    || invoiceWinsTies
-                        && normalized.assessment.confidencePercent == existing.assessment.confidencePercent
-                {
-                    candidatesByKey[key] = normalized
-                }
-            }
-        }
-        merge(object?.tagCandidates ?? [], invoiceWinsTies: false)
-        merge(invoice?.tagCandidates ?? [], invoiceWinsTies: true)
-        return candidatesByKey.values.sorted {
-            if $0.assessment.confidencePercent != $1.assessment.confidencePercent {
-                return $0.assessment.confidencePercent > $1.assessment.confidencePercent
-            }
-            return AssetSuggestionNormalizer.normalizedName($0.value)
-                < AssetSuggestionNormalizer.normalizedName($1.value)
         }
     }
 
@@ -802,10 +740,6 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         if mergeAcquisitionMethod(suggestion.acquisitionMethod, excluding: excludedFields) {
             appliedFields.insert(.acquisitionMethod)
         }
-        if mergeTags(suggestion.tags, excluding: excludedFields) {
-            appliedFields.insert(.tags)
-        }
-
         return appliedFields
     }
 
@@ -907,21 +841,6 @@ nonisolated struct AssetDraft: Equatable, Sendable {
               let suggestion
         else { return false }
         acquisitionMethod = suggestion
-        return true
-    }
-
-    private mutating func mergeTags(
-        _ suggestion: [String]?,
-        excluding excludedFields: Set<Field>
-    ) -> Bool {
-        guard !excludedFields.contains(.tags),
-              !manuallyEditedFields.contains(.tags),
-              tags.isEmpty,
-              let suggestion
-        else { return false }
-        let normalizedTags = AssetTagNormalizer.normalize(suggestion)
-        guard !normalizedTags.isEmpty else { return false }
-        tags = normalizedTags
         return true
     }
 

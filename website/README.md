@@ -190,9 +190,10 @@ niveau de détail `high`. Structured Outputs impose le contrat strict v2 : chaqu
 champ présent contient sa valeur, une confiance entière de 1 à 100 et la nature
 de son support (`visible_text`, `visual_identification` ou
 `context_inference`). Le montant et sa devise forment un candidat atomique ;
-chaque tag possède son propre score. Zod valide ensuite les dates, enums,
-bornes, identifiants de preset et montants, puis le backend convertit le montant
-majeur en unités mineures de façon déterministe.
+les tags restent exclusivement manuels et ne font pas partie de l’extraction.
+Zod valide ensuite les dates, enums, bornes, identifiants de preset et montants,
+puis le backend convertit le montant majeur en unités mineures de façon
+déterministe.
 Lorsque la plateforme serveur signale l’abandon de la requête cliente, ce signal
 est propagé à OpenAI. Cette notification n’est pas garantie après l’envoi du
 média ; l’appel reste alors borné par le timeout maximal de 45 secondes. Les

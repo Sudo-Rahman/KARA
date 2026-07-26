@@ -168,7 +168,6 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
         let invoiceNumber: Candidate<String>?
         let serialNumber: Candidate<String>?
         let acquisitionMethod: Candidate<String>?
-        let tags: [Candidate<String>]
 
         private enum CodingKeys: String, CodingKey, CaseIterable {
             case name
@@ -188,7 +187,6 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
             case invoiceNumber
             case serialNumber
             case acquisitionMethod
-            case tags
         }
 
         init(from decoder: Decoder) throws {
@@ -223,7 +221,6 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 Candidate<String>.self,
                 forKey: .acquisitionMethod
             )
-            tags = try container.decode([Candidate<String>].self, forKey: .tags)
         }
 
         func validated() throws -> AssetAnalysisSuggestion {
@@ -291,20 +288,6 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 metal: validatedMetal
             )
 
-            let validatedTagCandidates = try tags.compactMap { candidate -> AssetAnalysisTagCandidate? in
-                let value = normalizedDisplayText(candidate.value)
-                guard let value else { return nil }
-                return AssetAnalysisTagCandidate(
-                    value: value,
-                    assessment: try candidate.assessment()
-                )
-            }
-            if let bestTag = validatedTagCandidates.max(by: {
-                $0.assessment.confidencePercent < $1.assessment.confidencePercent
-            }) {
-                assessments[.tags] = bestTag.assessment
-            }
-
             return AssetAnalysisSuggestion(
                 name: normalizedDisplayText(name),
                 category: validatedCategory,
@@ -324,9 +307,7 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 invoiceNumber: exactIdentifier(invoiceNumber),
                 serialNumber: exactIdentifier(serialNumber),
                 acquisitionMethod: validatedAcquisition,
-                tags: validatedTagCandidates.map(\.value),
-                fieldAssessments: assessments,
-                tagCandidates: validatedTagCandidates
+                fieldAssessments: assessments
             )
         }
 

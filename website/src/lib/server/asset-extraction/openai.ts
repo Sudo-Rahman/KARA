@@ -54,9 +54,9 @@ item-specific confidencePercent.
 
 Select presetId only for an exact match in the server-supplied catalog. KARA
 will add canonical preset specifications later; do not label catalog knowledge
-as media evidence. Infer acquisitionMethod and concise useful tags when the
-media context supports them. Keep price amount and currency together in the
-single pricePaid candidate.
+as media evidence. Infer acquisitionMethod when the media context supports it.
+Tags are strictly manual in KARA: never generate, infer, or return tags. Keep
+price amount and currency together in the single pricePaid candidate.
 
 For serialNumber and invoiceNumber, copy the best supported identifier exactly,
 preserving leading zeros, case, and separators. Never complete missing

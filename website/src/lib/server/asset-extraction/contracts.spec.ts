@@ -23,8 +23,7 @@ const emptyModelSuggestion = {
 	storageLocationName: null,
 	invoiceNumber: null,
 	serialNumber: null,
-	acquisitionMethod: null,
-	tags: []
+	acquisitionMethod: null
 };
 
 function candidate<Value>(
@@ -40,8 +39,7 @@ describe('asset extraction output contract', () => {
 		const model = modelSuggestionSchema.parse({
 			...emptyModelSuggestion,
 			weightGrams: candidate(100, 92),
-			pricePaid: candidate({ amount: 1234.56, currencyCode: 'EUR' }, 96),
-			tags: [candidate('Or d’investissement', 78, 'context_inference')]
+			pricePaid: candidate({ amount: 1234.56, currencyCode: 'EUR' }, 96)
 		});
 
 		expect(toPublicExtraction(model)).toEqual({
@@ -49,8 +47,7 @@ describe('asset extraction output contract', () => {
 			suggestion: {
 				...emptyModelSuggestion,
 				weightGrams: candidate(100, 92),
-				pricePaid: candidate({ minorUnits: 123456, currencyCode: 'EUR' }, 96),
-				tags: [candidate('Or d’investissement', 78, 'context_inference')]
+				pricePaid: candidate({ minorUnits: 123456, currencyCode: 'EUR' }, 96)
 			}
 		});
 	});
@@ -94,9 +91,11 @@ describe('asset extraction output contract', () => {
 	test('requires every public property and rejects additions', () => {
 		const response = toPublicExtraction(modelSuggestionSchema.parse(emptyModelSuggestion));
 		expect(publicExtractionSchema.parse(response)).toEqual(response);
-		expect(publicExtractionSchema.safeParse({
-			...response,
-			suggestion: { ...response.suggestion, prompt: 'ignored' }
-		}).success).toBe(false);
+		for (const addition of [{ prompt: 'ignored' }, { tags: ['automatic'] }]) {
+			expect(publicExtractionSchema.safeParse({
+				...response,
+				suggestion: { ...response.suggestion, ...addition }
+			}).success).toBe(false);
+		}
 	});
 });

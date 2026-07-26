@@ -28,15 +28,14 @@ struct AssetCreationFlowTests {
     }
 
     @Test
-    func analysisPrefillsSupportedAndInferredMetadata() async {
+    func analysisPrefillsMetadataWithoutTouchingManualTags() async {
         let suggestedPurchaseDate = Date(timeIntervalSince1970: 1_715_644_800)
         let analyzer = SequencedAnalyzer(
             objectSuggestions: [
                 AssetAnalysisSuggestion(
                     purchaseDate: suggestedPurchaseDate,
                     serialNumber: "AI-123",
-                    acquisitionMethod: .inheritance,
-                    tags: ["AI tag"]
+                    acquisitionMethod: .inheritance
                 )
             ]
         )
@@ -45,6 +44,7 @@ struct AssetCreationFlowTests {
             analysisPreferences: enabledPreferences(),
             saver: FailingSaver()
         )
+        state.update(\.tags, to: ["Tag manuel"], field: .tags)
 
         state.setObjectPhoto(Data([0x01]))
         await waitForAnalysis(in: state)
@@ -52,7 +52,7 @@ struct AssetCreationFlowTests {
         #expect(state.draft.serialNumber == "AI-123")
         #expect(state.draft.purchaseDate == suggestedPurchaseDate)
         #expect(state.draft.acquisitionMethod == .inheritance)
-        #expect(state.draft.tags == ["AI tag"])
+        #expect(state.draft.tags == ["Tag manuel"])
     }
 
     @Test
