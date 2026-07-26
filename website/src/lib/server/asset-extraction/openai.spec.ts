@@ -14,18 +14,25 @@ const emptySuggestion = {
 	finenessPermille: null,
 	gemstoneCaratWeight: null,
 	gemstoneClarity: null,
-	pricePaidAmount: null,
-	currencyCode: null,
+	pricePaid: null,
 	sellerName: null,
 	storageLocationName: null,
 	invoiceNumber: null,
-	serialNumber: null
+	serialNumber: null,
+	acquisitionMethod: null,
+	tags: []
 };
 
+const visibleCandidate = <Value>(value: Value, confidencePercent = 95) => ({
+	value,
+	confidencePercent,
+	evidenceKind: 'visible_text' as const
+});
+
 describe('OpenAI asset extractor', () => {
-	test('sends one high-detail inline JPEG to GPT-5.6 Sol using strict Responses output', async () => {
+	test('sends one high-detail inline JPEG to GPT-5.6 Luna using strict Responses output', async () => {
 		const parse = vi.fn().mockResolvedValue({
-			output_parsed: { ...emptySuggestion, serialNumber: 'A-001' },
+			output_parsed: { ...emptySuggestion, serialNumber: visibleCandidate('A-001') },
 			output: [],
 			usage: { input_tokens: 321, output_tokens: 42, total_tokens: 363 }
 		});
@@ -42,15 +49,15 @@ describe('OpenAI asset extractor', () => {
 			signal: new AbortController().signal
 		});
 
-		expect(result.suggestion.serialNumber).toBe('A-001');
+		expect(result.suggestion.serialNumber?.value).toBe('A-001');
 		expect(result.usage).toEqual({ inputTokens: 321, outputTokens: 42, totalTokens: 363 });
 		expect(parse).toHaveBeenCalledOnce();
 		const [request, options] = parse.mock.calls[0];
 		expect(request).toMatchObject({
-			model: 'gpt-5.6-sol',
+			model: 'gpt-5.6-luna',
 			reasoning: { effort: 'none' },
 			store: false,
-			max_output_tokens: 1200,
+			max_output_tokens: 2400,
 			safety_identifier: 'a'.repeat(64),
 			text: { format: { type: 'json_schema', name: 'asset_extraction', strict: true } },
 			input: [
@@ -67,6 +74,9 @@ describe('OpenAI asset extractor', () => {
 		});
 		expect(request).not.toHaveProperty('tools');
 		expect(options.signal).toBeInstanceOf(AbortSignal);
+		expect(SYSTEM_PROMPT).toContain('confidencePercent');
+		expect(SYSTEM_PROMPT).toContain('deterministic unit normalization');
+		expect(SYSTEM_PROMPT).toContain('return a candidate even when confidence is low');
 	});
 
 	test('sends invoices inline with explicit high PDF detail and a fixed filename', async () => {

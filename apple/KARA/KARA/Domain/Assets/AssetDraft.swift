@@ -1,5 +1,38 @@
 import Foundation
 
+nonisolated enum AssetAnalysisEvidenceKind: String, Equatable, Sendable {
+    case visibleText = "visible_text"
+    case visualIdentification = "visual_identification"
+    case contextInference = "context_inference"
+    case catalogDerived = "catalog_derived"
+}
+
+nonisolated enum AssetAnalysisMediaKind: Equatable, Sendable {
+    case objectPhoto
+    case invoice
+}
+
+nonisolated struct AssetFieldAssessment: Equatable, Sendable {
+    let confidencePercent: Int
+    let evidenceKind: AssetAnalysisEvidenceKind
+    var mediaKind: AssetAnalysisMediaKind?
+
+    init(
+        confidencePercent: Int,
+        evidenceKind: AssetAnalysisEvidenceKind,
+        mediaKind: AssetAnalysisMediaKind? = nil
+    ) {
+        self.confidencePercent = min(max(confidencePercent, 1), 100)
+        self.evidenceKind = evidenceKind
+        self.mediaKind = mediaKind
+    }
+}
+
+nonisolated struct AssetAnalysisTagCandidate: Equatable, Sendable {
+    let value: String
+    let assessment: AssetFieldAssessment
+}
+
 nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
     var name: String?
     var category: AssetCategory?
@@ -20,6 +53,8 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
     var serialNumber: String?
     var acquisitionMethod: AssetAcquisitionMethod?
     var tags: [String]?
+    var fieldAssessments: [AssetDraft.Field: AssetFieldAssessment]
+    var tagCandidates: [AssetAnalysisTagCandidate]
 
     init(
         name: String? = nil,
@@ -40,7 +75,11 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         invoiceNumber: String? = nil,
         serialNumber: String? = nil,
         acquisitionMethod: AssetAcquisitionMethod? = nil,
-        tags: [String]? = nil
+        tags: [String]? = nil,
+        confidencePercent: Int = 100,
+        evidenceKind: AssetAnalysisEvidenceKind = .visibleText,
+        fieldAssessments: [AssetDraft.Field: AssetFieldAssessment] = [:],
+        tagCandidates: [AssetAnalysisTagCandidate]? = nil
     ) {
         self.name = name
         self.category = category
@@ -61,6 +100,365 @@ nonisolated struct AssetAnalysisSuggestion: Equatable, Sendable {
         self.serialNumber = serialNumber
         self.acquisitionMethod = acquisitionMethod
         self.tags = tags
+        let fallbackAssessment = AssetFieldAssessment(
+            confidencePercent: confidencePercent,
+            evidenceKind: evidenceKind
+        )
+        var assessments = fieldAssessments
+        func register(_ field: AssetDraft.Field, when present: Bool) {
+            if present, assessments[field] == nil {
+                assessments[field] = fallbackAssessment
+            }
+        }
+        register(.name, when: name != nil)
+        register(.category, when: category != nil)
+        register(.presetID, when: presetID != nil)
+        register(.quantity, when: quantity != nil)
+        register(.purchaseDate, when: purchaseDate != nil)
+        register(.metal, when: metal != nil)
+        register(.weightGrams, when: weightGrams != nil)
+        register(.metalKarat, when: metalKarat != nil)
+        register(.finenessPermille, when: finenessPermille != nil)
+        register(.gemstoneCaratWeight, when: gemstoneCaratWeight != nil)
+        register(.gemstoneClarity, when: gemstoneClarity != nil)
+        register(.pricePaidMinorUnits, when: pricePaidMinorUnits != nil)
+        register(.currencyCode, when: currencyCode != nil)
+        register(.sellerName, when: sellerName != nil)
+        register(.storageLocationName, when: storageLocationName != nil)
+        register(.invoiceNumber, when: invoiceNumber != nil)
+        register(.serialNumber, when: serialNumber != nil)
+        register(.acquisitionMethod, when: acquisitionMethod != nil)
+        register(.tags, when: tags?.isEmpty == false)
+        self.fieldAssessments = assessments
+        self.tagCandidates = tagCandidates ?? tags?.map {
+            AssetAnalysisTagCandidate(value: $0, assessment: assessments[.tags] ?? fallbackAssessment)
+        } ?? []
+    }
+
+    func assessment(for field: AssetDraft.Field) -> AssetFieldAssessment? {
+        fieldAssessments[field]
+    }
+
+    func stamped(with mediaKind: AssetAnalysisMediaKind) -> Self {
+        var result = self
+        result.fieldAssessments = result.fieldAssessments.mapValues { assessment in
+            var stamped = assessment
+            stamped.mediaKind = mediaKind
+            return stamped
+        }
+        result.tagCandidates = result.tagCandidates.map { candidate in
+            var assessment = candidate.assessment
+            assessment.mediaKind = mediaKind
+            return AssetAnalysisTagCandidate(value: candidate.value, assessment: assessment)
+        }
+        return result
+    }
+
+    func enrichedFromCatalog() -> Self {
+        guard let presetID,
+              let preset = AssetCatalog.preset(id: presetID),
+              let presetAssessment = assessment(for: .presetID)
+        else { return self }
+
+        var result = self
+        let derivedAssessment = AssetFieldAssessment(
+            confidencePercent: presetAssessment.confidencePercent,
+            evidenceKind: .catalogDerived,
+            mediaKind: presetAssessment.mediaKind
+        )
+        func register(_ field: AssetDraft.Field) {
+            result.fieldAssessments[field] = derivedAssessment
+        }
+        if result.name == nil {
+            result.name = preset.name
+            register(.name)
+        }
+        if result.category == nil {
+            result.category = preset.category
+            register(.category)
+        }
+        if result.metal == nil, let metal = preset.metal {
+            result.metal = metal
+            register(.metal)
+        }
+        if result.weightGrams == nil, let weight = preset.weightGrams {
+            result.weightGrams = weight
+            register(.weightGrams)
+        }
+        if result.metalKarat == nil, let karat = preset.metalKarat {
+            result.metalKarat = karat
+            register(.metalKarat)
+        }
+        if result.finenessPermille == nil, let fineness = preset.finenessPermille {
+            result.finenessPermille = fineness
+            register(.finenessPermille)
+        }
+        return result
+    }
+}
+
+nonisolated enum AssetAnalysisSuggestionResolver {
+    private struct Selection<Value> {
+        let value: Value
+        let assessment: AssetFieldAssessment
+    }
+
+    static func resolve(
+        objectPhoto: AssetAnalysisSuggestion?,
+        invoice: AssetAnalysisSuggestion?,
+        preserving draft: AssetDraft? = nil
+    ) -> AssetAnalysisSuggestion {
+        let object = objectPhoto?
+            .stamped(with: .objectPhoto)
+            .enrichedFromCatalog()
+        let invoice = invoice?
+            .stamped(with: .invoice)
+            .enrichedFromCatalog()
+        var assessments: [AssetDraft.Field: AssetFieldAssessment] = [:]
+
+        func selected<Value>(
+            _ field: AssetDraft.Field,
+            _ value: (AssetAnalysisSuggestion) -> Value?
+        ) -> Value? {
+            guard let choice = select(field, object: object, invoice: invoice, value: value) else {
+                return nil
+            }
+            assessments[field] = choice.assessment
+            return choice.value
+        }
+
+        let money = selectMoney(object: object, invoice: invoice)
+        if let money {
+            assessments[.pricePaidMinorUnits] = money.assessment
+            assessments[.currencyCode] = money.assessment
+        }
+        let resolvedTags = selectTags(object: object, invoice: invoice)
+        if let bestTagAssessment = resolvedTags.map(\.assessment).max(by: {
+            $0.confidencePercent < $1.confidencePercent
+        }) {
+            assessments[.tags] = bestTagAssessment
+        }
+
+        var result = AssetAnalysisSuggestion(
+            name: selected(.name, { $0.name }),
+            category: selected(.category, { $0.category }),
+            presetID: selected(.presetID, { $0.presetID }),
+            quantity: selected(.quantity, { $0.quantity }),
+            purchaseDate: selected(.purchaseDate, { $0.purchaseDate }),
+            metal: selected(.metal, { $0.metal }),
+            weightGrams: selected(.weightGrams, { $0.weightGrams }),
+            metalKarat: selected(.metalKarat, { $0.metalKarat }),
+            finenessPermille: selected(.finenessPermille, { $0.finenessPermille }),
+            gemstoneCaratWeight: selected(.gemstoneCaratWeight, { $0.gemstoneCaratWeight }),
+            gemstoneClarity: selected(.gemstoneClarity, { $0.gemstoneClarity }),
+            pricePaidMinorUnits: money?.minorUnits,
+            currencyCode: money?.currencyCode,
+            sellerName: selected(.sellerName, { $0.sellerName }),
+            storageLocationName: selected(.storageLocationName, { $0.storageLocationName }),
+            invoiceNumber: selected(.invoiceNumber, { $0.invoiceNumber }),
+            serialNumber: selected(.serialNumber, { $0.serialNumber }),
+            acquisitionMethod: selected(.acquisitionMethod, { $0.acquisitionMethod }),
+            tags: resolvedTags.isEmpty ? nil : resolvedTags.map(\.value),
+            fieldAssessments: assessments,
+            tagCandidates: resolvedTags
+        )
+        if !presetIsConsistent(in: result) {
+            result.presetID = nil
+            result.fieldAssessments[.presetID] = nil
+            removeCatalogDerivedFields(from: &result)
+        }
+        if let draft, !presetIsConsistent(withManualValuesIn: draft, suggestion: result) {
+            result.presetID = nil
+            result.fieldAssessments[.presetID] = nil
+            removeCatalogDerivedFields(from: &result)
+        }
+        return result
+    }
+
+    private static func select<Value>(
+        _ field: AssetDraft.Field,
+        object: AssetAnalysisSuggestion?,
+        invoice: AssetAnalysisSuggestion?,
+        value: (AssetAnalysisSuggestion) -> Value?
+    ) -> Selection<Value>? {
+        let objectSelection = selection(field, suggestion: object, value: value)
+        let invoiceSelection = selection(field, suggestion: invoice, value: value)
+        switch (objectSelection, invoiceSelection) {
+        case let (.some(object), .some(invoice)):
+            return invoice.assessment.confidencePercent >= object.assessment.confidencePercent
+                ? invoice
+                : object
+        case let (.some(object), .none):
+            return object
+        case let (.none, .some(invoice)):
+            return invoice
+        case (.none, .none):
+            return nil
+        }
+    }
+
+    private static func selection<Value>(
+        _ field: AssetDraft.Field,
+        suggestion: AssetAnalysisSuggestion?,
+        value: (AssetAnalysisSuggestion) -> Value?
+    ) -> Selection<Value>? {
+        guard let suggestion,
+              let value = value(suggestion),
+              let assessment = suggestion.assessment(for: field)
+        else { return nil }
+        return Selection(value: value, assessment: assessment)
+    }
+
+    private struct MoneySelection {
+        let minorUnits: Int64
+        let currencyCode: String
+        let assessment: AssetFieldAssessment
+    }
+
+    private static func selectMoney(
+        object: AssetAnalysisSuggestion?,
+        invoice: AssetAnalysisSuggestion?
+    ) -> MoneySelection? {
+        func money(from suggestion: AssetAnalysisSuggestion?) -> MoneySelection? {
+            guard let suggestion,
+                  let minorUnits = suggestion.pricePaidMinorUnits,
+                  let currencyCode = suggestion.currencyCode,
+                  let priceAssessment = suggestion.assessment(for: .pricePaidMinorUnits),
+                  let currencyAssessment = suggestion.assessment(for: .currencyCode)
+            else { return nil }
+            let assessment = priceAssessment.confidencePercent <= currencyAssessment.confidencePercent
+                ? priceAssessment
+                : currencyAssessment
+            return MoneySelection(
+                minorUnits: minorUnits,
+                currencyCode: currencyCode,
+                assessment: assessment
+            )
+        }
+        switch (money(from: object), money(from: invoice)) {
+        case let (.some(object), .some(invoice)):
+            return invoice.assessment.confidencePercent >= object.assessment.confidencePercent
+                ? invoice
+                : object
+        case let (.some(object), .none): return object
+        case let (.none, .some(invoice)): return invoice
+        case (.none, .none): return nil
+        }
+    }
+
+    private static func selectTags(
+        object: AssetAnalysisSuggestion?,
+        invoice: AssetAnalysisSuggestion?
+    ) -> [AssetAnalysisTagCandidate] {
+        var candidatesByKey: [String: AssetAnalysisTagCandidate] = [:]
+        func merge(_ candidates: [AssetAnalysisTagCandidate], invoiceWinsTies: Bool) {
+            for candidate in candidates {
+                let value = AssetSuggestionNormalizer.displayName(candidate.value)
+                guard !value.isEmpty else { continue }
+                let key = AssetSuggestionNormalizer.normalizedName(value)
+                let normalized = AssetAnalysisTagCandidate(value: value, assessment: candidate.assessment)
+                guard let existing = candidatesByKey[key] else {
+                    candidatesByKey[key] = normalized
+                    continue
+                }
+                if normalized.assessment.confidencePercent > existing.assessment.confidencePercent
+                    || invoiceWinsTies
+                        && normalized.assessment.confidencePercent == existing.assessment.confidencePercent
+                {
+                    candidatesByKey[key] = normalized
+                }
+            }
+        }
+        merge(object?.tagCandidates ?? [], invoiceWinsTies: false)
+        merge(invoice?.tagCandidates ?? [], invoiceWinsTies: true)
+        return candidatesByKey.values.sorted {
+            if $0.assessment.confidencePercent != $1.assessment.confidencePercent {
+                return $0.assessment.confidencePercent > $1.assessment.confidencePercent
+            }
+            return AssetSuggestionNormalizer.normalizedName($0.value)
+                < AssetSuggestionNormalizer.normalizedName($1.value)
+        }
+    }
+
+    private static func presetIsConsistent(in suggestion: AssetAnalysisSuggestion) -> Bool {
+        guard let presetID = suggestion.presetID,
+              let preset = AssetCatalog.preset(id: presetID)
+        else { return suggestion.presetID == nil }
+        if let category = suggestion.category, category != preset.category { return false }
+        if let expectedMetal = preset.metal,
+           let metal = suggestion.metal,
+           metal != expectedMetal { return false }
+        if !matches(suggestion.weightGrams, expected: preset.weightGrams) { return false }
+        if !matches(
+            suggestion.finenessPermille,
+            expected: preset.finenessPermille,
+            relativeTolerance: 0.002,
+            absoluteTolerance: 1
+        ) { return false }
+        if let expectedKarat = preset.metalKarat,
+           let karat = suggestion.metalKarat,
+           karat != expectedKarat { return false }
+        return true
+    }
+
+    private static func presetIsConsistent(
+        withManualValuesIn draft: AssetDraft,
+        suggestion: AssetAnalysisSuggestion
+    ) -> Bool {
+        guard let presetID = suggestion.presetID,
+              let preset = AssetCatalog.preset(id: presetID)
+        else { return suggestion.presetID == nil }
+        let manual = draft.manuallyEditedFields
+        if manual.contains(.category),
+           let category = draft.category,
+           category != preset.category { return false }
+        if manual.contains(.metal),
+           let expectedMetal = preset.metal,
+           let metal = draft.metal,
+           metal != expectedMetal { return false }
+        if manual.contains(.weightGrams),
+           !matches(draft.weightGrams, expected: preset.weightGrams) { return false }
+        if manual.contains(.finenessPermille),
+           !matches(
+                draft.finenessPermille,
+                expected: preset.finenessPermille,
+                relativeTolerance: 0.002,
+                absoluteTolerance: 1
+           ) { return false }
+        if manual.contains(.metalKarat),
+           let expectedKarat = preset.metalKarat,
+           let karat = draft.metalKarat,
+           karat != expectedKarat { return false }
+        return true
+    }
+
+    private static func matches(
+        _ value: Double?,
+        expected: Double?,
+        relativeTolerance: Double = 0.01,
+        absoluteTolerance: Double = 0.01
+    ) -> Bool {
+        guard let value, let expected else { return true }
+        let tolerance = max(absoluteTolerance, abs(expected) * relativeTolerance)
+        return abs(value - expected) <= tolerance
+    }
+
+    private static func removeCatalogDerivedFields(from suggestion: inout AssetAnalysisSuggestion) {
+        let derivedFields = suggestion.fieldAssessments.compactMap { field, assessment in
+            assessment.evidenceKind == .catalogDerived ? field : nil
+        }
+        for field in derivedFields {
+            switch field {
+            case .name: suggestion.name = nil
+            case .category: suggestion.category = nil
+            case .metal: suggestion.metal = nil
+            case .weightGrams: suggestion.weightGrams = nil
+            case .metalKarat: suggestion.metalKarat = nil
+            case .finenessPermille: suggestion.finenessPermille = nil
+            default: break
+            }
+            suggestion.fieldAssessments[field] = nil
+        }
     }
 }
 
@@ -401,12 +799,7 @@ nonisolated struct AssetDraft: Equatable, Sendable {
         ) {
             appliedFields.insert(.serialNumber)
         }
-        if mergeOptional(
-            \.acquisitionMethod,
-            field: .acquisitionMethod,
-            suggestion.acquisitionMethod,
-            excluding: excludedFields
-        ) {
+        if mergeAcquisitionMethod(suggestion.acquisitionMethod, excluding: excludedFields) {
             appliedFields.insert(.acquisitionMethod)
         }
         if mergeTags(suggestion.tags, excluding: excludedFields) {
@@ -436,7 +829,7 @@ nonisolated struct AssetDraft: Equatable, Sendable {
             case .storageLocationName: storageLocationName = ""
             case .invoiceNumber: invoiceNumber = ""
             case .serialNumber: serialNumber = ""
-            case .acquisitionMethod: acquisitionMethod = nil
+            case .acquisitionMethod: acquisitionMethod = .purchase
             case .tags: tags = []
             }
         }
@@ -501,6 +894,19 @@ nonisolated struct AssetDraft: Equatable, Sendable {
               let currency = SupportedAssetCurrency.currency(normalizing: suggestion)
         else { return false }
         currencyCode = currency.rawValue
+        return true
+    }
+
+    private mutating func mergeAcquisitionMethod(
+        _ suggestion: AssetAcquisitionMethod?,
+        excluding excludedFields: Set<Field>
+    ) -> Bool {
+        guard !excludedFields.contains(.acquisitionMethod),
+              !manuallyEditedFields.contains(.acquisitionMethod),
+              acquisitionMethod == nil || acquisitionMethod == .purchase,
+              let suggestion
+        else { return false }
+        acquisitionMethod = suggestion
         return true
     }
 

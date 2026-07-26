@@ -28,7 +28,7 @@ struct AssetCreationFlowTests {
     }
 
     @Test
-    func analysisPrefillsSerialNumberButLeavesUserMetadataManual() async {
+    func analysisPrefillsSupportedAndInferredMetadata() async {
         let suggestedPurchaseDate = Date(timeIntervalSince1970: 1_715_644_800)
         let analyzer = SequencedAnalyzer(
             objectSuggestions: [
@@ -50,9 +50,9 @@ struct AssetCreationFlowTests {
         await waitForAnalysis(in: state)
 
         #expect(state.draft.serialNumber == "AI-123")
-        #expect(state.draft.purchaseDate == nil)
-        #expect(state.draft.acquisitionMethod == .purchase)
-        #expect(state.draft.tags.isEmpty)
+        #expect(state.draft.purchaseDate == suggestedPurchaseDate)
+        #expect(state.draft.acquisitionMethod == .inheritance)
+        #expect(state.draft.tags == ["AI tag"])
     }
 
     @Test
@@ -139,11 +139,29 @@ struct AssetCreationFlowTests {
     func replacingAndRemovingObjectPhotoReappliesOverlappingSuggestions() async {
         let analyzer = SequencedAnalyzer(
             objectSuggestions: [
-                AssetAnalysisSuggestion(name: "Ancienne photo", quantity: 1, currencyCode: "EUR"),
-                AssetAnalysisSuggestion(name: "Nouvelle photo", quantity: 4, currencyCode: "GBP"),
+                AssetAnalysisSuggestion(
+                    name: "Ancienne photo",
+                    quantity: 1,
+                    pricePaidMinorUnits: 100,
+                    currencyCode: "EUR",
+                    confidencePercent: 90
+                ),
+                AssetAnalysisSuggestion(
+                    name: "Nouvelle photo",
+                    quantity: 4,
+                    pricePaidMinorUnits: 400,
+                    currencyCode: "GBP",
+                    confidencePercent: 95
+                ),
             ],
             invoiceSuggestions: [
-                AssetAnalysisSuggestion(name: "Nom de la facture", quantity: 3, currencyCode: "CHF")
+                AssetAnalysisSuggestion(
+                    name: "Nom de la facture",
+                    quantity: 3,
+                    pricePaidMinorUnits: 300,
+                    currencyCode: "CHF",
+                    confidencePercent: 80
+                )
             ]
         )
         let state = AssetCreationState(
@@ -176,12 +194,14 @@ struct AssetCreationFlowTests {
     }
 
     @Test
-    func invoiceCompletingFirstKeepsPhotoPriorityAndItsReplacementAvailable() async {
+    func higherConfidencePhotoWinsRegardlessOfCompletionOrder() async {
         let analyzer = SequencedAnalyzer(
-            objectSuggestions: [AssetAnalysisSuggestion(name: "Nom de la photo")],
+            objectSuggestions: [
+                AssetAnalysisSuggestion(name: "Nom de la photo", confidencePercent: 95)
+            ],
             invoiceSuggestions: [
-                AssetAnalysisSuggestion(name: "Ancienne facture"),
-                AssetAnalysisSuggestion(name: "Nouvelle facture"),
+                AssetAnalysisSuggestion(name: "Ancienne facture", confidencePercent: 80),
+                AssetAnalysisSuggestion(name: "Nouvelle facture", confidencePercent: 90),
             ]
         )
         let state = AssetCreationState(

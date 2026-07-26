@@ -15,9 +15,15 @@ function jpeg(): Buffer {
 const emptySuggestion = modelSuggestionSchema.parse({
 	name: null, category: null, presetId: null, quantity: null, purchaseDate: null,
 	metal: null, weightGrams: null, metalKarat: null, finenessPermille: null,
-	gemstoneCaratWeight: null, gemstoneClarity: null, pricePaidAmount: null,
-	currencyCode: null, sellerName: null, storageLocationName: null,
-	invoiceNumber: null, serialNumber: null
+	gemstoneCaratWeight: null, gemstoneClarity: null, pricePaid: null,
+	sellerName: null, storageLocationName: null, invoiceNumber: null,
+	serialNumber: null, acquisitionMethod: null, tags: []
+});
+
+const visibleCandidate = <Value>(value: Value, confidencePercent = 95) => ({
+	value,
+	confidencePercent,
+	evidenceKind: 'visible_text' as const
 });
 
 function dependencies(overrides: Partial<{
@@ -34,7 +40,7 @@ function dependencies(overrides: Partial<{
 	};
 	const extractor = {
 		extract: vi.fn().mockResolvedValue({
-			suggestion: { ...emptySuggestion, serialNumber: 'A-001' },
+			suggestion: { ...emptySuggestion, serialNumber: visibleCandidate('A-001') },
 			usage: { inputTokens: 100, outputTokens: 20, totalTokens: 120 }
 		})
 	};
@@ -65,8 +71,11 @@ describe('asset extraction service', () => {
 		expect(response.headers.get('x-content-type-options')).toBe('nosniff');
 		expect(response.headers.get('x-request-id')).toBe('00000000-0000-4000-8000-000000000001');
 		expect(await response.json()).toMatchObject({
-			schemaVersion: 1,
-			suggestion: { serialNumber: 'A-001', pricePaidMinorUnits: null }
+			schemaVersion: 2,
+			suggestion: {
+				serialNumber: visibleCandidate('A-001'),
+				pricePaid: null
+			}
 		});
 		expect(quota.recordAttempt).toHaveBeenCalledWith(expect.objectContaining({
 			installationId: expect.stringMatching(/^[a-f0-9]{64}$/),

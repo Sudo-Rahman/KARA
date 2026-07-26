@@ -136,7 +136,7 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
     }
 
     func validatedSuggestion() throws -> AssetAnalysisSuggestion {
-        guard schemaVersion == 1 else { throw AssetAnalysisError.invalidResponse }
+        guard schemaVersion == 2 else { throw AssetAnalysisError.invalidResponse }
         return try suggestion.validated()
     }
 
@@ -151,23 +151,24 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
     }
 
     struct Suggestion: Decodable {
-        let name: String?
-        let category: String?
-        let presetID: String?
-        let quantity: Int?
-        let purchaseDate: String?
-        let metal: String?
-        let weightGrams: Double?
-        let metalKarat: Int?
-        let finenessPermille: Double?
-        let gemstoneCaratWeight: Double?
-        let gemstoneClarity: String?
-        let pricePaidMinorUnits: Int64?
-        let currencyCode: String?
-        let sellerName: String?
-        let storageLocationName: String?
-        let invoiceNumber: String?
-        let serialNumber: String?
+        let name: Candidate<String>?
+        let category: Candidate<String>?
+        let presetID: Candidate<String>?
+        let quantity: Candidate<Int>?
+        let purchaseDate: Candidate<String>?
+        let metal: Candidate<String>?
+        let weightGrams: Candidate<Double>?
+        let metalKarat: Candidate<Int>?
+        let finenessPermille: Candidate<Double>?
+        let gemstoneCaratWeight: Candidate<Double>?
+        let gemstoneClarity: Candidate<String>?
+        let pricePaid: Candidate<PriceValue>?
+        let sellerName: Candidate<String>?
+        let storageLocationName: Candidate<String>?
+        let invoiceNumber: Candidate<String>?
+        let serialNumber: Candidate<String>?
+        let acquisitionMethod: Candidate<String>?
+        let tags: [Candidate<String>]
 
         private enum CodingKeys: String, CodingKey, CaseIterable {
             case name
@@ -181,12 +182,13 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
             case finenessPermille
             case gemstoneCaratWeight
             case gemstoneClarity
-            case pricePaidMinorUnits
-            case currencyCode
+            case pricePaid
             case sellerName
             case storageLocationName
             case invoiceNumber
             case serialNumber
+            case acquisitionMethod
+            case tags
         }
 
         init(from decoder: Decoder) throws {
@@ -195,26 +197,67 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 expected: CodingKeys.allCases.map(\.stringValue)
             )
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            name = try container.decodeIfPresent(String.self, forKey: .name)
-            category = try container.decodeIfPresent(String.self, forKey: .category)
-            presetID = try container.decodeIfPresent(String.self, forKey: .presetID)
-            quantity = try container.decodeIfPresent(Int.self, forKey: .quantity)
-            purchaseDate = try container.decodeIfPresent(String.self, forKey: .purchaseDate)
-            metal = try container.decodeIfPresent(String.self, forKey: .metal)
-            weightGrams = try container.decodeIfPresent(Double.self, forKey: .weightGrams)
-            metalKarat = try container.decodeIfPresent(Int.self, forKey: .metalKarat)
-            finenessPermille = try container.decodeIfPresent(Double.self, forKey: .finenessPermille)
-            gemstoneCaratWeight = try container.decodeIfPresent(Double.self, forKey: .gemstoneCaratWeight)
-            gemstoneClarity = try container.decodeIfPresent(String.self, forKey: .gemstoneClarity)
-            pricePaidMinorUnits = try container.decodeIfPresent(Int64.self, forKey: .pricePaidMinorUnits)
-            currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode)
-            sellerName = try container.decodeIfPresent(String.self, forKey: .sellerName)
-            storageLocationName = try container.decodeIfPresent(String.self, forKey: .storageLocationName)
-            invoiceNumber = try container.decodeIfPresent(String.self, forKey: .invoiceNumber)
-            serialNumber = try container.decodeIfPresent(String.self, forKey: .serialNumber)
+            name = try container.decodeIfPresent(Candidate<String>.self, forKey: .name)
+            category = try container.decodeIfPresent(Candidate<String>.self, forKey: .category)
+            presetID = try container.decodeIfPresent(Candidate<String>.self, forKey: .presetID)
+            quantity = try container.decodeIfPresent(Candidate<Int>.self, forKey: .quantity)
+            purchaseDate = try container.decodeIfPresent(Candidate<String>.self, forKey: .purchaseDate)
+            metal = try container.decodeIfPresent(Candidate<String>.self, forKey: .metal)
+            weightGrams = try container.decodeIfPresent(Candidate<Double>.self, forKey: .weightGrams)
+            metalKarat = try container.decodeIfPresent(Candidate<Int>.self, forKey: .metalKarat)
+            finenessPermille = try container.decodeIfPresent(Candidate<Double>.self, forKey: .finenessPermille)
+            gemstoneCaratWeight = try container.decodeIfPresent(
+                Candidate<Double>.self,
+                forKey: .gemstoneCaratWeight
+            )
+            gemstoneClarity = try container.decodeIfPresent(Candidate<String>.self, forKey: .gemstoneClarity)
+            pricePaid = try container.decodeIfPresent(Candidate<PriceValue>.self, forKey: .pricePaid)
+            sellerName = try container.decodeIfPresent(Candidate<String>.self, forKey: .sellerName)
+            storageLocationName = try container.decodeIfPresent(
+                Candidate<String>.self,
+                forKey: .storageLocationName
+            )
+            invoiceNumber = try container.decodeIfPresent(Candidate<String>.self, forKey: .invoiceNumber)
+            serialNumber = try container.decodeIfPresent(Candidate<String>.self, forKey: .serialNumber)
+            acquisitionMethod = try container.decodeIfPresent(
+                Candidate<String>.self,
+                forKey: .acquisitionMethod
+            )
+            tags = try container.decode([Candidate<String>].self, forKey: .tags)
         }
 
         func validated() throws -> AssetAnalysisSuggestion {
+            var assessments: [AssetDraft.Field: AssetFieldAssessment] = [:]
+            func unpack<Value>(
+                _ candidate: Candidate<Value>?,
+                field: AssetDraft.Field
+            ) throws -> Value? {
+                guard let candidate else { return nil }
+                assessments[field] = try candidate.assessment()
+                return candidate.value
+            }
+
+            let name = try unpack(name, field: .name)
+            let category = try unpack(category, field: .category)
+            let presetID = try unpack(presetID, field: .presetID)
+            let quantity = try unpack(quantity, field: .quantity)
+            let purchaseDate = try unpack(purchaseDate, field: .purchaseDate)
+            let metal = try unpack(metal, field: .metal)
+            let weightGrams = try unpack(weightGrams, field: .weightGrams)
+            let metalKarat = try unpack(metalKarat, field: .metalKarat)
+            let finenessPermille = try unpack(finenessPermille, field: .finenessPermille)
+            let gemstoneCaratWeight = try unpack(gemstoneCaratWeight, field: .gemstoneCaratWeight)
+            let gemstoneClarity = try unpack(gemstoneClarity, field: .gemstoneClarity)
+            let pricePaid = try unpack(pricePaid, field: .pricePaidMinorUnits)
+            if pricePaid != nil {
+                assessments[.currencyCode] = assessments[.pricePaidMinorUnits]
+            }
+            let sellerName = try unpack(sellerName, field: .sellerName)
+            let storageLocationName = try unpack(storageLocationName, field: .storageLocationName)
+            let invoiceNumber = try unpack(invoiceNumber, field: .invoiceNumber)
+            let serialNumber = try unpack(serialNumber, field: .serialNumber)
+            let acquisitionMethod = try unpack(acquisitionMethod, field: .acquisitionMethod)
+
             let validatedCategory = try validateOptional(category) {
                 AssetCategory(analysisIdentifier: $0)
             }
@@ -222,8 +265,11 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 AssetCatalog.preset(id: value)
             }
             let validatedMetal = try validateOptional(metal) { PreciousMetal(rawValue: $0) }
-            let validatedCurrency = try validateOptional(currencyCode) {
+            let validatedCurrency = try validateOptional(pricePaid?.currencyCode) {
                 SupportedAssetCurrency(rawValue: $0)?.rawValue
+            }
+            let validatedAcquisition = try validateOptional(acquisitionMethod) {
+                AssetAcquisitionMethod(rawValue: $0)
             }
 
             if let quantity, quantity < 1 { throw AssetAnalysisError.invalidResponse }
@@ -236,7 +282,7 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                !finenessPermille.isFinite || finenessPermille <= 0 || finenessPermille > 1_000 {
                 throw AssetAnalysisError.invalidResponse
             }
-            if let pricePaidMinorUnits, pricePaidMinorUnits < 0 {
+            if let minorUnits = pricePaid?.minorUnits, minorUnits < 0 {
                 throw AssetAnalysisError.invalidResponse
             }
             try validatePresetConsistency(
@@ -244,6 +290,20 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 category: validatedCategory,
                 metal: validatedMetal
             )
+
+            let validatedTagCandidates = try tags.compactMap { candidate -> AssetAnalysisTagCandidate? in
+                let value = normalizedDisplayText(candidate.value)
+                guard let value else { return nil }
+                return AssetAnalysisTagCandidate(
+                    value: value,
+                    assessment: try candidate.assessment()
+                )
+            }
+            if let bestTag = validatedTagCandidates.max(by: {
+                $0.assessment.confidencePercent < $1.assessment.confidencePercent
+            }) {
+                assessments[.tags] = bestTag.assessment
+            }
 
             return AssetAnalysisSuggestion(
                 name: normalizedDisplayText(name),
@@ -257,12 +317,16 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 finenessPermille: finenessPermille,
                 gemstoneCaratWeight: gemstoneCaratWeight,
                 gemstoneClarity: normalizedDisplayText(gemstoneClarity),
-                pricePaidMinorUnits: pricePaidMinorUnits,
+                pricePaidMinorUnits: pricePaid?.minorUnits,
                 currencyCode: validatedCurrency,
                 sellerName: normalizedDisplayText(sellerName),
                 storageLocationName: normalizedDisplayText(storageLocationName),
-                invoiceNumber: normalizedDisplayText(invoiceNumber),
-                serialNumber: exactIdentifier(serialNumber)
+                invoiceNumber: exactIdentifier(invoiceNumber),
+                serialNumber: exactIdentifier(serialNumber),
+                acquisitionMethod: validatedAcquisition,
+                tags: validatedTagCandidates.map(\.value),
+                fieldAssessments: assessments,
+                tagCandidates: validatedTagCandidates
             )
         }
 
@@ -280,9 +344,9 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                metal != expectedMetal {
                 throw AssetAnalysisError.invalidResponse
             }
-            if !matchesPresetNumber(weightGrams, expected: preset.weightGrams)
+            if !matchesPresetNumber(weightGrams?.value, expected: preset.weightGrams)
                 || !matchesPresetNumber(
-                    finenessPermille,
+                    finenessPermille?.value,
                     expected: preset.finenessPermille,
                     relativeTolerance: 0.002,
                     absoluteTolerance: 1
@@ -291,7 +355,7 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                 throw AssetAnalysisError.invalidResponse
             }
             if let expectedKarat = preset.metalKarat,
-               let metalKarat,
+               let metalKarat = metalKarat?.value,
                metalKarat != expectedKarat {
                 throw AssetAnalysisError.invalidResponse
             }
@@ -368,6 +432,60 @@ private nonisolated struct AssetExtractionEnvelope: Decodable {
                   roundTrip.day == day
             else { throw AssetAnalysisError.invalidResponse }
             return date
+        }
+    }
+
+    struct Candidate<Value: Decodable>: Decodable {
+        let value: Value
+        let confidencePercent: Int
+        let evidenceKind: String
+
+        private enum CodingKeys: String, CodingKey, CaseIterable {
+            case value
+            case confidencePercent
+            case evidenceKind
+        }
+
+        init(from decoder: Decoder) throws {
+            try AssetExtractionEnvelope.requireExactKeys(
+                decoder,
+                expected: CodingKeys.allCases.map(\.stringValue)
+            )
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            value = try container.decode(Value.self, forKey: .value)
+            confidencePercent = try container.decode(Int.self, forKey: .confidencePercent)
+            evidenceKind = try container.decode(String.self, forKey: .evidenceKind)
+        }
+
+        func assessment() throws -> AssetFieldAssessment {
+            guard (1 ... 100).contains(confidencePercent),
+                  let evidence = AssetAnalysisEvidenceKind(rawValue: evidenceKind),
+                  evidence != .catalogDerived
+            else { throw AssetAnalysisError.invalidResponse }
+            return AssetFieldAssessment(
+                confidencePercent: confidencePercent,
+                evidenceKind: evidence
+            )
+        }
+    }
+
+    struct PriceValue: Decodable {
+        let minorUnits: Int64
+        let currencyCode: String
+
+        private enum CodingKeys: String, CodingKey, CaseIterable {
+            case minorUnits
+            case currencyCode
+        }
+
+        init(from decoder: Decoder) throws {
+            try AssetExtractionEnvelope.requireExactKeys(
+                decoder,
+                expected: CodingKeys.allCases.map(\.stringValue)
+            )
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            minorUnits = try container.decode(Int64.self, forKey: .minorUnits)
+            currencyCode = try container.decode(String.self, forKey: .currencyCode)
         }
     }
 }

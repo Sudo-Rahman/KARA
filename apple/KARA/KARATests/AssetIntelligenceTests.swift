@@ -106,23 +106,29 @@ struct AssetIntelligenceTests {
     func generatedFieldsAreValidated() throws {
         let amount = try #require(Decimal(string: "2390.005"))
         let generated = GeneratedAssetAnalysis(
-            name: "  Lingotin   10 g ",
-            category: "bar",
-            presetID: "gold-bar-10g",
-            quantity: 0,
-            purchaseDateISO8601: "2024-05-14",
-            metal: "gold",
-            weightGrams: .nan,
-            metalKarat: 25,
-            finenessPermille: 999.9,
-            gemstoneCaratWeight: -1,
-            gemstoneClarity: " ",
-            pricePaidAmount: amount,
-            currencyCode: " eur ",
-            sellerName: "  Maison   Lemoine ",
-            storageLocationName: " ",
-            invoiceNumber: " ML2024-05872 ",
-            serialNumber: " 00-AbC-42 "
+            name: .init(value: "  Lingotin   10 g ", confidencePercent: 98, evidenceKind: "visible_text"),
+            category: .init(value: "bar", confidencePercent: 94, evidenceKind: "visual_identification"),
+            presetID: .init(value: "gold-bar-10g", confidencePercent: 91, evidenceKind: "visual_identification"),
+            quantity: .init(value: 0, confidencePercent: 80, evidenceKind: "context_inference"),
+            purchaseDateISO8601: .init(value: "2024-05-14", confidencePercent: 99, evidenceKind: "visible_text"),
+            metal: .init(value: "gold", confidencePercent: 97, evidenceKind: "visible_text"),
+            weightGrams: .init(value: .nan, confidencePercent: 95, evidenceKind: "visible_text"),
+            metalKarat: .init(value: 25, confidencePercent: 70, evidenceKind: "context_inference"),
+            finenessPermille: .init(value: 999.9, confidencePercent: 99, evidenceKind: "visible_text"),
+            gemstoneCaratWeight: .init(value: -1, confidencePercent: 40, evidenceKind: "context_inference"),
+            gemstoneClarity: .init(value: " ", confidencePercent: 20, evidenceKind: "visible_text"),
+            pricePaid: .init(
+                amount: amount,
+                currencyCode: " eur ",
+                confidencePercent: 98,
+                evidenceKind: "visible_text"
+            ),
+            sellerName: .init(value: "  Maison   Lemoine ", confidencePercent: 96, evidenceKind: "visible_text"),
+            storageLocationName: .init(value: " ", confidencePercent: 10, evidenceKind: "context_inference"),
+            invoiceNumber: .init(value: " ML2024-05872 ", confidencePercent: 99, evidenceKind: "visible_text"),
+            serialNumber: .init(value: " 00-AbC-42 ", confidencePercent: 99, evidenceKind: "visible_text"),
+            acquisitionMethod: .init(value: "purchase", confidencePercent: 85, evidenceKind: "context_inference"),
+            tags: [.init(value: "Or d’investissement", confidencePercent: 75, evidenceKind: "context_inference")]
         )
 
         let suggestion = FoundationModelAssetAnalyzer.suggestion(from: generated)
@@ -141,6 +147,9 @@ struct AssetIntelligenceTests {
         #expect(suggestion.sellerName == "Maison Lemoine")
         #expect(suggestion.invoiceNumber == "ML2024-05872")
         #expect(suggestion.serialNumber == "00-AbC-42")
+        #expect(suggestion.acquisitionMethod == .purchase)
+        #expect(suggestion.tags == ["Or d’investissement"])
+        #expect(suggestion.assessment(for: .finenessPermille)?.confidencePercent == 99)
     }
 
     private func makeService(

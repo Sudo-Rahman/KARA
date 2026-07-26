@@ -2,66 +2,95 @@ import { z } from 'zod';
 
 import { ASSET_CATALOG, ASSET_PRESET_IDS } from './catalog';
 
-const optionalText = (maximum: number) => z.string().trim().min(1).max(maximum).nullable();
+const text = (maximum: number) => z.string().trim().min(1).max(maximum);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const maximumMajorAmount = (Number.MAX_SAFE_INTEGER - 1) / 100;
 
-export const modelSuggestionWireSchema = z.object({
-	name: optionalText(200),
-	category: z.enum(['bar', 'coin', 'jewelry', 'custom']).nullable(),
-	presetId: z.enum(ASSET_PRESET_IDS).nullable(),
-	quantity: z.number().int().min(1).max(10_000).nullable(),
-	purchaseDate: z.string().regex(datePattern).nullable(),
-	metal: z.enum(['gold', 'silver', 'platinum', 'palladium', 'other']).nullable(),
-	weightGrams: z.number().finite().positive().max(1_000_000_000).nullable(),
-	metalKarat: z.number().int().min(1).max(24).nullable(),
-	finenessPermille: z.number().finite().positive().max(1_000).nullable(),
-	gemstoneCaratWeight: z.number().finite().positive().max(1_000_000).nullable(),
-	gemstoneClarity: optionalText(40),
-	pricePaidAmount: z.number().finite().nonnegative().max(maximumMajorAmount).nullable(),
-	currencyCode: z.enum(['EUR', 'USD', 'CHF', 'GBP']).nullable(),
-	sellerName: optionalText(200),
-	storageLocationName: optionalText(200),
-	invoiceNumber: optionalText(200),
-	serialNumber: optionalText(200)
+export const evidenceKindSchema = z.enum([
+	'visible_text',
+	'visual_identification',
+	'context_inference'
+]);
+
+const confidencePercentSchema = z.number().int().min(1).max(100);
+
+function candidateSchema<Value extends z.ZodType>(value: Value) {
+	return z.object({
+		value,
+		confidencePercent: confidencePercentSchema,
+		evidenceKind: evidenceKindSchema
+	}).strict().nullable();
+}
+
+const textCandidateSchema = (maximum: number) => candidateSchema(text(maximum));
+const tagCandidateSchema = candidateSchema(text(80)).unwrap();
+const moneyValueSchema = z.object({
+	amount: z.number().finite().nonnegative().max(maximumMajorAmount),
+	currencyCode: z.enum(['EUR', 'USD', 'CHF', 'GBP'])
 }).strict();
 
-export const modelSuggestionSchema = modelSuggestionWireSchema.superRefine((value, context) => {
-	if (value.purchaseDate !== null && !isCalendarDate(value.purchaseDate)) {
-		context.addIssue({ code: 'custom', path: ['purchaseDate'], message: 'purchaseDate is invalid' });
-	}
-	if ((value.pricePaidAmount === null) !== (value.currencyCode === null)) {
+export const modelSuggestionWireSchema = z.object({
+	name: textCandidateSchema(200),
+	category: candidateSchema(z.enum(['bar', 'coin', 'jewelry', 'custom'])),
+	presetId: candidateSchema(z.enum(ASSET_PRESET_IDS)),
+	quantity: candidateSchema(z.number().int().min(1).max(10_000)),
+	purchaseDate: candidateSchema(z.string().regex(datePattern)),
+	metal: candidateSchema(z.enum(['gold', 'silver', 'platinum', 'palladium', 'other'])),
+	weightGrams: candidateSchema(z.number().finite().positive().max(1_000_000_000)),
+	metalKarat: candidateSchema(z.number().int().min(1).max(24)),
+	finenessPermille: candidateSchema(z.number().finite().positive().max(1_000)),
+	gemstoneCaratWeight: candidateSchema(z.number().finite().positive().max(1_000_000)),
+	gemstoneClarity: textCandidateSchema(40),
+	pricePaid: candidateSchema(moneyValueSchema),
+	sellerName: textCandidateSchema(200),
+	storageLocationName: textCandidateSchema(200),
+	invoiceNumber: textCandidateSchema(200),
+	serialNumber: textCandidateSchema(200),
+	acquisitionMethod: candidateSchema(z.enum(['purchase', 'gift', 'inheritance', 'exchange', 'other'])),
+	tags: z.array(tagCandidateSchema).max(20)
+}).strict();
+
+export const modelSuggestionSchema = modelSuggestionWireSchema.superRefine((suggestion, context) => {
+	const purchaseDate = suggestion.purchaseDate?.value;
+	if (purchaseDate !== undefined && !isCalendarDate(purchaseDate)) {
 		context.addIssue({
 			code: 'custom',
-			path: ['pricePaidAmount'],
-			message: 'pricePaidAmount and currencyCode must either both be set or both be null'
+			path: ['purchaseDate', 'value'],
+			message: 'purchaseDate is invalid'
 		});
 	}
-	if (value.presetId !== null) {
-		const preset = ASSET_CATALOG.find(([id]) => id === value.presetId);
-		if (preset && value.category !== null && value.category !== preset[2]) {
+
+	const presetID = suggestion.presetId?.value;
+	if (presetID !== undefined) {
+		const preset = ASSET_CATALOG.find(([id]) => id === presetID);
+		if (preset && suggestion.category !== null && suggestion.category.value !== preset[2]) {
 			context.addIssue({
 				code: 'custom',
-				path: ['category'],
+				path: ['category', 'value'],
 				message: 'category contradicts presetId'
 			});
 		}
-		if (preset && preset[3] !== null && value.metal !== null && value.metal !== preset[3]) {
+		if (preset && preset[3] !== null && suggestion.metal !== null && suggestion.metal.value !== preset[3]) {
 			context.addIssue({
 				code: 'custom',
-				path: ['metal'],
+				path: ['metal', 'value'],
 				message: 'metal contradicts presetId'
 			});
 		}
 	}
 });
 
-const publicSuggestionSchema = modelSuggestionWireSchema.omit({ pricePaidAmount: true }).extend({
-	pricePaidMinorUnits: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).nullable()
+const publicMoneyCandidateSchema = candidateSchema(z.object({
+	minorUnits: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+	currencyCode: z.enum(['EUR', 'USD', 'CHF', 'GBP'])
+}).strict());
+
+const publicSuggestionSchema = modelSuggestionWireSchema.omit({ pricePaid: true }).extend({
+	pricePaid: publicMoneyCandidateSchema
 }).strict();
 
 export const publicExtractionSchema = z.object({
-	schemaVersion: z.literal(1),
+	schemaVersion: z.literal(2),
 	suggestion: publicSuggestionSchema
 }).strict();
 
@@ -69,12 +98,20 @@ export type ModelSuggestion = z.infer<typeof modelSuggestionSchema>;
 export type PublicExtraction = z.infer<typeof publicExtractionSchema>;
 
 export function toPublicExtraction(value: ModelSuggestion): PublicExtraction {
-	const { pricePaidAmount, ...suggestion } = value;
+	const { pricePaid, ...suggestion } = value;
 	return publicExtractionSchema.parse({
-		schemaVersion: 1,
+		schemaVersion: 2,
 		suggestion: {
 			...suggestion,
-			pricePaidMinorUnits: pricePaidAmount === null ? null : majorToMinor(pricePaidAmount)
+			pricePaid: pricePaid === null
+				? null
+				: {
+					...pricePaid,
+					value: {
+						minorUnits: majorToMinor(pricePaid.value.amount),
+						currencyCode: pricePaid.value.currencyCode
+					}
+				}
 		}
 	});
 }

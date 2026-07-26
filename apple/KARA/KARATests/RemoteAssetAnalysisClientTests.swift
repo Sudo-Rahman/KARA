@@ -4,7 +4,7 @@ import Testing
 
 @Suite("Remote asset analysis client")
 struct RemoteAssetAnalysisClientTests {
-    @Test("Posts the JPEG as an attested binary request and decodes schema v1")
+    @Test("Posts the JPEG as an attested binary request and decodes schema v2")
     func postsPhotoAndDecodesStrictResponse() async throws {
         let photo = Data([0xFF, 0xD8, 0xFF, 0xD9])
         let transport = RecordingAnalysisTransport(
@@ -26,6 +26,7 @@ struct RemoteAssetAnalysisClientTests {
         #expect(suggestion.category == .bar)
         #expect(suggestion.serialNumber == "00-AbC-42")
         #expect(suggestion.pricePaidMinorUnits == 239_001)
+        #expect(suggestion.assessment(for: .weightGrams)?.confidencePercent == 99)
         let request = try #require(await transport.lastRequest())
         #expect(request.httpMethod == "POST")
         #expect(request.url?.path == "/v1/asset-extraction")
@@ -116,7 +117,7 @@ struct RemoteAssetAnalysisClientTests {
             JSONSerialization.jsonObject(with: Self.validResponse) as? [String: Any]
         )
         var suggestion = try #require(root["suggestion"] as? [String: Any])
-        suggestion["category"] = "coin"
+        suggestion["category"] = Self.candidate("coin", confidence: 99)
         root["suggestion"] = suggestion
 
         let client = RemoteAssetAnalysisClient(
@@ -142,9 +143,9 @@ struct RemoteAssetAnalysisClientTests {
             JSONSerialization.jsonObject(with: Self.validResponse) as? [String: Any]
         )
         var suggestion = try #require(root["suggestion"] as? [String: Any])
-        suggestion["name"] = "Lingotin or 1 oz"
-        suggestion["presetId"] = "gold-bar-1oz"
-        suggestion["weightGrams"] = 31.1
+        suggestion["name"] = Self.candidate("Lingotin or 1 oz", confidence: 95)
+        suggestion["presetId"] = Self.candidate("gold-bar-1oz", confidence: 94)
+        suggestion["weightGrams"] = Self.candidate(31.1, confidence: 92)
         root["suggestion"] = suggestion
 
         let client = RemoteAssetAnalysisClient(
@@ -183,28 +184,37 @@ struct RemoteAssetAnalysisClientTests {
 
     private static let validResponse = Data(#"""
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "suggestion": {
-        "name": "Lingotin 10 g",
-        "category": "bar",
-        "presetId": "gold-bar-10g",
-        "quantity": 1,
-        "purchaseDate": "2024-05-14",
-        "metal": "gold",
-        "weightGrams": 10,
-        "metalKarat": 24,
-        "finenessPermille": 999.9,
+        "name": {"value":"Lingotin 10 g","confidencePercent":98,"evidenceKind":"visible_text"},
+        "category": {"value":"bar","confidencePercent":96,"evidenceKind":"visual_identification"},
+        "presetId": {"value":"gold-bar-10g","confidencePercent":94,"evidenceKind":"visual_identification"},
+        "quantity": {"value":1,"confidencePercent":90,"evidenceKind":"context_inference"},
+        "purchaseDate": {"value":"2024-05-14","confidencePercent":99,"evidenceKind":"visible_text"},
+        "metal": {"value":"gold","confidencePercent":97,"evidenceKind":"visible_text"},
+        "weightGrams": {"value":10,"confidencePercent":99,"evidenceKind":"visible_text"},
+        "metalKarat": {"value":24,"confidencePercent":91,"evidenceKind":"context_inference"},
+        "finenessPermille": {"value":999.9,"confidencePercent":99,"evidenceKind":"visible_text"},
         "gemstoneCaratWeight": null,
         "gemstoneClarity": null,
-        "pricePaidMinorUnits": 239001,
-        "currencyCode": "EUR",
-        "sellerName": "Maison Lemoine",
+        "pricePaid": {"value":{"minorUnits":239001,"currencyCode":"EUR"},"confidencePercent":98,"evidenceKind":"visible_text"},
+        "sellerName": {"value":"Maison Lemoine","confidencePercent":97,"evidenceKind":"visible_text"},
         "storageLocationName": null,
-        "invoiceNumber": "ML-42",
-        "serialNumber": "00-AbC-42"
+        "invoiceNumber": {"value":"ML-42","confidencePercent":99,"evidenceKind":"visible_text"},
+        "serialNumber": {"value":"00-AbC-42","confidencePercent":99,"evidenceKind":"visible_text"},
+        "acquisitionMethod": {"value":"purchase","confidencePercent":85,"evidenceKind":"context_inference"},
+        "tags": [{"value":"Or d’investissement","confidencePercent":80,"evidenceKind":"context_inference"}]
       }
     }
     """#.utf8)
+
+    private static func candidate(_ value: Any, confidence: Int) -> [String: Any] {
+        [
+            "value": value,
+            "confidencePercent": confidence,
+            "evidenceKind": "visible_text",
+        ]
+    }
 }
 
 private actor RecordingAnalysisTransport: APIDataTransport {

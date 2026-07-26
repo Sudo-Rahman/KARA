@@ -111,6 +111,150 @@ struct AssetDomainTests {
         #expect(draft.invoiceNumber.isEmpty)
     }
 
+    @Test("The highest-confidence source wins for a conflicting field")
+    func suggestionResolverUsesHighestConfidence() {
+        let object = AssetAnalysisSuggestion(
+            weightGrams: 100,
+            fieldAssessments: [
+                .weightGrams: AssetFieldAssessment(
+                    confidencePercent: 82,
+                    evidenceKind: .visibleText
+                )
+            ]
+        )
+        let invoice = AssetAnalysisSuggestion(
+            weightGrams: 50,
+            fieldAssessments: [
+                .weightGrams: AssetFieldAssessment(
+                    confidencePercent: 80,
+                    evidenceKind: .visibleText
+                )
+            ]
+        )
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: invoice
+        )
+
+        #expect(resolved.weightGrams == 100)
+        #expect(resolved.assessment(for: .weightGrams)?.confidencePercent == 82)
+    }
+
+    @Test("The invoice wins an exact confidence tie")
+    func suggestionResolverPrefersInvoiceOnTie() {
+        let object = AssetAnalysisSuggestion(weightGrams: 100, confidencePercent: 80)
+        let invoice = AssetAnalysisSuggestion(weightGrams: 50, confidencePercent: 80)
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: invoice
+        )
+
+        #expect(resolved.weightGrams == 50)
+        #expect(resolved.assessment(for: .weightGrams)?.mediaKind == .invoice)
+    }
+
+    @Test("A lone low-confidence candidate still prefills")
+    func suggestionResolverUsesSingleLowConfidenceCandidate() {
+        let object = AssetAnalysisSuggestion(weightGrams: 100, confidencePercent: 15)
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: nil
+        )
+
+        #expect(resolved.weightGrams == 100)
+        #expect(resolved.assessment(for: .weightGrams)?.confidencePercent == 15)
+    }
+
+    @Test("An exact preset supplies reversible catalog specifications")
+    func suggestionResolverEnrichesPreset() {
+        let object = AssetAnalysisSuggestion(
+            presetID: "gold-bar-1oz",
+            confidencePercent: 91,
+            evidenceKind: .visualIdentification
+        )
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: nil
+        )
+
+        #expect(resolved.weightGrams == 31.103_476_8)
+        #expect(resolved.metalKarat == 24)
+        #expect(resolved.finenessPermille == 999.9)
+        #expect(resolved.assessment(for: .weightGrams) == AssetFieldAssessment(
+            confidencePercent: 91,
+            evidenceKind: .catalogDerived,
+            mediaKind: .objectPhoto
+        ))
+    }
+
+    @Test("Money amount and currency always come from the same winning source")
+    func suggestionResolverKeepsMoneyAtomic() {
+        let object = AssetAnalysisSuggestion(
+            pricePaidMinorUnits: 10_000,
+            currencyCode: "EUR",
+            confidencePercent: 80
+        )
+        let invoice = AssetAnalysisSuggestion(
+            pricePaidMinorUnits: 12_000,
+            currencyCode: "CHF",
+            confidencePercent: 81
+        )
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: invoice
+        )
+
+        #expect(resolved.pricePaidMinorUnits == 12_000)
+        #expect(resolved.currencyCode == "CHF")
+    }
+
+    @Test("A higher-confidence explicit measurement invalidates an incompatible preset")
+    func suggestionResolverDropsIncompatiblePreset() {
+        let object = AssetAnalysisSuggestion(
+            presetID: "gold-bar-1oz",
+            confidencePercent: 70,
+            evidenceKind: .visualIdentification
+        )
+        let invoice = AssetAnalysisSuggestion(
+            weightGrams: 50,
+            confidencePercent: 90
+        )
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: object,
+            invoice: invoice
+        )
+
+        #expect(resolved.presetID == nil)
+        #expect(resolved.weightGrams == 50)
+        #expect(resolved.assessment(for: .weightGrams)?.evidenceKind == .visibleText)
+    }
+
+    @Test("A manual specification prevents an incompatible AI preset")
+    func suggestionResolverPreservesManualSpecificationConsistency() {
+        var draft = AssetDraft(weightGrams: 50)
+        draft.markAsManuallyEdited(.weightGrams)
+
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: AssetAnalysisSuggestion(
+                presetID: "gold-bar-1oz",
+                confidencePercent: 99,
+                evidenceKind: .visualIdentification
+            ),
+            invoice: nil,
+            preserving: draft
+        )
+
+        #expect(resolved.presetID == nil)
+        #expect(resolved.weightGrams == nil)
+        #expect(draft.weightGrams == 50)
+    }
+
     @Test("An existing asset becomes a complete editable draft")
     func createsDraftFromExistingAsset() {
         let asset = Asset(

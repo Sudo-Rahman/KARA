@@ -183,13 +183,16 @@ signé, puis expose en mémoire le corps et l’identité vérifiée à la route
 client ne peut fournir ni prompt, ni modèle, ni schéma, ni catalogue, ni
 paramètre OpenAI.
 
-Le backend envoie le média inline à la Responses API avec `gpt-5.6-sol`,
-`reasoning.effort: none`, `store: false`, `max_output_tokens: 1200`, un timeout
+Le backend envoie le média inline à la Responses API avec `gpt-5.6-luna`,
+`reasoning.effort: none`, `store: false`, `max_output_tokens: 2400`, un timeout
 de 45 secondes et aucun retry. Images et pages PDF utilisent explicitement le
-niveau de détail `high`. Structured Outputs impose un schéma strict, puis Zod
-valide une seconde fois les dates, enums, bornes, identifiants de preset et le
-montant, ainsi que la cohérence catégorie/métal du preset choisi. Le backend
-convertit ensuite le montant majeur en unités mineures de façon déterministe.
+niveau de détail `high`. Structured Outputs impose le contrat strict v2 : chaque
+champ présent contient sa valeur, une confiance entière de 1 à 100 et la nature
+de son support (`visible_text`, `visual_identification` ou
+`context_inference`). Le montant et sa devise forment un candidat atomique ;
+chaque tag possède son propre score. Zod valide ensuite les dates, enums,
+bornes, identifiants de preset et montants, puis le backend convertit le montant
+majeur en unités mineures de façon déterministe.
 Lorsque la plateforme serveur signale l’abandon de la requête cliente, ce signal
 est propagé à OpenAI. Cette notification n’est pas garantie après l’envoi du
 média ; l’appel reste alors borné par le timeout maximal de 45 secondes. Les

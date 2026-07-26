@@ -192,8 +192,7 @@ nonisolated struct SystemAssetModelAvailabilityChecker: AssetModelAvailabilityCh
     func availability(for locale: Locale) -> AssetModelReadiness {
         let model = SystemLanguageModel.default
         guard model.availability == .available,
-              model.supportsLocale(locale),
-              model.capabilities.contains(.guidedGeneration)
+              model.supportsLocale(locale)
         else { return .unavailable }
         return .ready
     }

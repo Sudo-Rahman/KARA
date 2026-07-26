@@ -99,10 +99,7 @@ final class AssetCreationState {
     private var invoiceAnalysisTask: Task<Void, Never>?
 
     @ObservationIgnored
-    private var objectSuggestedFields: Set<AssetDraft.Field> = []
-
-    @ObservationIgnored
-    private var invoiceSuggestedFields: Set<AssetDraft.Field> = []
+    private var analysisSuggestedFields: Set<AssetDraft.Field> = []
 
     @ObservationIgnored
     private var objectSuggestion: AssetAnalysisSuggestion?
@@ -383,29 +380,23 @@ final class AssetCreationState {
     }
 
     private func reapplyAnalysisSuggestions() {
-        let manuallyConfirmedMetadata: Set<AssetDraft.Field> = [
-            .purchaseDate,
-            .acquisitionMethod,
-            .tags,
-        ]
-        draft.clearSuggestedFields(objectSuggestedFields.union(invoiceSuggestedFields))
-        objectSuggestedFields.removeAll()
-        invoiceSuggestedFields.removeAll()
+        draft.clearSuggestedFields(analysisSuggestedFields)
+        analysisSuggestedFields.removeAll()
 
-        // Keep the capture order deterministic even when the two analyses finish out of order.
-        if let objectSuggestion {
-            objectSuggestedFields = draft.merge(
-                suggestion: objectSuggestion,
-                excluding: manuallyConfirmedMetadata
-            )
+        let resolved = AssetAnalysisSuggestionResolver.resolve(
+            objectPhoto: objectSuggestion,
+            invoice: invoiceSuggestion,
+            preserving: draft
+        )
+        var excludedFields: Set<AssetDraft.Field> = []
+        let moneyFields: Set<AssetDraft.Field> = [.pricePaidMinorUnits, .currencyCode]
+        if !draft.manuallyEditedFields.isDisjoint(with: moneyFields) {
+            excludedFields.formUnion(moneyFields)
         }
-
-        if let invoiceSuggestion {
-            invoiceSuggestedFields = draft.merge(
-                suggestion: invoiceSuggestion,
-                excluding: objectSuggestedFields.union(manuallyConfirmedMetadata)
-            )
-        }
+        analysisSuggestedFields = draft.merge(
+            suggestion: resolved,
+            excluding: excludedFields
+        )
     }
 
     func reportMediaFailure() {
