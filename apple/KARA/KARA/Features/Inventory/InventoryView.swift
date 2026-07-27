@@ -313,7 +313,9 @@ struct InventoryView: View {
                         .font(theme.displayFont(size: 30, relativeTo: .title))
                         .monospacedDigit()
                         .foregroundStyle(theme.ink)
-                        .contentTransition(.numericText())
+                        .karaMarketNumericTransition(
+                            value: valuation.totalEstimatedValueEUR
+                        )
                 }
             } else if isRefreshing {
                 HStack(spacing: KaraSpacing.small) {
@@ -342,6 +344,7 @@ struct InventoryView: View {
                     Text(VaultFormatters.currency(gain, showsPositiveSign: true))
                         .font(.headline.monospacedDigit())
                         .foregroundStyle(performanceColor(gain))
+                        .karaMarketNumericTransition(value: gain)
                 }
             }
         }
@@ -400,6 +403,7 @@ struct InventoryView: View {
                             Text(VaultFormatters.currency(value))
                                 .font(.headline.monospacedDigit())
                                 .foregroundStyle(theme.ink)
+                                .karaMarketNumericTransition(value: value)
                         }
                     } else {
                         Image(systemName: "exclamationmark.circle")
@@ -412,6 +416,7 @@ struct InventoryView: View {
                             Text(VaultFormatters.percentage(gain, showsPositiveSign: true))
                                 .font(.caption.weight(.semibold).monospacedDigit())
                                 .foregroundStyle(performanceColor(gain))
+                                .karaMarketNumericTransition(value: gain)
                         }
                     }
                 }

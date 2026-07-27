@@ -118,7 +118,9 @@ struct VaultDashboardView: View {
                                     .foregroundStyle(theme.ink)
                                     .minimumScaleFactor(0.72)
                                     .lineLimit(1)
-                                    .contentTransition(.numericText())
+                                    .karaMarketNumericTransition(
+                                        value: valuation.totalEstimatedValueEUR
+                                    )
                             }
                         } else if isRefreshing {
                             HStack(spacing: KaraSpacing.small) {
@@ -221,6 +223,7 @@ struct VaultDashboardView: View {
                             .foregroundStyle(performanceColor(gain))
                             .minimumScaleFactor(0.68)
                             .lineLimit(1)
+                            .karaMarketNumericTransition(value: gain)
                     }
                 } else {
                     Text("vault.value.unavailable")
@@ -233,6 +236,7 @@ struct VaultDashboardView: View {
                             Text(VaultFormatters.percentage(percentage, showsPositiveSign: true))
                                 .monospacedDigit()
                                 .foregroundStyle(performanceColor(percentage))
+                                .karaMarketNumericTransition(value: percentage)
                         }
                     } else {
                         Text("vault.performance.missing-cost")
@@ -318,6 +322,7 @@ struct VaultDashboardView: View {
                                     Text(VaultFormatters.currency(value))
                                         .font(.headline.monospacedDigit())
                                         .foregroundStyle(theme.ink)
+                                        .karaMarketNumericTransition(value: value)
                                 }
                             } else {
                                 Text("vault.value.unavailable")
@@ -330,6 +335,7 @@ struct VaultDashboardView: View {
                                     Text(VaultFormatters.percentage(share))
                                         .font(.caption.monospacedDigit())
                                         .foregroundStyle(theme.goldBright)
+                                        .karaMarketNumericTransition(value: share)
                                 }
                             }
                         }
@@ -393,6 +399,7 @@ struct VaultDashboardView: View {
                                     Text(VaultFormatters.currency(value))
                                         .font(.headline.monospacedDigit())
                                         .foregroundStyle(theme.ink)
+                                        .karaMarketNumericTransition(value: value)
                                 }
                             }
 
@@ -401,6 +408,7 @@ struct VaultDashboardView: View {
                                     Text(VaultFormatters.percentage(share))
                                         .font(.caption.monospacedDigit())
                                         .foregroundStyle(theme.goldBright)
+                                        .karaMarketNumericTransition(value: share)
                                 }
                             }
                         }
@@ -484,6 +492,7 @@ struct VaultDashboardView: View {
                         Text(VaultFormatters.currency(value))
                             .font(.headline.monospacedDigit())
                             .foregroundStyle(theme.ink)
+                            .karaMarketNumericTransition(value: value)
                     }
                 } else {
                     Text("vault.value.unavailable")
@@ -496,6 +505,7 @@ struct VaultDashboardView: View {
                         Text(VaultFormatters.percentage(gain, showsPositiveSign: true))
                             .font(.caption.weight(.semibold).monospacedDigit())
                             .foregroundStyle(performanceColor(gain))
+                            .karaMarketNumericTransition(value: gain)
                     }
                 }
             }
@@ -553,17 +563,17 @@ struct VaultDashboardView: View {
                                     .font(theme.displayFont(size: 31, relativeTo: .title))
                                     .monospacedDigit()
                                     .foregroundStyle(theme.ink)
+                                    .karaMarketNumericTransition(value: quote.pricePerGram)
 
                                 Text("vault.gold-live.per-gram")
                                     .font(.subheadline)
                                     .foregroundStyle(theme.muted)
                             }
-                            .contentTransition(.numericText())
-
                             HStack(alignment: .firstTextBaseline) {
                                 Text("vault.gold-live.per-ounce \(VaultFormatters.currency(quote.price, maximumFractionDigits: 2))")
                                     .font(.caption.monospacedDigit())
                                     .foregroundStyle(theme.muted)
+                                    .karaMarketNumericTransition(value: quote.price)
 
                                 Spacer(minLength: KaraSpacing.small)
 

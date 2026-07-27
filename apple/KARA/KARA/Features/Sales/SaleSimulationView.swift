@@ -99,7 +99,9 @@ struct SaleSimulationView: View {
                         .font(theme.displayFont(size: 36, relativeTo: .largeTitle))
                         .monospacedDigit()
                         .foregroundStyle(theme.ink)
-                        .contentTransition(.numericText())
+                        .karaMarketNumericTransition(
+                            value: totals.estimatedProceedsEUR
+                        )
                 }
 
                 totalMetrics(totals)
@@ -138,6 +140,7 @@ struct SaleSimulationView: View {
             value: totals.estimatedGainEUR.map {
                 VaultFormatters.currency($0, showsPositiveSign: true)
             },
+            marketValue: totals.estimatedGainEUR,
             tint: totals.estimatedGainEUR.map(performanceColor) ?? theme.muted
         )
     }
@@ -148,6 +151,7 @@ struct SaleSimulationView: View {
             value: totals.gainPercentage.map {
                 VaultFormatters.percentage($0, showsPositiveSign: true)
             },
+            marketValue: totals.gainPercentage,
             tint: totals.gainPercentage.map(performanceColor) ?? theme.muted
         )
     }
@@ -155,6 +159,7 @@ struct SaleSimulationView: View {
     private func simulationMetric(
         title: LocalizedStringKey,
         value: String?,
+        marketValue: Decimal? = nil,
         tint: Color
     ) -> some View {
         VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
@@ -169,6 +174,7 @@ struct SaleSimulationView: View {
                         .foregroundStyle(tint)
                         .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 0.82 : 0.65)
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                        .karaMarketNumericTransition(value: marketValue)
                 }
             } else {
                 Text("sale-simulation.value.unavailable")
@@ -237,6 +243,7 @@ struct SaleSimulationView: View {
                                 Text(VaultFormatters.currency(value))
                                     .font(.caption.monospacedDigit())
                                     .foregroundStyle(theme.muted)
+                                    .karaMarketNumericTransition(value: value)
                             }
                         }
                     }

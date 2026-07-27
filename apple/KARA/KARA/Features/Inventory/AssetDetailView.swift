@@ -181,7 +181,7 @@ struct AssetDetailView: View {
                             .font(theme.displayFont(size: 36, relativeTo: .largeTitle))
                             .monospacedDigit()
                             .foregroundStyle(theme.ink)
-                            .contentTransition(.numericText())
+                            .karaMarketNumericTransition(value: value)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: KaraSpacing.small) {
@@ -254,6 +254,7 @@ struct AssetDetailView: View {
             value: valuation?.gainEUR.map {
                 VaultFormatters.currency($0, showsPositiveSign: true)
             },
+            marketValue: valuation?.gainEUR,
             tint: valuation?.gainEUR.map(performanceColor)
         )
     }
@@ -264,6 +265,7 @@ struct AssetDetailView: View {
             value: valuation?.gainPercentage.map {
                 VaultFormatters.percentage($0, showsPositiveSign: true)
             },
+            marketValue: valuation?.gainPercentage,
             tint: valuation?.gainPercentage.map(performanceColor)
         )
     }
@@ -622,6 +624,7 @@ private struct AssetDetailMetric: View {
 
     let title: LocalizedStringKey
     let value: String?
+    var marketValue: Decimal? = nil
     var tint: Color?
 
     var body: some View {
@@ -638,6 +641,7 @@ private struct AssetDetailMetric: View {
                         .foregroundStyle(tint ?? theme.ink)
                         .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 0.82 : 0.68)
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                        .karaMarketNumericTransition(value: marketValue)
                 }
             } else {
                 Text("asset-detail.value.not-provided")
