@@ -1,4 +1,6 @@
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 import UIKit
 
 nonisolated enum VaultReportPDFRendererError: Error, Equatable, Sendable {
@@ -239,7 +241,85 @@ nonisolated struct VaultReportPDFRenderer: Sendable {
                     keepWithPrevious: fieldIndex == 0
                 )
             }
+            try drawVisualContent(for: attachment, using: composer)
         }
+    }
+
+    private func drawVisualContent(
+        for attachment: VaultReportAttachmentSnapshot,
+        using composer: VaultReportPDFComposer
+    ) throws {
+        try Task.checkCancellation()
+        guard !attachment.data.isEmpty else { return }
+
+        if attachmentLooksLikePDF(attachment),
+           let provider = CGDataProvider(data: attachment.data as CFData),
+           let document = CGPDFDocument(provider),
+           document.numberOfPages > 0 {
+            for pageIndex in 1...document.numberOfPages {
+                try Task.checkCancellation()
+                guard let page = document.page(at: pageIndex) else { continue }
+                try composer.drawAttachmentPDFPage(
+                    page,
+                    filename: attachment.filename,
+                    pageIndex: pageIndex,
+                    pageCount: document.numberOfPages
+                )
+            }
+            return
+        }
+
+        guard attachmentLooksLikeImage(attachment),
+              let image = reportImage(from: attachment.data) else {
+            return
+        }
+        try composer.drawAttachmentImage(image, filename: attachment.filename)
+    }
+
+    private func attachmentLooksLikePDF(
+        _ attachment: VaultReportAttachmentSnapshot
+    ) -> Bool {
+        contentType(forMIMEType: attachment.mimeType)?.conforms(to: .pdf) == true
+            || contentType(forFilename: attachment.filename)?.conforms(to: .pdf) == true
+    }
+
+    private func attachmentLooksLikeImage(
+        _ attachment: VaultReportAttachmentSnapshot
+    ) -> Bool {
+        contentType(forMIMEType: attachment.mimeType)?.conforms(to: .image) == true
+            || contentType(forFilename: attachment.filename)?.conforms(to: .image) == true
+    }
+
+    private func contentType(forMIMEType mimeType: String) -> UTType? {
+        let normalized = mimeType.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return nil }
+        return UTType(mimeType: normalized)
+    }
+
+    private func contentType(forFilename filename: String) -> UTType? {
+        let pathExtension = (filename as NSString).pathExtension
+        guard !pathExtension.isEmpty else { return nil }
+        return UTType(filenameExtension: pathExtension)
+    }
+
+    private func reportImage(from data: Data) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: 2_048,
+        ]
+        guard let image = CGImageSourceCreateThumbnailAtIndex(
+            source,
+            0,
+            options as CFDictionary
+        ) else {
+            return nil
+        }
+        return UIImage(cgImage: image)
     }
 
     private func drawSection(

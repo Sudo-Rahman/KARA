@@ -7,7 +7,7 @@ import UIKit
 @Suite("Vault report")
 @MainActor
 struct VaultReportTests {
-    @Test("The snapshot contains active assets and attachment metadata only")
+    @Test("The snapshot contains active assets and complete attachment payloads")
     func snapshotContainsActiveAssetsOnly() async throws {
         let activeID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
         let deletedID = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
@@ -54,9 +54,8 @@ struct VaultReportTests {
         #expect(copiedAttachment.id == attachment.id)
         #expect(copiedAttachment.filename == "Facture.pdf")
         #expect(copiedAttachment.pageCount == 3)
-        // An unknown historical byte count must stay unknown: deriving it from `data`
-        // would prove the external-storage payload was read during report assembly.
         #expect(copiedAttachment.byteCount == nil)
+        #expect(copiedAttachment.data == attachment.data)
 
         let cooperativeSnapshot = try await VaultReportSnapshotAssembler.makeCooperatively(
             assets: [deleted, active],
@@ -284,6 +283,62 @@ struct VaultReportTests {
                 locale: Locale(identifier: "fr_FR")
             )
         )))
+    }
+
+    @Test("The renderer embeds image attachments and every page of attached PDFs")
+    func rendererEmbedsAttachmentVisuals() throws {
+        let assetID = UUID(uuidString: "31000000-0000-0000-0000-000000000001")!
+        let asset = Asset(
+            id: assetID,
+            name: "Montre documentée",
+            createdAt: date(2026, 7, 20)
+        )
+        let attachments = [
+            AssetAttachment(
+                assetID: assetID,
+                kind: .objectPhoto,
+                filename: "Montre-face.jpg",
+                mimeType: "image/jpeg",
+                data: reportTestImageData(),
+                createdAt: date(2026, 7, 21)
+            ),
+            AssetAttachment(
+                assetID: assetID,
+                kind: .invoice,
+                filename: "Facture-montre.pdf",
+                mimeType: "application/pdf",
+                pageCount: 2,
+                data: reportTestPDFData(pageCount: 2),
+                createdAt: date(2026, 7, 22)
+            ),
+        ]
+        let snapshot = VaultReportSnapshotAssembler.make(
+            assets: [asset],
+            attachments: attachments,
+            valuation: emptyValuation(recordCount: 1, objectCount: 1),
+            valuationAsOf: date(2026, 7, 23)
+        )
+
+        let data = try VaultReportPDFRenderer(
+            snapshot: snapshot,
+            locale: Locale(identifier: "fr_FR"),
+            generatedAt: date(2026, 7, 23)
+        ).render()
+        let document = try #require(PDFDocument(data: data))
+        let pageTexts = (0..<document.pageCount).map {
+            document.page(at: $0)?.string ?? ""
+        }
+
+        #expect(document.pageCount >= 6)
+        #expect(pageTexts.contains(where: {
+            $0.contains("Montre-face.jpg")
+        }))
+        #expect(pageTexts.contains(where: {
+            $0.contains("Facture-montre.pdf") && $0.contains("Page 1/2")
+        }))
+        #expect(pageTexts.contains(where: {
+            $0.contains("Facture-montre.pdf") && $0.contains("Page 2/2")
+        }))
     }
 
     @Test("A summary without any valued asset does not present zero as a valuation")
@@ -639,4 +694,41 @@ private func normalizedWhitespace(_ value: String) -> String {
     value
         .replacingOccurrences(of: "\u{00A0}", with: " ")
         .replacingOccurrences(of: "\u{202F}", with: " ")
+}
+
+@MainActor
+private func reportTestImageData() -> Data {
+    UIGraphicsImageRenderer(size: CGSize(width: 640, height: 360)).jpegData(
+        withCompressionQuality: 0.9
+    ) { context in
+        UIColor.systemTeal.setFill()
+        context.fill(CGRect(x: 0, y: 0, width: 640, height: 360))
+        UIColor.systemYellow.setFill()
+        context.fill(CGRect(x: 160, y: 90, width: 320, height: 180))
+    }
+}
+
+@MainActor
+private func reportTestPDFData(pageCount: Int) -> Data {
+    let renderer = UIGraphicsPDFRenderer(bounds: CGRect(
+        x: 0,
+        y: 0,
+        width: 420,
+        height: 595
+    ))
+    return renderer.pdfData { context in
+        for pageIndex in 1...pageCount {
+            context.beginPage()
+            (pageIndex.isMultiple(of: 2) ? UIColor.systemBlue : UIColor.systemRed)
+                .setFill()
+            context.cgContext.fill(CGRect(x: 0, y: 0, width: 420, height: 595))
+            ("SOURCE PAGE \(pageIndex)" as NSString).draw(
+                at: CGPoint(x: 48, y: 72),
+                withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 24, weight: .bold),
+                    .foregroundColor: UIColor.white,
+                ]
+            )
+        }
+    }
 }

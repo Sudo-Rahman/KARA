@@ -77,6 +77,7 @@ nonisolated struct VaultReportAttachmentSnapshot: Equatable, Identifiable, Senda
     let mimeType: String
     let pageCount: Int?
     let byteCount: Int64?
+    let data: Data
     let createdAt: Date
 }
 
@@ -208,8 +209,6 @@ enum VaultReportSnapshotAssembler {
     ) {
         guard activeAssetIDs.contains(attachment.assetID) else { return }
 
-        // Deliberately copy metadata one property at a time. The external-storage
-        // payload is intentionally outside the report assembly path.
         attachmentsByAssetID[attachment.assetID, default: []].append(
             VaultReportAttachmentSnapshot(
                 id: attachment.id,
@@ -218,6 +217,7 @@ enum VaultReportSnapshotAssembler {
                 mimeType: attachment.mimeType,
                 pageCount: attachment.pageCount,
                 byteCount: attachment.dataByteCount,
+                data: attachment.data,
                 createdAt: attachment.createdAt
             )
         )

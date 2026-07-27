@@ -255,6 +255,64 @@ nonisolated final class VaultReportPDFComposer {
         cursorY += 16
     }
 
+    func drawAttachmentImage(
+        _ image: UIImage,
+        filename: String
+    ) throws {
+        try Task.checkCancellation()
+        let visualRect = try beginAttachmentVisualPage(title: filename)
+        guard image.size.width > 0, image.size.height > 0 else { return }
+
+        let imageRect = aspectFitRect(
+            size: image.size,
+            inside: visualRect.insetBy(dx: 1, dy: 1)
+        )
+        context.cgContext.saveGState()
+        context.cgContext.interpolationQuality = .high
+        image.draw(in: imageRect)
+        context.cgContext.restoreGState()
+        drawVisualBorder(around: imageRect)
+        cursorY = contentBottom
+    }
+
+    func drawAttachmentPDFPage(
+        _ page: CGPDFPage,
+        filename: String,
+        pageIndex: Int,
+        pageCount: Int
+    ) throws {
+        try Task.checkCancellation()
+        let pageTitle = pageCount > 1
+            ? "\(filename) · \(VaultReportCopy.page(locale: locale)) \(pageIndex)/\(pageCount)"
+            : filename
+        let visualRect = try beginAttachmentVisualPage(title: pageTitle)
+        let sourceRect = page.getBoxRect(.cropBox)
+        guard sourceRect.width > 0, sourceRect.height > 0 else { return }
+
+        let rotation = normalizedQuarterTurn(Int(page.rotationAngle))
+        let orientedSize = rotation == 90 || rotation == 270
+            ? CGSize(width: sourceRect.height, height: sourceRect.width)
+            : sourceRect.size
+        let fittedRect = aspectFitRect(size: orientedSize, inside: visualRect)
+        let cgContext = context.cgContext
+
+        cgContext.saveGState()
+        cgContext.translateBy(x: fittedRect.minX, y: fittedRect.maxY)
+        cgContext.scaleBy(x: 1, y: -1)
+        let localRect = CGRect(origin: .zero, size: fittedRect.size)
+        cgContext.concatenate(page.getDrawingTransform(
+            .cropBox,
+            rect: localRect,
+            rotate: 0,
+            preserveAspectRatio: true
+        ))
+        cgContext.drawPDFPage(page)
+        cgContext.restoreGState()
+
+        drawVisualBorder(around: fittedRect)
+        cursorY = contentBottom
+    }
+
     private func drawPageChrome() {
         draw(
             "KARA",
@@ -300,6 +358,66 @@ nonisolated final class VaultReportPDFComposer {
             color: VaultReportPDFPalette.secondaryText,
             alignment: .right
         )
+    }
+
+    private func beginAttachmentVisualPage(title: String) throws -> CGRect {
+        try beginPage()
+
+        let font = UIFont.systemFont(ofSize: 10.5, weight: .semibold)
+        let titleHeight = min(
+            textHeight(title, width: contentWidth, font: font),
+            2 * lineHeight(for: font)
+        )
+        draw(
+            title,
+            in: CGRect(
+                x: contentLeft,
+                y: cursorY,
+                width: contentWidth,
+                height: titleHeight
+            ),
+            font: font,
+            color: VaultReportPDFPalette.text
+        )
+        cursorY += titleHeight + 10
+
+        return CGRect(
+            x: contentLeft,
+            y: cursorY,
+            width: contentWidth,
+            height: max(0, contentBottom - cursorY)
+        )
+    }
+
+    private func aspectFitRect(size: CGSize, inside bounds: CGRect) -> CGRect {
+        guard size.width > 0, size.height > 0,
+              bounds.width > 0, bounds.height > 0 else {
+            return .zero
+        }
+        let scale = min(bounds.width / size.width, bounds.height / size.height)
+        let fittedSize = CGSize(
+            width: size.width * scale,
+            height: size.height * scale
+        )
+        return CGRect(
+            x: bounds.midX - fittedSize.width / 2,
+            y: bounds.midY - fittedSize.height / 2,
+            width: fittedSize.width,
+            height: fittedSize.height
+        )
+    }
+
+    private func normalizedQuarterTurn(_ angle: Int) -> Int {
+        let normalized = angle % 360
+        return normalized >= 0 ? normalized : normalized + 360
+    }
+
+    private func drawVisualBorder(around rect: CGRect) {
+        guard !rect.isEmpty else { return }
+        VaultReportPDFPalette.separator.setStroke()
+        let path = UIBezierPath(rect: rect)
+        path.lineWidth = 0.5
+        path.stroke()
     }
 
     private func drawContinuationTitle(_ text: String) {
