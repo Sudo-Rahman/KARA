@@ -69,6 +69,8 @@ struct SettingsView: View {
     @Environment(KaraTheme.self) private var theme
     @Environment(PrivacyPreferences.self) private var privacyPreferences
     @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
+    @Environment(AppLockPreferences.self) private var appLockPreferences
+    @Environment(AppLockController.self) private var appLockController
     @Environment(\.modelContext) private var modelContext
 
     @Query(filter: #Predicate<Asset> { $0.deletedAt == nil }) private var activeAssets: [Asset]
@@ -78,6 +80,7 @@ struct SettingsView: View {
     private let portfolioValuation: PortfolioValuation
     private let valuationAsOf: Date
     private let versionInfo: AppVersionInfo
+    @State private var appLockActivationErrorIsPresented = false
 
     init(
         portfolioValuation: PortfolioValuation,
@@ -92,6 +95,7 @@ struct SettingsView: View {
     var body: some View {
         @Bindable var analysisPreferences = analysisPreferences
         @Bindable var privacyPreferences = privacyPreferences
+        @Bindable var appLockPreferences = appLockPreferences
         let currentActiveAttachments = activeAttachments
         let statistics = SettingsStatistics(
             activeAssets: activeAssets,
@@ -121,16 +125,56 @@ struct SettingsView: View {
             .listRowBackground(theme.surface)
 
             Section {
-                Toggle(
-                    "settings.privacy.toggle",
-                    isOn: $privacyPreferences.hidesSensitiveValues
-                )
-                .tint(theme.cobaltBright)
-                .accessibilityIdentifier("settings.privacy.toggle")
+                VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
+                    Toggle(
+                        "settings.privacy.toggle",
+                        isOn: $privacyPreferences.hidesSensitiveValues
+                    )
+                    .tint(theme.cobaltBright)
+                    .accessibilityIdentifier("settings.privacy.toggle")
+
+                    Text("settings.privacy.detail")
+                        .font(.caption)
+                        .foregroundStyle(theme.muted)
+                }
+                .padding(.vertical, KaraSpacing.xSmall)
+
+                VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
+                    Toggle(
+                        "settings.app-lock.toggle",
+                        isOn: appLockEnabledBinding
+                    )
+                    .tint(theme.cobaltBright)
+                    .disabled(appLockController.isAuthenticating)
+                    .accessibilityIdentifier("settings.app-lock.toggle")
+
+                    Text("settings.app-lock.detail")
+                        .font(.caption)
+                        .foregroundStyle(theme.muted)
+
+                    if appLockPreferences.isEnabled {
+                        Text("settings.app-lock.delay")
+                            .font(.subheadline)
+                            .foregroundStyle(theme.muted)
+                            .padding(.top, KaraSpacing.small)
+
+                        Picker(
+                            "settings.app-lock.delay",
+                            selection: $appLockPreferences.delay
+                        ) {
+                            ForEach(AppLockDelay.allCases, id: \.self) { delay in
+                                Text(delay.titleKey)
+                                    .tag(delay)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .accessibilityIdentifier("settings.app-lock.delay")
+                    }
+                }
+                .padding(.vertical, KaraSpacing.xSmall)
             } header: {
                 Text("settings.privacy.section")
-            } footer: {
-                Text("settings.privacy.detail")
             }
             .listRowBackground(theme.surface)
 
@@ -185,6 +229,14 @@ struct SettingsView: View {
         .background(theme.background.ignoresSafeArea())
         .foregroundStyle(theme.ink)
         .accessibilityIdentifier("settings.screen")
+        .alert(
+            "settings.app-lock.error.title",
+            isPresented: $appLockActivationErrorIsPresented
+        ) {
+            Button("settings.app-lock.error.dismiss", role: .cancel) {}
+        } message: {
+            Text("settings.app-lock.error.detail")
+        }
         .task(id: missingAttachmentByteCountIDs) {
             guard !missingAttachmentByteCountIDs.isEmpty else { return }
             let backfill = AssetAttachmentByteCountBackfill(
@@ -192,6 +244,24 @@ struct SettingsView: View {
             )
             _ = try? await backfill.backfillMissingByteCounts()
         }
+    }
+
+    private var appLockEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { appLockPreferences.isEnabled },
+            set: { isEnabled in
+                if isEnabled {
+                    Task {
+                        let result = await appLockController.requestEnable()
+                        if result == .failed {
+                            appLockActivationErrorIsPresented = true
+                        }
+                    }
+                } else {
+                    appLockController.disable()
+                }
+            }
+        )
     }
 
     private func vaultSection(statistics: SettingsStatistics) -> some View {
@@ -255,6 +325,19 @@ struct SettingsView: View {
         formatter.zeroPadsFractionDigits = false
         return formatter
     }()
+}
+
+private extension AppLockDelay {
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .immediate:
+            "settings.app-lock.delay.immediate"
+        case .oneMinute:
+            "settings.app-lock.delay.one-minute"
+        case .fiveMinutes:
+            "settings.app-lock.delay.five-minutes"
+        }
+    }
 }
 
 private struct SettingsReportRow: View {

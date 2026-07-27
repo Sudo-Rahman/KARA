@@ -125,9 +125,12 @@ final class VaultExperienceUITests: XCTestCase {
 
         let aiToggle = app.switches["settings.ai.toggle"]
         let privacyToggle = app.switches["settings.privacy.toggle"]
+        let appLockToggle = app.switches["settings.app-lock.toggle"]
         let report = element("settings.vault.report", in: app)
         XCTAssertTrue(aiToggle.exists)
         XCTAssertTrue(privacyToggle.exists)
+        XCTAssertTrue(appLockToggle.exists)
+        XCTAssertFalse(element("settings.app-lock.delay", in: app).exists)
         XCTAssertTrue(report.exists)
         XCTAssertTrue(report.isEnabled)
 
@@ -241,6 +244,7 @@ final class VaultExperienceUITests: XCTestCase {
             "-KARAUseInMemoryStore",
             "-kara.onboarding.hasCompleted", "YES",
             "-kara.privacy.hidesSensitiveValues", "NO",
+            "-kara.app-lock.is-enabled", "NO",
             "-AppleLanguages", "(fr)",
             "-AppleLocale", "fr_FR",
         ]

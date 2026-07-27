@@ -1981,7 +1981,6 @@
       }
     },
     "asset.acquisition-method.exchange" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1998,7 +1997,6 @@
       }
     },
     "asset.acquisition-method.gift" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2015,7 +2013,6 @@
       }
     },
     "asset.acquisition-method.inheritance" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2032,7 +2029,6 @@
       }
     },
     "asset.acquisition-method.other" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2049,7 +2045,6 @@
       }
     },
     "asset.acquisition-method.purchase" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2066,7 +2061,6 @@
       }
     },
     "asset.category.bar" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2083,7 +2077,6 @@
       }
     },
     "asset.category.coin" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2100,7 +2093,6 @@
       }
     },
     "asset.category.custom" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2151,7 +2143,6 @@
       }
     },
     "asset.category.jewelry" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5337,6 +5328,54 @@
         }
       }
     },
+    "app-lock.authentication.enable-reason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable app locking."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer le verrouillage de l’app."
+          }
+        }
+      }
+    },
+    "app-lock.authentication.unlock-reason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock your private vault."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déverrouiller votre coffre privé."
+          }
+        }
+      }
+    },
+    "app-lock.shield.accessibility-label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA is locked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA est verrouillée."
+          }
+        }
+      }
+    },
     "privacy.action.conceal" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6322,6 +6361,150 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activer les suggestions automatiques"
+          }
+        }
+      }
+    },
+    "settings.app-lock.delay" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Require authentication after"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander l’authentification après"
+          }
+        }
+      }
+    },
+    "settings.app-lock.delay.five-minutes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 min"
+          }
+        }
+      }
+    },
+    "settings.app-lock.delay.immediate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immediately"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immédiat"
+          }
+        }
+      }
+    },
+    "settings.app-lock.delay.one-minute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 min"
+          }
+        }
+      }
+    },
+    "settings.app-lock.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA will ask for Face ID, Touch ID, or your device passcode after the selected delay."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA demandera Face ID, Touch ID ou le code de l’appareil après le délai choisi."
+          }
+        }
+      }
+    },
+    "settings.app-lock.error.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device authentication is unavailable. Check that a device passcode is configured, then try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’authentification de l’appareil est indisponible. Vérifiez qu’un code est configuré, puis réessayez."
+          }
+        }
+      }
+    },
+    "settings.app-lock.error.dismiss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "settings.app-lock.error.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to enable app locking"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’activer le verrouillage"
+          }
+        }
+      }
+    },
+    "settings.app-lock.toggle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock the app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verrouiller l’app"
           }
         }
       }

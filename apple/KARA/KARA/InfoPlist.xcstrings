@@ -29,6 +29,23 @@
           }
         }
       }
+    },
+    "NSFaceIDUsageDescription" : {
+      "comment" : "Privacy - Face ID Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA uses Face ID to protect access to your private vault."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA utilise Face ID pour protéger l’accès à votre coffre privé."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

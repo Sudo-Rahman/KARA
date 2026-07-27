@@ -61,4 +61,13 @@ struct ResourceTests {
 
         #expect(!(description ?? "").isEmpty)
     }
+
+    @Test
+    func faceIDUsageDescriptionIsBundled() {
+        let description = Bundle.main.object(
+            forInfoDictionaryKey: "NSFaceIDUsageDescription"
+        ) as? String
+
+        #expect(!(description ?? "").isEmpty)
+    }
 }
