@@ -201,6 +201,7 @@ final class VaultExperienceUITests: XCTestCase {
         let confirmationMessage = app.staticTexts[
             "Cet actif sera placé dans la corbeille, puis supprimé automatiquement après 30 jours."
         ]
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 2))
         XCTAssertTrue(confirmationMessage.waitForExistence(timeout: 2))
         hittableElement(labeled: "Annuler", in: app).tap()
         XCTAssertTrue(featuredAsset.exists)
@@ -225,6 +226,45 @@ final class VaultExperienceUITests: XCTestCase {
             .completed
         )
         capture("vault-09-after-delete", in: app)
+
+        app.tabBars.buttons["Réglages"].tap()
+        XCTAssertTrue(element("settings.screen", in: app).waitForExistence(timeout: 5))
+
+        let trash = element("settings.trash", in: app)
+        reveal(trash, in: app, attempts: 8)
+        XCTAssertTrue(trash.isHittable)
+        trash.tap()
+
+        XCTAssertTrue(element("settings.trash.screen", in: app).waitForExistence(timeout: 5))
+        let trashedAsset = element("settings.trash.asset.\(featuredAssetID)", in: app)
+        XCTAssertTrue(trashedAsset.waitForExistence(timeout: 5))
+
+        let deleteAll = element("settings.trash.delete-all", in: app)
+        XCTAssertTrue(deleteAll.isHittable)
+        deleteAll.tap()
+
+        let deleteAllAlert = app.alerts["Vider la corbeille ?"]
+        XCTAssertTrue(deleteAllAlert.waitForExistence(timeout: 2))
+        hittableElement(labeled: "Annuler", in: app).tap()
+        XCTAssertTrue(trashedAsset.exists)
+
+        trashedAsset.swipeLeft()
+        let permanentDelete = element(
+            "settings.trash.delete.\(featuredAssetID)",
+            in: app
+        )
+        XCTAssertTrue(permanentDelete.waitForExistence(timeout: 2))
+        permanentDelete.tap()
+
+        XCTAssertFalse(app.alerts["Supprimer définitivement cet actif ?"].exists)
+        let permanentRemovalExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: trashedAsset
+        )
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [permanentRemovalExpectation], timeout: 5),
+            .completed
+        )
     }
 
     @MainActor

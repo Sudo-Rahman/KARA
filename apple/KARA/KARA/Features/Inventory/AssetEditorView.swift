@@ -147,10 +147,9 @@ struct AssetEditorView: View {
                 saveBar
             }
             .interactiveDismissDisabled(hasUnsavedChanges)
-            .confirmationDialog(
+            .alert(
                 AssetEditorCopy.string("asset-editor.discard.title"),
-                isPresented: $showingDiscardConfirmation,
-                titleVisibility: .visible
+                isPresented: $showingDiscardConfirmation
             ) {
                 Button(
                     AssetEditorCopy.string("asset-editor.discard.action"),

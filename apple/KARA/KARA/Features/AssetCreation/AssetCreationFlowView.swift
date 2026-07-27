@@ -39,10 +39,9 @@ struct AssetCreationFlowView: View {
         .interactiveDismissDisabled()
         .sensoryFeedback(.selection, trigger: router.currentStep)
         .sensoryFeedback(.success, trigger: savedFeedback)
-        .confirmationDialog(
+        .alert(
             "asset-flow.cancel.confirmation.title",
-            isPresented: $showsCancelConfirmation,
-            titleVisibility: .visible
+            isPresented: $showsCancelConfirmation
         ) {
             Button("asset-flow.cancel.confirmation.action", role: .destructive) {
                 cancelAndDismiss()

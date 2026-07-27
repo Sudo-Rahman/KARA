@@ -97,10 +97,9 @@ struct AssetDocumentsView: View {
             allowsMultipleSelection: false,
             onCompletion: importFiles
         )
-        .confirmationDialog(
+        .alert(
             AssetDocumentsCopy.string("documents.delete.title"),
             isPresented: deletionConfirmationBinding,
-            titleVisibility: .visible,
             presenting: pendingDeletion
         ) { attachment in
             Button(AssetDocumentsCopy.string("documents.delete.confirm"), role: .destructive) {

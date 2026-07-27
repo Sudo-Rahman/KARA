@@ -8,7 +8,6 @@ struct AssetTrashView: View {
     @Query(filter: #Predicate<Asset> { $0.deletedAt != nil }) private var assets: [Asset]
     @Query private var attachments: [AssetAttachment]
 
-    @State private var pendingPermanentDeletion: Asset?
     @State private var isConfirmingDeleteAll = false
     @State private var errorMessage: String?
 
@@ -31,7 +30,7 @@ struct AssetTrashView: View {
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
-                                        pendingPermanentDeletion = asset
+                                        permanentlyDelete(asset)
                                     } label: {
                                         Label("settings.trash.delete.action", systemImage: "trash")
                                     }
@@ -64,24 +63,9 @@ struct AssetTrashView: View {
                 }
             }
         }
-        .confirmationDialog(
-            "settings.trash.delete.confirmation.title",
-            isPresented: permanentDeletionIsPresented,
-            titleVisibility: .visible
-        ) {
-            Button("settings.trash.delete", role: .destructive) {
-                permanentlyDeletePendingAsset()
-            }
-            Button("settings.trash.cancel", role: .cancel) {
-                pendingPermanentDeletion = nil
-            }
-        } message: {
-            Text("settings.trash.delete.confirmation.body")
-        }
-        .confirmationDialog(
+        .alert(
             "settings.trash.delete-all.confirmation.title",
-            isPresented: $isConfirmingDeleteAll,
-            titleVisibility: .visible
+            isPresented: $isConfirmingDeleteAll
         ) {
             Button("settings.trash.delete-all", role: .destructive) {
                 permanentlyDeleteAllAssets()
@@ -152,7 +136,7 @@ struct AssetTrashView: View {
                 }
 
                 Button(role: .destructive) {
-                    pendingPermanentDeletion = asset
+                    permanentlyDelete(asset)
                 } label: {
                     Label("settings.trash.delete", systemImage: "trash")
                 }
@@ -176,17 +160,6 @@ struct AssetTrashView: View {
 
     private var repository: SwiftDataAssetRepository {
         SwiftDataAssetRepository(modelContext: modelContext)
-    }
-
-    private var permanentDeletionIsPresented: Binding<Bool> {
-        Binding(
-            get: { pendingPermanentDeletion != nil },
-            set: { isPresented in
-                if !isPresented {
-                    pendingPermanentDeletion = nil
-                }
-            }
-        )
     }
 
     private var errorIsPresented: Binding<Bool> {
@@ -215,10 +188,7 @@ struct AssetTrashView: View {
         }
     }
 
-    private func permanentlyDeletePendingAsset() {
-        guard let asset = pendingPermanentDeletion else { return }
-        pendingPermanentDeletion = nil
-
+    private func permanentlyDelete(_ asset: Asset) {
         performTrashUpdate {
             try repository.permanentlyDelete(assetID: asset.id)
         }
