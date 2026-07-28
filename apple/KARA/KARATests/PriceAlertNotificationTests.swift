@@ -65,6 +65,32 @@ struct PriceAlertNotificationTests {
         #expect(!inbox.consume(request))
     }
 
+    @Test(
+        "A notification response received off-main completes on the main thread"
+    )
+    func dispatchesNotificationResponseOnMainThread() async {
+        let request = PriceAlertNotificationNavigationRequest(
+            alertID: UUID(),
+            assetID: UUID()
+        )
+        let inbox = PriceAlertNotificationNavigationInbox()
+        let dispatcher = PriceAlertNotificationResponseDispatcher()
+        dispatcher.installNavigationInbox(inbox)
+        let probe = NotificationResponseCompletionProbe()
+
+        await withCheckedContinuation { continuation in
+            Task.detached {
+                dispatcher.receive(request) {
+                    probe.recordCompletion()
+                    continuation.resume()
+                }
+            }
+        }
+
+        #expect(probe.completedOnMainThread)
+        #expect(inbox.pendingRequest == request)
+    }
+
     @Test("Requesting price-alert notifications delegates to the system boundary")
     func requestsAuthorization() async throws {
         let center = RecordingUserNotificationCenter(
@@ -625,6 +651,23 @@ private actor RecordingPriceAlertNotificationDelivery:
     ) async throws -> PriceAlertNotificationDelivery {
         payloads.append(payload)
         return result
+    }
+}
+
+nonisolated private final class NotificationResponseCompletionProbe:
+    @unchecked Sendable
+{
+    private let lock = NSLock()
+    private var completionThreadWasMain = false
+
+    var completedOnMainThread: Bool {
+        lock.withLock { completionThreadWasMain }
+    }
+
+    func recordCompletion() {
+        lock.withLock {
+            completionThreadWasMain = Thread.isMainThread
+        }
     }
 }
 

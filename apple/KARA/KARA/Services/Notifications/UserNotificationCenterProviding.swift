@@ -45,20 +45,22 @@ nonisolated final class SystemUserNotificationCenter:
     static let shared = SystemUserNotificationCenter()
 
     private let center: UNUserNotificationCenter
-    @MainActor private weak var navigationInbox:
-        PriceAlertNotificationNavigationInbox?
+    private let responseDispatcher = PriceAlertNotificationResponseDispatcher()
 
     private init(center: UNUserNotificationCenter = .current()) {
         self.center = center
         super.init()
-        center.delegate = self
     }
 
     @MainActor
     func installNavigationInbox(
         _ navigationInbox: PriceAlertNotificationNavigationInbox
     ) {
-        self.navigationInbox = navigationInbox
+        responseDispatcher.installNavigationInbox(navigationInbox)
+        // Install the delegate only after its durable inbox exists. During a
+        // cold launch iOS may deliver the response as soon as the delegate is
+        // assigned.
+        center.delegate = self
     }
 
     func authorizationStatus() async -> LocalNotificationAuthorizationStatus {
@@ -130,15 +132,17 @@ nonisolated final class SystemUserNotificationCenter:
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse
-    ) async {
-        guard let request = PriceAlertNotificationNavigationRequest(
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler:
+            @escaping @Sendable () -> Void
+    ) {
+        let request = PriceAlertNotificationNavigationRequest(
             notificationIdentifier: response.notification.request.identifier,
             userInfo: response.notification.request.content.userInfo
-        ) else {
-            return
-        }
-
-        await navigationInbox?.receive(request)
+        )
+        responseDispatcher.receive(
+            request,
+            completion: completionHandler
+        )
     }
 }

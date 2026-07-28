@@ -49,3 +49,33 @@ final class PriceAlertNotificationNavigationInbox {
         return true
     }
 }
+
+/// Bridges the notification-center callback onto the UI actor. UIKit may
+/// invoke its delegate on a cooperative queue, including during a cold launch.
+/// Both the observable mutation and the system completion must happen on the
+/// main thread because SwiftUI synchronizes scene activation at that boundary.
+nonisolated final class PriceAlertNotificationResponseDispatcher:
+    @unchecked Sendable
+{
+    @MainActor private weak var navigationInbox:
+        PriceAlertNotificationNavigationInbox?
+
+    @MainActor
+    func installNavigationInbox(
+        _ navigationInbox: PriceAlertNotificationNavigationInbox
+    ) {
+        self.navigationInbox = navigationInbox
+    }
+
+    func receive(
+        _ request: PriceAlertNotificationNavigationRequest?,
+        completion: @escaping @Sendable () -> Void
+    ) {
+        Task { @MainActor [weak self] in
+            if let request {
+                self?.navigationInbox?.receive(request)
+            }
+            completion()
+        }
+    }
+}
