@@ -5,6 +5,7 @@
 "sales.action.objective" = "Fixer un objectif de prix";
 "sales.action.see-all" = "Tout voir";
 "sales.action.cancel" = "Annuler";
+"sales.action.close" = "Fermer";
 "sales.action.keep-editing" = "Continuer la modification";
 "sales.action.ok" = "OK";
 "sales.error.title" = "Une erreur est survenue";
@@ -23,6 +24,12 @@
 "sales.empty.title" = "Aucune vente enregistrée";
 "sales.empty.detail" = "Vos ventes finalisées apparaîtront ici.";
 "sales.asset.unknown" = "Actif inconnu";
+"sales.asset.serial" = "N° %@";
+"sales.asset.purchased" = "Acheté le %@";
+"sales.asset.change" = "Changer";
+"sales.asset.change.hint" = "Ouvre la liste des actifs disponibles.";
+"sales.asset.choose" = "Choisir un actif";
+"sales.asset.search" = "Rechercher un actif";
 "sales.amount.received" = "Net reçu";
 "sales.missing.title" = "Cet élément est indisponible";
 "sales.missing.detail" = "Il a peut-être été supprimé ou n’est plus disponible.";
@@ -70,8 +77,8 @@
 "sale-flow.confirm.action" = "Enregistrer la vente";
 "sale-flow.error.detail" = "Votre vente n’a pas pu être enregistrée. Réessayez.";
 "sale-flow.asset.title" = "Actif";
-"sale-flow.asset.detail" = "Choisissez l’actif vendu.";
-"sale-flow.asset.held-count" = "%d en détention";
+"sale-flow.asset.detail" = "Identifiez précisément l’actif vendu.";
+"sale-flow.asset.held-count" = "×%d";
 "sale-flow.amount.title" = "Montant de la vente";
 "sale-flow.amount.detail" = "Saisissez le montant convenu avec l’acheteur et les éventuels frais.";
 "sale-flow.quantity" = "Quantité vendue";
@@ -123,16 +130,16 @@
 
 /* Créer un objectif de prix */
 "alert-flow.title" = "Fixer un objectif de prix";
-"alert-flow.intro.title" = "Un objectif à retrouver";
-"alert-flow.intro.detail" = "Choisissez un seuil. KARA le vérifiera à chaque actualisation disponible, y compris en arrière-plan lorsque iOS l’autorise.";
+"alert-flow.intro.title" = "Un objectif simple";
+"alert-flow.intro.detail" = "Choisissez un actif et le prix à atteindre. Nous vous avertirons lorsqu’il sera atteint.";
 "alert-flow.discard.title" = "Abandonner cet objectif de prix ?";
 "alert-flow.discard.detail" = "Les informations saisies ici seront perdues.";
 "alert-flow.discard.action" = "Abandonner l’objectif";
 "alert-flow.error.detail" = "Votre objectif de prix n’a pas pu être enregistré. Réessayez.";
 "alert-flow.asset.title" = "Actif";
-"alert-flow.asset.detail" = "Choisissez un actif avec une estimation actuelle.";
+"alert-flow.asset.detail" = "Identifiez précisément l’actif à suivre.";
 "alert-flow.target.title" = "Prix cible";
-"alert-flow.target.detail" = "Fixez la valeur que vous souhaitez retrouver.";
+"alert-flow.target.detail" = "Indiquez le prix que vous souhaitez atteindre.";
 "alert-flow.current-value" = "Estimation actuelle";
 "alert-flow.target-value" = "Valeur cible";
 "alert-flow.target-helper" = "Utilisez la même devise que l’estimation actuelle.";

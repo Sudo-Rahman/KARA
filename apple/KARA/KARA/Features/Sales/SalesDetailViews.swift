@@ -6,6 +6,7 @@ struct SalesHistoryView: View {
 
     let sales: [Sale]
     let saleLines: [SaleLine]
+    let attachments: [AssetAttachment]
 
     var body: some View {
         ScrollView {
@@ -50,7 +51,10 @@ struct SalesHistoryView: View {
                                         NavigationLink(value: SalesRoute.sale(sale.id)) {
                                             SaleRow(
                                                 sale: sale,
-                                                line: line(for: sale.id)
+                                                line: line(for: sale.id),
+                                                photoData: line(for: sale.id).flatMap {
+                                                    photoDataByAssetID[$0.assetID]
+                                                }
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -91,6 +95,10 @@ struct SalesHistoryView: View {
     private func line(for saleID: UUID) -> SaleLine? {
         saleLines.first { $0.saleID == saleID && $0.isActive }
     }
+
+    private var photoDataByAssetID: [UUID: Data] {
+        newestObjectPhotoDataByAssetID(attachments: attachments)
+    }
 }
 
 @MainActor
@@ -101,6 +109,7 @@ struct SaleDetailView: View {
 
     let sale: Sale
     let line: SaleLine?
+    let photoData: Data?
 
     @State private var showingVoidConfirmation = false
     @State private var showingError = false
@@ -164,6 +173,7 @@ struct SaleDetailView: View {
             HStack(spacing: KaraSpacing.medium) {
                 AssetArtworkView(
                     category: line?.categorySnapshot ?? .custom,
+                    photoData: photoData,
                     size: 64
                 )
 
@@ -175,6 +185,18 @@ struct SaleDetailView: View {
                     .font(theme.displayFont(size: 23, relativeTo: .title2))
                     .foregroundStyle(theme.ink)
                     .fixedSize(horizontal: false, vertical: true)
+
+                    if let line,
+                       let assetDetail = SalesAssetIdentification.detail(
+                           for: line
+                       ) {
+                        SensitiveValue {
+                            Text(verbatim: assetDetail)
+                                .font(.caption)
+                                .foregroundStyle(theme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
 
                     Label(
                         sale.soldAt.formatted(
@@ -286,6 +308,7 @@ struct PriceAlertsView: View {
 
     let alerts: [PriceAlert]
     let assets: [Asset]
+    let attachments: [AssetAttachment]
     let valuation: PortfolioValuation
 
     @State private var showingDeleteConfirmation = false
@@ -384,6 +407,10 @@ struct PriceAlertsView: View {
         assets.first { $0.id == id }
     }
 
+    private var photoDataByAssetID: [UUID: Data] {
+        newestObjectPhotoDataByAssetID(attachments: attachments)
+    }
+
     private func alertSection(
         title: String.LocalizationValue,
         alerts: [PriceAlert],
@@ -425,7 +452,8 @@ struct PriceAlertsView: View {
                             PriceAlertRow(
                                 alert: alert,
                                 asset: asset(withID: alert.assetID),
-                                valuation: valuationByAssetID[alert.assetID]
+                                valuation: valuationByAssetID[alert.assetID],
+                                photoData: photoDataByAssetID[alert.assetID]
                             )
                         }
                         .buttonStyle(.plain)
@@ -453,6 +481,7 @@ struct PriceAlertDetailView: View {
     let alert: PriceAlert
     let asset: Asset?
     let valuation: AssetValuation?
+    let photoData: Data?
 
     @State private var showingCancelConfirmation = false
     @State private var showingSaveError = false
@@ -522,6 +551,7 @@ struct PriceAlertDetailView: View {
                 HStack(spacing: KaraSpacing.medium) {
                     AssetArtworkView(
                         category: asset?.category ?? .custom,
+                        photoData: photoData,
                         size: 58
                     )
 
@@ -532,6 +562,18 @@ struct PriceAlertDetailView: View {
                         )
                         .font(.headline)
                         .foregroundStyle(theme.ink)
+
+                        if let asset,
+                           let assetDetail = SalesAssetIdentification.detail(
+                               for: asset
+                           ) {
+                            SensitiveValue {
+                                Text(verbatim: assetDetail)
+                                    .font(.caption)
+                                    .foregroundStyle(theme.muted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
 
                         SalesCopy.text(alert.direction.salesConditionKey)
                             .font(.caption)

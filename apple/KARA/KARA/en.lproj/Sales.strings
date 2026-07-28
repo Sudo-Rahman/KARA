@@ -5,6 +5,7 @@
 "sales.action.objective" = "Set a price goal";
 "sales.action.see-all" = "See all";
 "sales.action.cancel" = "Cancel";
+"sales.action.close" = "Close";
 "sales.action.keep-editing" = "Keep editing";
 "sales.action.ok" = "OK";
 "sales.error.title" = "Something went wrong";
@@ -23,6 +24,12 @@
 "sales.empty.title" = "No sales recorded";
 "sales.empty.detail" = "Your completed sales will appear here.";
 "sales.asset.unknown" = "Unknown asset";
+"sales.asset.serial" = "Serial %@";
+"sales.asset.purchased" = "Purchased %@";
+"sales.asset.change" = "Change";
+"sales.asset.change.hint" = "Opens the list of available assets.";
+"sales.asset.choose" = "Choose an asset";
+"sales.asset.search" = "Search assets";
 "sales.amount.received" = "Net received";
 "sales.missing.title" = "This item is unavailable";
 "sales.missing.detail" = "It may have been removed or is no longer available.";
@@ -70,8 +77,8 @@
 "sale-flow.confirm.action" = "Record sale";
 "sale-flow.error.detail" = "Your sale could not be saved. Please try again.";
 "sale-flow.asset.title" = "Asset";
-"sale-flow.asset.detail" = "Choose the asset you sold.";
-"sale-flow.asset.held-count" = "%d held";
+"sale-flow.asset.detail" = "Identify the exact asset you sold.";
+"sale-flow.asset.held-count" = "×%d";
 "sale-flow.amount.title" = "Sale amount";
 "sale-flow.amount.detail" = "Enter the amount agreed with the buyer and any costs.";
 "sale-flow.quantity" = "Quantity sold";
@@ -123,16 +130,16 @@
 
 /* Create a price goal */
 "alert-flow.title" = "Set a price goal";
-"alert-flow.intro.title" = "A goal to revisit";
-"alert-flow.intro.detail" = "Choose a target. KARA checks it whenever an update is available, including in the background when iOS allows it.";
+"alert-flow.intro.title" = "A simple goal";
+"alert-flow.intro.detail" = "Choose an asset and the price to reach. We’ll notify you when it gets there.";
 "alert-flow.discard.title" = "Discard this price goal?";
 "alert-flow.discard.detail" = "The information entered here will be lost.";
 "alert-flow.discard.action" = "Discard goal";
 "alert-flow.error.detail" = "Your price goal could not be saved. Please try again.";
 "alert-flow.asset.title" = "Asset";
-"alert-flow.asset.detail" = "Choose an asset with a current estimate.";
+"alert-flow.asset.detail" = "Identify the exact asset you want to track.";
 "alert-flow.target.title" = "Target price";
-"alert-flow.target.detail" = "Set the value you want to revisit.";
+"alert-flow.target.detail" = "Enter the price you want to reach.";
 "alert-flow.current-value" = "Current estimate";
 "alert-flow.target-value" = "Target value";
 "alert-flow.target-helper" = "Use the same currency as the current estimate.";

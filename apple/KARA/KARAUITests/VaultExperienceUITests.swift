@@ -112,11 +112,22 @@ final class VaultExperienceUITests: XCTestCase {
         app.buttons["sales.record"].tap()
         XCTAssertTrue(element("sale-flow", in: app).waitForExistence(timeout: 5))
 
-        let napoleon = app.buttons[
-            "sale-flow.asset.A1000000-0000-4000-8000-000000000002"
-        ]
+        let assetPicker = element("sale-flow.asset-picker", in: app)
+        XCTAssertTrue(assetPicker.isHittable)
+        assetPicker.tap()
+
+        let napoleon = element(
+            "sale-flow.asset-picker.A1000000-0000-4000-8000-000000000002",
+            in: app
+        )
         XCTAssertTrue(napoleon.waitForExistence(timeout: 5))
         napoleon.tap()
+        XCTAssertFalse(
+            element(
+                "sale-flow.asset-picker.A1000000-0000-4000-8000-000000000002",
+                in: app
+            ).exists
+        )
         XCTAssertTrue(element("sale-flow.quantity", in: app).exists)
         XCTAssertTrue(element("sale-flow.gross", in: app).exists)
         capture("vault-07-sale-recording", in: app)
@@ -134,7 +145,14 @@ final class VaultExperienceUITests: XCTestCase {
         app.buttons["sales.record"].tap()
         XCTAssertTrue(element("sale-flow", in: app).waitForExistence(timeout: 5))
 
-        let asset = app.buttons["sale-flow.asset.\(soldAssetID)"]
+        let assetPicker = element("sale-flow.asset-picker", in: app)
+        XCTAssertTrue(assetPicker.isHittable)
+        assetPicker.tap()
+
+        let asset = element(
+            "sale-flow.asset-picker.\(soldAssetID)",
+            in: app
+        )
         XCTAssertTrue(asset.waitForExistence(timeout: 5))
         asset.tap()
 
@@ -211,6 +229,43 @@ final class VaultExperienceUITests: XCTestCase {
         )
         XCTAssertTrue(app.staticTexts["À examiner"].exists)
         XCTAssertFalse(app.staticTexts["Anciens objectifs"].exists)
+    }
+
+    @MainActor
+    func testPriceGoalUsesCompactAssetPicker() {
+        let app = launchSeededVault()
+
+        app.tabBars.buttons["Ventes"].tap()
+        XCTAssertTrue(
+            element("sales.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+        app.buttons["sales.alert.create"].tap()
+
+        XCTAssertTrue(
+            element("alert-flow", in: app).waitForExistence(timeout: 5)
+        )
+        XCTAssertFalse(app.staticTexts["Comment cela fonctionne"].exists)
+        XCTAssertFalse(
+            app.staticTexts[
+                "Actualisation dans l’app et en arrière-plan"
+            ].exists
+        )
+
+        let assetPicker = element("alert-flow.asset-picker", in: app)
+        XCTAssertTrue(assetPicker.isHittable)
+        assetPicker.tap()
+
+        let mapleLeaf = element(
+            "alert-flow.asset-picker.A1000000-0000-4000-8000-000000000003",
+            in: app
+        )
+        XCTAssertTrue(mapleLeaf.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Maple Leaf 1 oz"].exists)
+        mapleLeaf.tap()
+
+        XCTAssertTrue(app.staticTexts["Maple Leaf 1 oz"].exists)
+        XCTAssertTrue(element("alert-flow.target", in: app).exists)
+        capture("vault-07-price-goal-picker", in: app)
     }
 
     @MainActor

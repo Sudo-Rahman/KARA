@@ -192,24 +192,6 @@
     "alert-flow.asset.title" : {
 
     },
-    "alert-flow.behavior.detail" : {
-
-    },
-    "alert-flow.behavior.notification.detail" : {
-
-    },
-    "alert-flow.behavior.notification.title" : {
-
-    },
-    "alert-flow.behavior.refresh.detail" : {
-
-    },
-    "alert-flow.behavior.refresh.title" : {
-
-    },
-    "alert-flow.behavior.title" : {
-
-    },
     "alert-flow.current-value" : {
 
     },
@@ -253,9 +235,6 @@
 
     },
     "alert-flow.success.title" : {
-
-    },
-    "alert-flow.target-helper" : {
 
     },
     "alert-flow.target-value" : {
@@ -6775,6 +6754,9 @@
     "sales.action.cancel" : {
 
     },
+    "sales.action.close" : {
+
+    },
     "sales.action.keep-editing" : {
 
     },
@@ -6824,6 +6806,24 @@
 
     },
     "sales.amount.received" : {
+
+    },
+    "sales.asset.change" : {
+
+    },
+    "sales.asset.change.hint" : {
+
+    },
+    "sales.asset.choose" : {
+
+    },
+    "sales.asset.purchased" : {
+
+    },
+    "sales.asset.search" : {
+
+    },
+    "sales.asset.serial" : {
 
     },
     "sales.asset.unknown" : {

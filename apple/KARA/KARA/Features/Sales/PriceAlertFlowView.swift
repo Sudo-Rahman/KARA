@@ -109,7 +109,6 @@ struct PriceAlertFlowView: View {
 
                 if selectedAsset != nil {
                     targetSection
-                    behaviorSection
                 }
 
                 if validationAttempted, let validationMessageKey {
@@ -138,73 +137,11 @@ struct PriceAlertFlowView: View {
             title: SalesCopy.text("alert-flow.asset.title"),
             detail: SalesCopy.text("alert-flow.asset.detail")
         ) {
-            ScrollView(.horizontal) {
-                HStack(spacing: KaraSpacing.small) {
-                    ForEach(valuedAssets) { asset in
-                        let selected = selectedAssetID == asset.id
-                        let current = valuationByAssetID[asset.id]?.estimatedValueEUR
-
-                        Button {
-                            selectedAssetID = asset.id
-                        } label: {
-                            HStack(spacing: KaraSpacing.small) {
-                                AssetArtworkView(
-                                    category: asset.category,
-                                    size: 44
-                                )
-
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(verbatim: asset.name)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(theme.ink)
-                                        .lineLimit(1)
-
-                                    SensitiveValue {
-                                        Text(
-                                            current.map {
-                                                VaultFormatters.currency($0)
-                                            }
-                                                ?? "—"
-                                        )
-                                        .font(.caption.monospacedDigit())
-                                        .foregroundStyle(theme.muted)
-                                    }
-                                }
-
-                                if selected {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(theme.cobaltBright)
-                                        .accessibilityHidden(true)
-                                }
-                            }
-                            .padding(KaraSpacing.small)
-                            .frame(width: 210, alignment: .leading)
-                            .background(
-                                selected
-                                    ? theme.cobalt.opacity(0.18)
-                                    : theme.background.opacity(0.72),
-                                in: .rect(cornerRadius: 14)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(
-                                        selected
-                                            ? theme.cobaltBright.opacity(0.62)
-                                            : theme.muted.opacity(0.16),
-                                        lineWidth: selected ? 1.5 : 1
-                                    )
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(selected ? .isSelected : [])
-                        .accessibilityIdentifier("alert-flow.asset.\(asset.id.uuidString)")
-                    }
-                }
-                .padding(.vertical, 1)
-            }
-            .karaSurfaceEdgeHorizontalScroll(surfaceInset: KaraSpacing.medium)
-            .scrollIndicators(.hidden)
-            .accessibilityIdentifier("alert-flow.asset-picker")
+            SalesAssetPicker(
+                selectedAssetID: $selectedAssetID,
+                items: assetPickerItems,
+                accessibilityIdentifier: "alert-flow.asset-picker"
+            )
         }
     }
 
@@ -234,8 +171,7 @@ struct PriceAlertFlowView: View {
                 .overlay(theme.muted.opacity(0.18))
 
             AssetFieldGroup(
-                title: SalesCopy.text("alert-flow.target-value"),
-                helper: SalesCopy.text("alert-flow.target-helper")
+                title: SalesCopy.text("alert-flow.target-value")
             ) {
                 HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
                     TextField(
@@ -270,28 +206,6 @@ struct PriceAlertFlowView: View {
                 .contentTransition(.numericText())
                 .accessibilityIdentifier("alert-flow.direction")
             }
-        }
-    }
-
-    private var behaviorSection: some View {
-        AssetFormSection(
-            title: SalesCopy.text("alert-flow.behavior.title"),
-            detail: SalesCopy.text("alert-flow.behavior.detail")
-        ) {
-            AlertBehaviorRow(
-                systemImage: "arrow.clockwise",
-                title: "alert-flow.behavior.refresh.title",
-                detail: "alert-flow.behavior.refresh.detail"
-            )
-
-            Divider()
-                .overlay(theme.muted.opacity(0.18))
-
-            AlertBehaviorRow(
-                systemImage: "bell.fill",
-                title: "alert-flow.behavior.notification.title",
-                detail: "alert-flow.behavior.notification.detail"
-            )
         }
     }
 
@@ -333,6 +247,26 @@ struct PriceAlertFlowView: View {
                 ($0.assetID, $0)
             }
         )
+    }
+
+    private var photoDataByAssetID: [UUID: Data] {
+        newestObjectPhotoDataByAssetID(attachments: attachments)
+    }
+
+    private var assetPickerItems: [SalesAssetPickerItem] {
+        valuedAssets.compactMap { asset in
+            guard let current =
+                valuationByAssetID[asset.id]?.estimatedValueEUR
+            else {
+                return nil
+            }
+            return SalesAssetPickerItem(
+                asset: asset,
+                photoData: photoDataByAssetID[asset.id],
+                trailingValue: VaultFormatters.currency(current),
+                trailingValueIsSensitive: true
+            )
+        }
     }
 
     private var selectedAsset: Asset? {
@@ -422,36 +356,6 @@ struct PriceAlertFlowView: View {
                 showingSaveError = true
             }
             isSaving = false
-        }
-    }
-}
-
-private struct AlertBehaviorRow: View {
-    @Environment(KaraTheme.self) private var theme
-
-    let systemImage: String
-    let title: String.LocalizationValue
-    let detail: String.LocalizationValue
-
-    var body: some View {
-        HStack(alignment: .top, spacing: KaraSpacing.medium) {
-            Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(theme.cobaltBright)
-                .frame(width: 34, height: 34)
-                .background(theme.cobalt.opacity(0.16), in: .circle)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 3) {
-                SalesCopy.text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(theme.ink)
-
-                SalesCopy.text(detail)
-                    .font(.caption)
-                    .foregroundStyle(theme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
         }
     }
 }

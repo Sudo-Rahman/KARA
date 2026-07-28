@@ -219,7 +219,8 @@ struct SalesDashboardView: View {
                                 PriceAlertRow(
                                     alert: alert,
                                     asset: asset(withID: alert.assetID),
-                                    valuation: valuationByAssetID[alert.assetID]
+                                    valuation: valuationByAssetID[alert.assetID],
+                                    photoData: photoDataByAssetID[alert.assetID]
                                 )
                             }
                             .buttonStyle(.plain)
@@ -268,7 +269,10 @@ struct SalesDashboardView: View {
                             NavigationLink(value: SalesRoute.sale(sale.id)) {
                                 SaleRow(
                                     sale: sale,
-                                    line: line(for: sale.id)
+                                    line: line(for: sale.id),
+                                    photoData: line(for: sale.id).flatMap {
+                                        photoDataByAssetID[$0.assetID]
+                                    }
                                 )
                             }
                             .buttonStyle(.plain)
@@ -331,12 +335,20 @@ struct SalesDashboardView: View {
     private func destination(for route: SalesRoute) -> some View {
         switch route {
         case .history:
-            SalesHistoryView(sales: sales, saleLines: saleLines)
+            SalesHistoryView(
+                sales: sales,
+                saleLines: saleLines,
+                attachments: attachments
+            )
         case let .sale(id):
             if let sale = sales.first(where: { $0.id == id }) {
+                let saleLine = line(for: id)
                 SaleDetailView(
                     sale: sale,
-                    line: line(for: id)
+                    line: saleLine,
+                    photoData: saleLine.flatMap {
+                        photoDataByAssetID[$0.assetID]
+                    }
                 )
             } else {
                 SalesMissingContentView()
@@ -345,6 +357,7 @@ struct SalesDashboardView: View {
             PriceAlertsView(
                 alerts: alerts,
                 assets: assetCatalog,
+                attachments: attachments,
                 valuation: valuation
             )
         case let .alert(id):
@@ -352,7 +365,8 @@ struct SalesDashboardView: View {
                 PriceAlertDetailView(
                     alert: alert,
                     asset: asset(withID: alert.assetID),
-                    valuation: valuationByAssetID[alert.assetID]
+                    valuation: valuationByAssetID[alert.assetID],
+                    photoData: photoDataByAssetID[alert.assetID]
                 )
             } else {
                 SalesMissingContentView()
@@ -382,6 +396,10 @@ struct SalesDashboardView: View {
                 ($0.assetID, $0)
             }
         )
+    }
+
+    private var photoDataByAssetID: [UUID: Data] {
+        newestObjectPhotoDataByAssetID(attachments: attachments)
     }
 
     private var valuedAssets: [Asset] {
@@ -513,6 +531,7 @@ struct SaleRow: View {
 
     let sale: Sale
     let line: SaleLine?
+    let photoData: Data?
 
     var body: some View {
         Group {
@@ -545,6 +564,7 @@ struct SaleRow: View {
     private var artwork: some View {
         AssetArtworkView(
             category: line?.categorySnapshot ?? .custom,
+            photoData: photoData,
             size: 50
         )
     }
@@ -612,6 +632,7 @@ struct PriceAlertRow: View {
     let alert: PriceAlert
     let asset: Asset?
     let valuation: AssetValuation?
+    let photoData: Data?
 
     var body: some View {
         Group {
@@ -646,6 +667,7 @@ struct PriceAlertRow: View {
     private var artwork: some View {
         AssetArtworkView(
             category: asset?.category ?? .custom,
+            photoData: photoData,
             size: 50
         )
     }

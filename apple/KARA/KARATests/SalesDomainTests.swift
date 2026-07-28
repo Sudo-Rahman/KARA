@@ -973,4 +973,86 @@ struct SalesDomainTests {
 
         #expect(recorded.sale.status == .recorded)
     }
+
+    @Test("Sales artwork uses the newest object photo and ignores invoices")
+    func indexesNewestObjectPhotoOnly() {
+        let assetID = UUID()
+        let otherAssetID = UUID()
+        let oldPhoto = Data([0x01])
+        let newPhoto = Data([0x02])
+        let invoice = Data([0x09])
+        let attachments = [
+            AssetAttachment(
+                assetID: assetID,
+                kind: .objectPhoto,
+                filename: "old.jpg",
+                mimeType: "image/jpeg",
+                data: oldPhoto,
+                createdAt: Date(timeIntervalSince1970: 1)
+            ),
+            AssetAttachment(
+                assetID: assetID,
+                kind: .invoice,
+                filename: "invoice.jpg",
+                mimeType: "image/jpeg",
+                data: invoice,
+                createdAt: Date(timeIntervalSince1970: 3)
+            ),
+            AssetAttachment(
+                assetID: assetID,
+                kind: .objectPhoto,
+                filename: "new.jpg",
+                mimeType: "image/jpeg",
+                data: newPhoto,
+                createdAt: Date(timeIntervalSince1970: 2)
+            ),
+            AssetAttachment(
+                assetID: otherAssetID,
+                kind: .invoice,
+                filename: "other-invoice.jpg",
+                mimeType: "image/jpeg",
+                data: invoice,
+                createdAt: Date(timeIntervalSince1970: 4)
+            ),
+        ]
+
+        let photos = newestObjectPhotoDataByAssetID(
+            attachments: attachments
+        )
+
+        #expect(photos[assetID] == newPhoto)
+        #expect(photos[otherAssetID] == nil)
+    }
+
+    @Test("Sales identification prioritizes serial number and weight")
+    func identifiesAssetWithSerialAndWeight() {
+        let asset = Asset(
+            name: "Lingot",
+            category: .bar,
+            purchaseDate: Date(timeIntervalSince1970: 1_700_000_000),
+            weightGrams: 50,
+            storageLocationName: "Coffre secondaire",
+            serialNumber: "A982741"
+        )
+
+        let detail = SalesAssetIdentification.detail(for: asset)
+
+        #expect(detail?.contains("A982741") == true)
+        #expect(detail?.contains(VaultFormatters.weight(50)) == true)
+        #expect(detail?.contains("Coffre secondaire") == false)
+    }
+
+    @Test("Sales identification falls back to storage when needed")
+    func identifiesAssetWithStorageFallback() {
+        let asset = Asset(
+            name: "Bijou",
+            category: .jewelry,
+            storageLocationName: "Coffre principal"
+        )
+
+        #expect(
+            SalesAssetIdentification.detail(for: asset)
+                == "Coffre principal"
+        )
+    }
 }

@@ -154,72 +154,11 @@ struct SaleFlowView: View {
             title: SalesCopy.text("sale-flow.asset.title"),
             detail: SalesCopy.text("sale-flow.asset.detail")
         ) {
-            ScrollView(.horizontal) {
-                HStack(spacing: KaraSpacing.small) {
-                    ForEach(assets) { asset in
-                        let selected = selectedAssetID == asset.id
-
-                        Button {
-                            selectedAssetID = asset.id
-                        } label: {
-                            HStack(spacing: KaraSpacing.small) {
-                                AssetArtworkView(
-                                    category: asset.category,
-                                    size: 44
-                                )
-
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(verbatim: asset.name)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(theme.ink)
-                                        .lineLimit(1)
-
-                                    Text(heldQuantity(for: asset), format: .number)
-                                        .font(.caption.monospacedDigit())
-                                        .foregroundStyle(theme.muted)
-                                        .contentTransition(.numericText())
-                                        .accessibilityLabel(
-                                            SalesCopy.formatted(
-                                                "sale-flow.asset.held-count",
-                                                heldQuantity(for: asset)
-                                            )
-                                        )
-                                }
-
-                                if selected {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(theme.cobaltBright)
-                                        .accessibilityHidden(true)
-                                }
-                            }
-                            .padding(KaraSpacing.small)
-                            .frame(width: 210, alignment: .leading)
-                            .background(
-                                selected
-                                    ? theme.cobalt.opacity(0.18)
-                                    : theme.background.opacity(0.72),
-                                in: .rect(cornerRadius: 14)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(
-                                        selected
-                                            ? theme.cobaltBright.opacity(0.62)
-                                            : theme.muted.opacity(0.16),
-                                        lineWidth: selected ? 1.5 : 1
-                                    )
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityAddTraits(selected ? .isSelected : [])
-                        .accessibilityIdentifier("sale-flow.asset.\(asset.id.uuidString)")
-                    }
-                }
-                .padding(.vertical, 1)
-            }
-            .karaSurfaceEdgeHorizontalScroll(surfaceInset: KaraSpacing.medium)
-            .scrollIndicators(.hidden)
-            .accessibilityIdentifier("sale-flow.asset-picker")
+            SalesAssetPicker(
+                selectedAssetID: $selectedAssetID,
+                items: assetPickerItems,
+                accessibilityIdentifier: "sale-flow.asset-picker"
+            )
         }
     }
 
@@ -427,6 +366,27 @@ struct SaleFlowView: View {
 
     private var selectedAssetValuation: AssetValuation? {
         selectedAssetID.flatMap { valuationByAssetID[$0] }
+    }
+
+    private var photoDataByAssetID: [UUID: Data] {
+        newestObjectPhotoDataByAssetID(attachments: attachments)
+    }
+
+    private var assetPickerItems: [SalesAssetPickerItem] {
+        assets.map { asset in
+            let heldQuantity = heldQuantity(for: asset)
+            return SalesAssetPickerItem(
+                asset: asset,
+                photoData: photoDataByAssetID[asset.id],
+                trailingValue: heldQuantity > 1
+                    ? SalesCopy.formatted(
+                        "sale-flow.asset.held-count",
+                        heldQuantity
+                    )
+                    : nil,
+                trailingValueIsSensitive: false
+            )
+        }
     }
 
     private var grossAmount: Decimal? {

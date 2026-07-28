@@ -85,7 +85,7 @@ struct AppShellView: View {
                     SalesDashboardView(
                         assets: assets,
                         assetCatalog: canonicalAssets,
-                        attachments: attachments,
+                        attachments: salesAttachments,
                         valuation: valuation,
                         sales: sales,
                         saleLines: recordedSaleLines,
@@ -327,6 +327,11 @@ struct AppShellView: View {
     private var heldAttachments: [AssetAttachment] {
         let heldAssetIDs = Set(heldAssets.map(\.id))
         return attachments.filter { heldAssetIDs.contains($0.assetID) }
+    }
+
+    private var salesAttachments: [AssetAttachment] {
+        let salesAssetIDs = Set(canonicalAssets.map(\.id))
+        return attachments.filter { salesAssetIDs.contains($0.assetID) }
     }
 
     private var storageLocationsByAssetID: [UUID: String] {
