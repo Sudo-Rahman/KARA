@@ -126,6 +126,54 @@
         }
       }
     },
+    "app-lock.authentication.enable-reason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable app locking."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer le verrouillage de l’app."
+          }
+        }
+      }
+    },
+    "app-lock.authentication.unlock-reason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock your private vault."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déverrouiller votre coffre privé."
+          }
+        }
+      }
+    },
+    "app-lock.shield.accessibility-label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA is locked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KARA est verrouillée."
+          }
+        }
+      }
+    },
     "asset-delete.action.cancel" : {
       "localizations" : {
         "en" : {
@@ -5328,54 +5376,6 @@
         }
       }
     },
-    "app-lock.authentication.enable-reason" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable app locking."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activer le verrouillage de l’app."
-          }
-        }
-      }
-    },
-    "app-lock.authentication.unlock-reason" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock your private vault."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Déverrouiller votre coffre privé."
-          }
-        }
-      }
-    },
-    "app-lock.shield.accessibility-label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KARA is locked."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KARA est verrouillée."
-          }
-        }
-      }
-    },
     "privacy.action.conceal" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6734,6 +6734,7 @@
       }
     },
     "settings.trash.delete.confirmation.body" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6750,6 +6751,7 @@
       }
     },
     "settings.trash.delete.confirmation.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

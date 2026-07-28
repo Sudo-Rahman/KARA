@@ -271,8 +271,12 @@ struct VaultDashboardView: View {
                             .lineLimit(1)
                     }
                 } detail: {
-                    SensitiveValue {
-                        Text("vault.metric.records \(valuation.coverage.totalRecordCount)")
+                    if valuation.coverage.totalRecordCount
+                        != valuation.coverage.totalObjectCount
+                    {
+                        SensitiveValue {
+                            Text("vault.metric.records \(valuation.coverage.totalRecordCount)")
+                        }
                     }
                 }
             }
@@ -365,7 +369,7 @@ struct VaultDashboardView: View {
     }
 
     private var compactMetricCardHeight: CGFloat? {
-        dynamicTypeSize.isAccessibilitySize ? nil : 176
+        dynamicTypeSize.isAccessibilitySize ? nil : 136
     }
 
     private var categoryCard: some View {
