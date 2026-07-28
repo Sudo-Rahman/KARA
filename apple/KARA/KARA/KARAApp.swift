@@ -16,8 +16,23 @@ struct KARAApp: App {
     @State private var aiFormAutofillPreferences = AIFormAutofillPreferences()
     @State private var appLockPreferences: AppLockPreferences
     @State private var appLockController: AppLockController
+    @State private var priceAlertNotificationNavigationInbox:
+        PriceAlertNotificationNavigationInbox
+    private let initialPersistencePhase: PersistencePhase
 
     init() {
+        PriceAlertBestEffortBackgroundRefresh.register()
+        initialPersistencePhase = KARAApplicationPersistence.load()
+
+        let notificationNavigationInbox =
+            PriceAlertNotificationNavigationInbox()
+        _priceAlertNotificationNavigationInbox = State(
+            initialValue: notificationNavigationInbox
+        )
+        SystemUserNotificationCenter.shared.installNavigationInbox(
+            notificationNavigationInbox
+        )
+
         let preferences = AppLockPreferences()
         _appLockPreferences = State(initialValue: preferences)
         _appLockController = State(
@@ -27,25 +42,55 @@ struct KARAApp: App {
 
     var body: some Scene {
         WindowGroup {
-            PersistenceHostView()
+            PersistenceHostView(initialPhase: initialPersistencePhase)
                 .environment(flow)
                 .environment(theme)
                 .environment(privacyPreferences)
                 .environment(aiFormAutofillPreferences)
                 .environment(appLockPreferences)
                 .environment(appLockController)
+                .environment(priceAlertNotificationNavigationInbox)
                 .preferredColorScheme(.dark)
         }
     }
 }
 
-private struct PersistenceHostView: View {
-    private enum Phase {
-        case ready(ModelContainer)
-        case failed(String)
-    }
+private enum PersistencePhase {
+    case ready(ModelContainer)
+    case failed(String)
+}
 
-    @State private var phase = Self.loadContainer()
+@MainActor
+private enum KARAApplicationPersistence {
+    private static var modelContainer: ModelContainer?
+
+    static func load() -> PersistencePhase {
+        if let modelContainer {
+            PriceAlertBestEffortBackgroundRefresh.install(
+                modelContainer: modelContainer
+            )
+            return .ready(modelContainer)
+        }
+
+        do {
+            let container = try KaraModelContainerFactory.make()
+            modelContainer = container
+            PriceAlertBestEffortBackgroundRefresh.install(
+                modelContainer: container
+            )
+            return .ready(container)
+        } catch {
+            return .failed(String(describing: error))
+        }
+    }
+}
+
+private struct PersistenceHostView: View {
+    @State private var phase: PersistencePhase
+
+    init(initialPhase: PersistencePhase) {
+        _phase = State(initialValue: initialPhase)
+    }
 
     var body: some View {
         switch phase {
@@ -54,16 +99,8 @@ private struct PersistenceHostView: View {
                 .modelContainer(container)
         case let .failed(message):
             PersistenceUnavailableView(message: message) {
-                phase = Self.loadContainer()
+                phase = KARAApplicationPersistence.load()
             }
-        }
-    }
-
-    private static func loadContainer() -> Phase {
-        do {
-            return .ready(try KaraModelContainerFactory.make())
-        } catch {
-            return .failed(String(describing: error))
         }
     }
 }

@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    "—" : {
+
+    },
     "·" : {
 
     },
@@ -125,6 +131,339 @@
           }
         }
       }
+    },
+    "alert-detail.cancel" : {
+
+    },
+    "alert-detail.cancel.confirm.action" : {
+
+    },
+    "alert-detail.cancel.confirm.detail" : {
+
+    },
+    "alert-detail.cancel.confirm.title" : {
+
+    },
+    "alert-detail.current" : {
+
+    },
+    "alert-detail.error" : {
+
+    },
+    "alert-detail.last-check" : {
+
+    },
+    "alert-detail.pause" : {
+
+    },
+    "alert-detail.reached.detail" : {
+
+    },
+    "alert-detail.reached.title" : {
+
+    },
+    "alert-detail.resume" : {
+
+    },
+    "alert-detail.review.detail" : {
+
+    },
+    "alert-detail.review.title" : {
+
+    },
+    "alert-detail.status" : {
+
+    },
+    "alert-detail.status.title" : {
+
+    },
+    "alert-detail.title" : {
+
+    },
+    "alert-flow.action.create" : {
+
+    },
+    "alert-flow.action.saving" : {
+
+    },
+    "alert-flow.asset.detail" : {
+
+    },
+    "alert-flow.asset.title" : {
+
+    },
+    "alert-flow.behavior.detail" : {
+
+    },
+    "alert-flow.behavior.notification.detail" : {
+
+    },
+    "alert-flow.behavior.notification.title" : {
+
+    },
+    "alert-flow.behavior.refresh.detail" : {
+
+    },
+    "alert-flow.behavior.refresh.title" : {
+
+    },
+    "alert-flow.behavior.title" : {
+
+    },
+    "alert-flow.current-value" : {
+
+    },
+    "alert-flow.discard.action" : {
+
+    },
+    "alert-flow.discard.detail" : {
+
+    },
+    "alert-flow.discard.title" : {
+
+    },
+    "alert-flow.error.detail" : {
+
+    },
+    "alert-flow.intro.detail" : {
+
+    },
+    "alert-flow.intro.title" : {
+
+    },
+    "alert-flow.success.above" : {
+
+    },
+    "alert-flow.success.below" : {
+
+    },
+    "alert-flow.success.close" : {
+
+    },
+    "alert-flow.success.notifications-off.detail" : {
+
+    },
+    "alert-flow.success.notifications-off.title" : {
+
+    },
+    "alert-flow.success.notifications.detail" : {
+
+    },
+    "alert-flow.success.notifications.title" : {
+
+    },
+    "alert-flow.success.title" : {
+
+    },
+    "alert-flow.target-helper" : {
+
+    },
+    "alert-flow.target-value" : {
+
+    },
+    "alert-flow.target.detail" : {
+
+    },
+    "alert-flow.target.placeholder" : {
+
+    },
+    "alert-flow.target.title" : {
+
+    },
+    "alert-flow.title" : {
+
+    },
+    "alert-flow.validation.current" : {
+
+    },
+    "alert-flow.validation.same" : {
+
+    },
+    "alert-flow.validation.target" : {
+
+    },
+    "alerts.active.title" : {
+
+    },
+    "alerts.notice.detail" : {
+
+    },
+    "alerts.notice.title" : {
+
+    },
+    "alerts.past.title" : {
+
+    },
+    "alerts.title" : {
+
+    },
+    "analysis.allocation.categories" : {
+
+    },
+    "analysis.allocation.detail" : {
+
+    },
+    "analysis.allocation.leading" : {
+
+    },
+    "analysis.allocation.locations" : {
+
+    },
+    "analysis.allocation.metals" : {
+
+    },
+    "analysis.allocation.partial" : {
+
+    },
+    "analysis.allocation.picker" : {
+
+    },
+    "analysis.allocation.records" : {
+
+    },
+    "analysis.allocation.subtitle" : {
+
+    },
+    "analysis.allocation.title" : {
+
+    },
+    "analysis.allocation.unavailable" : {
+
+    },
+    "analysis.cached.detail" : {
+
+    },
+    "analysis.cached.title" : {
+
+    },
+    "analysis.empty.action" : {
+
+    },
+    "analysis.empty.detail" : {
+
+    },
+    "analysis.empty.title" : {
+
+    },
+    "analysis.empty.with-sales" : {
+
+    },
+    "analysis.evolution.current-value" : {
+
+    },
+    "analysis.evolution.detail.subtitle" : {
+
+    },
+    "analysis.evolution.incomplete-data" : {
+
+    },
+    "analysis.evolution.monthly-note" : {
+
+    },
+    "analysis.evolution.not-enough-data" : {
+
+    },
+    "analysis.evolution.reading.detail" : {
+
+    },
+    "analysis.evolution.reading.title" : {
+
+    },
+    "analysis.evolution.title" : {
+
+    },
+    "analysis.evolution.unknown-purchase-dates" : {
+
+    },
+    "analysis.insight.metal.detail" : {
+
+    },
+    "analysis.insight.metal.title" : {
+
+    },
+    "analysis.insight.result.detail" : {
+
+    },
+    "analysis.insight.result.title" : {
+
+    },
+    "analysis.insight.sales.detail" : {
+
+    },
+    "analysis.insight.sales.title" : {
+
+    },
+    "analysis.insight.storage.detail" : {
+
+    },
+    "analysis.insight.storage.title" : {
+
+    },
+    "analysis.insight.valuation.detail" : {
+
+    },
+    "analysis.insight.valuation.title" : {
+
+    },
+    "analysis.insights.title" : {
+
+    },
+    "analysis.period.all" : {
+
+    },
+    "analysis.period.label" : {
+
+    },
+    "analysis.period.one-year" : {
+
+    },
+    "analysis.period.three-months" : {
+
+    },
+    "analysis.sales.empty.detail" : {
+
+    },
+    "analysis.sales.empty.title" : {
+
+    },
+    "analysis.sales.net-received" : {
+
+    },
+    "analysis.sales.partial" : {
+
+    },
+    "analysis.sales.reading.detail" : {
+
+    },
+    "analysis.sales.reading.title" : {
+
+    },
+    "analysis.sales.realized-result" : {
+
+    },
+    "analysis.sales.result-unavailable" : {
+
+    },
+    "analysis.sales.spot-comparison" : {
+
+    },
+    "analysis.sales.subtitle" : {
+
+    },
+    "analysis.sales.title" : {
+
+    },
+    "analysis.subtitle" : {
+
+    },
+    "analysis.title" : {
+
+    },
+    "analysis.value.loading" : {
+
+    },
+    "analysis.value.unavailable" : {
+
     },
     "app-lock.authentication.enable-reason" : {
       "localizations" : {
@@ -5909,6 +6248,186 @@
         }
       }
     },
+    "sale-detail.amounts.detail" : {
+
+    },
+    "sale-detail.amounts.title" : {
+
+    },
+    "sale-detail.buyer" : {
+
+    },
+    "sale-detail.fees" : {
+
+    },
+    "sale-detail.gross" : {
+
+    },
+    "sale-detail.net" : {
+
+    },
+    "sale-detail.note" : {
+
+    },
+    "sale-detail.quantity" : {
+
+    },
+    "sale-detail.title" : {
+
+    },
+    "sale-detail.transaction.title" : {
+
+    },
+    "sale-detail.void.action" : {
+
+    },
+    "sale-detail.void.confirm.action" : {
+
+    },
+    "sale-detail.void.confirm.detail" : {
+
+    },
+    "sale-detail.void.confirm.title" : {
+
+    },
+    "sale-detail.void.error" : {
+
+    },
+    "sale-flow.action.continue" : {
+
+    },
+    "sale-flow.action.saving" : {
+
+    },
+    "sale-flow.amount.detail" : {
+
+    },
+    "sale-flow.amount.title" : {
+
+    },
+    "sale-flow.asset.detail" : {
+
+    },
+    "sale-flow.asset.held-count" : {
+
+    },
+    "sale-flow.asset.title" : {
+
+    },
+    "sale-flow.buyer.placeholder" : {
+
+    },
+    "sale-flow.buyer.title" : {
+
+    },
+    "sale-flow.confirm.action" : {
+
+    },
+    "sale-flow.confirm.detail" : {
+
+    },
+    "sale-flow.confirm.fallback" : {
+
+    },
+    "sale-flow.confirm.title" : {
+
+    },
+    "sale-flow.currency" : {
+
+    },
+    "sale-flow.date" : {
+
+    },
+    "sale-flow.details.detail" : {
+
+    },
+    "sale-flow.details.title" : {
+
+    },
+    "sale-flow.discard.action" : {
+
+    },
+    "sale-flow.discard.detail" : {
+
+    },
+    "sale-flow.discard.title" : {
+
+    },
+    "sale-flow.error.detail" : {
+
+    },
+    "sale-flow.fees.detail" : {
+
+    },
+    "sale-flow.fees.placeholder" : {
+
+    },
+    "sale-flow.fees.title" : {
+
+    },
+    "sale-flow.gross.detail" : {
+
+    },
+    "sale-flow.gross.placeholder" : {
+
+    },
+    "sale-flow.gross.title" : {
+
+    },
+    "sale-flow.intro.detail" : {
+
+    },
+    "sale-flow.intro.title" : {
+
+    },
+    "sale-flow.note.placeholder" : {
+
+    },
+    "sale-flow.note.title" : {
+
+    },
+    "sale-flow.optional" : {
+
+    },
+    "sale-flow.quantity" : {
+
+    },
+    "sale-flow.success.close" : {
+
+    },
+    "sale-flow.success.full" : {
+
+    },
+    "sale-flow.success.partial" : {
+
+    },
+    "sale-flow.success.received" : {
+
+    },
+    "sale-flow.success.title" : {
+
+    },
+    "sale-flow.summary.detail" : {
+
+    },
+    "sale-flow.summary.fees" : {
+
+    },
+    "sale-flow.summary.gross" : {
+
+    },
+    "sale-flow.summary.net" : {
+
+    },
+    "sale-flow.summary.title" : {
+
+    },
+    "sale-flow.title" : {
+
+    },
+    "sale-flow.use-estimate" : {
+
+    },
     "sale-simulation.asset.deselect" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6246,6 +6765,156 @@
           }
         }
       }
+    },
+    "sales.action.cancel" : {
+
+    },
+    "sales.action.keep-editing" : {
+
+    },
+    "sales.action.objective" : {
+
+    },
+    "sales.action.objective.detail" : {
+
+    },
+    "sales.action.ok" : {
+
+    },
+    "sales.action.record" : {
+
+    },
+    "sales.action.record.detail" : {
+
+    },
+    "sales.action.see-all" : {
+
+    },
+    "sales.alert.condition.above" : {
+
+    },
+    "sales.alert.condition.below" : {
+
+    },
+    "sales.alert.status.active" : {
+
+    },
+    "sales.alert.status.cancelled" : {
+
+    },
+    "sales.alert.status.completed" : {
+
+    },
+    "sales.alert.status.paused" : {
+
+    },
+    "sales.alert.status.reached" : {
+
+    },
+    "sales.alert.status.review" : {
+
+    },
+    "sales.alerts.empty.detail" : {
+
+    },
+    "sales.alerts.empty.title" : {
+
+    },
+    "sales.alerts.title" : {
+
+    },
+    "sales.amount.received" : {
+
+    },
+    "sales.asset.unknown" : {
+
+    },
+    "sales.empty.detail" : {
+
+    },
+    "sales.empty.title" : {
+
+    },
+    "sales.error.title" : {
+
+    },
+    "sales.history.action" : {
+
+    },
+    "sales.history.empty.detail" : {
+
+    },
+    "sales.history.empty.title" : {
+
+    },
+    "sales.history.notice.detail" : {
+
+    },
+    "sales.history.notice.title" : {
+
+    },
+    "sales.history.title" : {
+
+    },
+    "sales.missing.detail" : {
+
+    },
+    "sales.missing.title" : {
+
+    },
+    "sales.no-assets.detail" : {
+
+    },
+    "sales.no-assets.title" : {
+
+    },
+    "sales.recent.title" : {
+
+    },
+    "sales.subtitle" : {
+
+    },
+    "sales.title" : {
+
+    },
+    "sales.validation.fees" : {
+
+    },
+    "sales.validation.fees-above-gross" : {
+
+    },
+    "sales.validation.gross" : {
+
+    },
+    "sales.validation.quantity" : {
+
+    },
+    "sales.validation.quantity-exceeds" : {
+
+    },
+    "sales.validation.sale-predates-purchase" : {
+
+    },
+    "sales.validation.title" : {
+
+    },
+    "sales.valuation.loading.action" : {
+
+    },
+    "sales.valuation.loading.detail" : {
+
+    },
+    "sales.valuation.loading.title" : {
+
+    },
+    "sales.valuation.refresh" : {
+
+    },
+    "sales.valuation.unavailable.detail" : {
+
+    },
+    "sales.valuation.unavailable.title" : {
+
     },
     "Selected date" : {
 
@@ -7465,18 +8134,34 @@
         }
       }
     },
-    "tabs.sale" : {
+    "tabs.analysis" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sale"
+            "value" : "Analysis"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vente"
+            "value" : "Analyse"
+          }
+        }
+      }
+    },
+    "tabs.sale" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ventes"
           }
         }
       }

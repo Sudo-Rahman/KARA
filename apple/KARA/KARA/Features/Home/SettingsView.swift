@@ -13,11 +13,16 @@ struct SettingsStatistics: Equatable {
     init(
         activeAssets: [Asset],
         activeAttachments: [AssetAttachment],
-        trashedAssetCount: Int
+        trashedAssetCount: Int,
+        assetValuations: [AssetValuation] = []
     ) {
-        activeAssetCount = activeAssets.count
+        let heldQuantities = Self.heldQuantities(
+            for: activeAssets,
+            assetValuations: assetValuations
+        )
+        activeAssetCount = heldQuantities.count
         objectCount = activeAssets.reduce(into: 0) { result, asset in
-            result += max(asset.quantity, 0)
+            result += heldQuantities[asset.id] ?? 0
         }
 
         var documents = 0
@@ -42,6 +47,29 @@ struct SettingsStatistics: Equatable {
         photoCount = photos
         attachmentByteCount = totalByteCount
         self.trashedAssetCount = trashedAssetCount
+    }
+
+    static func heldAssetIDs(
+        from assets: [Asset],
+        assetValuations: [AssetValuation]
+    ) -> Set<UUID> {
+        Set(heldQuantities(for: assets, assetValuations: assetValuations).keys)
+    }
+
+    private static func heldQuantities(
+        for assets: [Asset],
+        assetValuations: [AssetValuation]
+    ) -> [UUID: Int] {
+        var quantitiesByAssetID: [UUID: Int] = [:]
+        for valuation in assetValuations where quantitiesByAssetID[valuation.assetID] == nil {
+            quantitiesByAssetID[valuation.assetID] = max(0, valuation.quantity)
+        }
+
+        return assets.reduce(into: [:]) { heldQuantities, asset in
+            let quantity = quantitiesByAssetID[asset.id] ?? max(0, asset.quantity)
+            guard quantity > 0 else { return }
+            heldQuantities[asset.id] = quantity
+        }
     }
 
     var attachmentCount: Int {
@@ -100,7 +128,8 @@ struct SettingsView: View {
         let statistics = SettingsStatistics(
             activeAssets: activeAssets,
             activeAttachments: currentActiveAttachments,
-            trashedAssetCount: trashedAssets.count
+            trashedAssetCount: trashedAssets.count,
+            assetValuations: portfolioValuation.assetValuations
         )
         let missingAttachmentByteCountIDs = currentActiveAttachments
             .filter { $0.dataByteCount == nil }
@@ -313,7 +342,10 @@ struct SettingsView: View {
     }
 
     private var activeAttachments: [AssetAttachment] {
-        let activeAssetIDs = Set(activeAssets.map(\.id))
+        let activeAssetIDs = SettingsStatistics.heldAssetIDs(
+            from: activeAssets,
+            assetValuations: portfolioValuation.assetValuations
+        )
         return attachments.filter { activeAssetIDs.contains($0.assetID) }
     }
 

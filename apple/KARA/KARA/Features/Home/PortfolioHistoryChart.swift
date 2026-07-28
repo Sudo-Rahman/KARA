@@ -166,7 +166,7 @@ struct PortfolioHistoryChart: View {
                 )
                 .foregroundStyle(theme.goldBright)
                 .lineStyle(.init(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
 
                 if let laserProgress {
                     LineMark(
@@ -175,7 +175,7 @@ struct PortfolioHistoryChart: View {
                     )
                     .foregroundStyle(laserGradient(progress: laserProgress, opacity: 0.24))
                     .lineStyle(.init(lineWidth: 8, lineCap: .round, lineJoin: .round))
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(.linear)
 
                     LineMark(
                         x: .value("Laser core date", point.date),
@@ -183,7 +183,7 @@ struct PortfolioHistoryChart: View {
                     )
                     .foregroundStyle(laserGradient(progress: laserProgress, opacity: 0.94))
                     .lineStyle(.init(lineWidth: 2.8, lineCap: .round, lineJoin: .round))
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(.linear)
                 }
 
                 if point.isCurrent {

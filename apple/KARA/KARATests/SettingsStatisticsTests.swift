@@ -77,6 +77,24 @@ struct SettingsStatisticsTests {
         #expect(statistics.attachmentByteCount == nil)
     }
 
+    @Test("Vault statistics use held quantities and exclude fully sold assets")
+    func summarizesHeldAssetsOnly() {
+        let heldAsset = Asset(name: "Napoléons", category: .coin, quantity: 4)
+        let soldAsset = Asset(name: "Lingot vendu", category: .bar, quantity: 1)
+        let statistics = SettingsStatistics(
+            activeAssets: [heldAsset, soldAsset],
+            activeAttachments: [],
+            trashedAssetCount: 0,
+            assetValuations: [
+                assetValuation(assetID: heldAsset.id, quantity: 2),
+                assetValuation(assetID: soldAsset.id, quantity: 0),
+            ]
+        )
+
+        #expect(statistics.activeAssetCount == 1)
+        #expect(statistics.objectCount == 2)
+    }
+
     @Test("App version combines the marketing version and build number")
     func formatsVersionAndBuild() {
         let versionInfo = AppVersionInfo(infoDictionary: [
@@ -108,4 +126,24 @@ struct SettingsStatisticsTests {
         #expect(versionInfo.build == "—")
         #expect(versionInfo.displayName == "2.4.1")
     }
+}
+
+private func assetValuation(assetID: UUID, quantity: Int) -> AssetValuation {
+    AssetValuation(
+        assetID: assetID,
+        name: "Asset",
+        categoryID: AssetCategory.custom.rawValue,
+        metal: nil,
+        quantity: quantity,
+        fineWeightGrams: nil,
+        estimatedValueEUR: nil,
+        purchaseCost: nil,
+        purchaseCurrency: nil,
+        currentValueInPurchaseCurrency: nil,
+        purchaseCostEUR: nil,
+        gainInPurchaseCurrency: nil,
+        gainEUR: nil,
+        gainPercentage: nil,
+        status: .missingMetal
+    )
 }

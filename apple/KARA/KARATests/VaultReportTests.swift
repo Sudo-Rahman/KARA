@@ -66,6 +66,53 @@ struct VaultReportTests {
         #expect(cooperativeSnapshot == snapshot)
     }
 
+    @Test("The snapshot uses held quantities and excludes fully sold assets")
+    func snapshotUsesHeldQuantitiesOnly() async throws {
+        let heldID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+        let soldID = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
+        let held = Asset(id: heldID, name: "Lot partiellement vendu", quantity: 4)
+        let sold = Asset(id: soldID, name: "Lot vendu", quantity: 1)
+        let valuation = makeValuation(
+            assetValuations: [
+                makeAssetValuation(
+                    assetID: heldID,
+                    quantity: 2,
+                    estimatedValueEUR: nil,
+                    gainEUR: nil,
+                    gainPercentage: nil
+                ),
+                makeAssetValuation(
+                    assetID: soldID,
+                    quantity: 0,
+                    estimatedValueEUR: nil,
+                    gainEUR: nil,
+                    gainPercentage: nil
+                ),
+            ],
+            recordCount: 1,
+            objectCount: 2
+        )
+
+        let snapshot = VaultReportSnapshotAssembler.make(
+            assets: [held, sold],
+            attachments: [],
+            valuation: valuation,
+            valuationAsOf: date(2026, 7, 6)
+        )
+
+        #expect(snapshot.assets.map(\.id) == [heldID])
+        #expect(snapshot.assets.first?.quantity == 2)
+        #expect(snapshot.objectCount == 2)
+
+        let cooperativeSnapshot = try await VaultReportSnapshotAssembler.makeCooperatively(
+            assets: [held, sold],
+            attachments: [],
+            valuation: valuation,
+            valuationAsOf: date(2026, 7, 6)
+        )
+        #expect(cooperativeSnapshot == snapshot)
+    }
+
     @Test("The snapshot preserves complete fields, valuations, costs, and deterministic order")
     func snapshotPreservesReportDataAndOrder() throws {
         let expectedPurchaseEUR = Decimal(string: "1234.56")!
@@ -646,6 +693,7 @@ private func makeValuation(
 
 private func makeAssetValuation(
     assetID: UUID,
+    quantity: Int = 1,
     estimatedValueEUR: Decimal?,
     gainEUR: Decimal?,
     gainPercentage: Decimal?
@@ -655,7 +703,7 @@ private func makeAssetValuation(
         name: "Asset",
         categoryID: AssetCategory.custom.rawValue,
         metal: nil,
-        quantity: 1,
+        quantity: quantity,
         fineWeightGrams: nil,
         estimatedValueEUR: estimatedValueEUR,
         purchaseCost: nil,

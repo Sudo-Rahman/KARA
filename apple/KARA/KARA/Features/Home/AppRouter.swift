@@ -3,6 +3,7 @@ import Observation
 
 nonisolated enum AppTab: String, CaseIterable, Identifiable, Sendable {
     case vault
+    case analysis
     case sale
     case settings
 
@@ -38,15 +39,21 @@ final class AppRouter {
     var path: [AppRoute]
     var sheet: AppSheetDestination?
     var cover: AppCoverDestination?
+    var selectedTab: AppTab
+    var salesPath: [SalesRoute]
 
     init(
         path: [AppRoute] = [],
         sheet: AppSheetDestination? = nil,
-        cover: AppCoverDestination? = nil
+        cover: AppCoverDestination? = nil,
+        selectedTab: AppTab = .vault,
+        salesPath: [SalesRoute] = []
     ) {
         self.path = path
         self.sheet = sheet
         self.cover = cover
+        self.selectedTab = selectedTab
+        self.salesPath = salesPath
     }
 
     func showInventory() {
@@ -72,5 +79,15 @@ final class AppRouter {
     func dismissCurrentRoute() {
         guard !path.isEmpty else { return }
         path.removeLast()
+    }
+
+    func showPriceAlertFromNotification(
+        _ request: PriceAlertNotificationNavigationRequest,
+        availableAlertIDs: Set<UUID>
+    ) {
+        selectedTab = .sale
+        salesPath = availableAlertIDs.contains(request.alertID)
+            ? [.alert(request.alertID)]
+            : [.alerts]
     }
 }

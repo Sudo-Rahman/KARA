@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.karaprivate.KARA.price-alerts.best-effort-refresh</string>
+	</array>
 	<key>KARAAPIBaseURL</key>
 	<string>$(KARA_API_BASE_URL)</string>
 	<key>NSCameraUsageDescription</key>
@@ -14,6 +18,7 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>

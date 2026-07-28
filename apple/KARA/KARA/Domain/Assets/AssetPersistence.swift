@@ -9,6 +9,62 @@ nonisolated enum AssetRepositoryError: Error, Equatable, Sendable {
 }
 
 @MainActor
+enum AssetCanonicalization {
+    static func canonicalAssets(from values: [Asset]) -> [Asset] {
+        Dictionary(grouping: values, by: \.id)
+            .values
+            .compactMap(preferredAsset)
+    }
+
+    static func preferredAsset(from values: [Asset]) -> Asset? {
+        values.sorted(by: assetIsPreferred).first
+    }
+
+    private static func assetIsPreferred(_ lhs: Asset, _ rhs: Asset) -> Bool {
+        if lhs.updatedAt != rhs.updatedAt {
+            return lhs.updatedAt > rhs.updatedAt
+        }
+        if lhs.createdAt != rhs.createdAt {
+            return lhs.createdAt > rhs.createdAt
+        }
+        return stableContentKey(lhs) < stableContentKey(rhs)
+    }
+
+    private static func stableContentKey(_ asset: Asset) -> String {
+        let components = [
+            asset.id.uuidString,
+            asset.name,
+            asset.categoryRawValue,
+            asset.presetID ?? "",
+            String(asset.quantity),
+            dateString(asset.purchaseDate),
+            asset.metalRawValue ?? "",
+            asset.weightGrams.map { String($0) } ?? "",
+            asset.metalKarat.map { String($0) } ?? "",
+            asset.finenessPermille.map { String($0) } ?? "",
+            asset.gemstoneCaratWeight.map { String($0) } ?? "",
+            asset.gemstoneClarity ?? "",
+            asset.pricePaidMinorUnits.map { String($0) } ?? "",
+            asset.currencyCode,
+            asset.sellerName ?? "",
+            asset.storageLocationName ?? "",
+            asset.invoiceNumber ?? "",
+            asset.serialNumber ?? "",
+            asset.acquisitionMethodRawValue ?? "",
+            asset.tagsJSON,
+            dateString(asset.deletedAt),
+        ]
+        return components
+            .map { "\($0.utf8.count):\($0)" }
+            .joined()
+    }
+
+    private static func dateString(_ date: Date?) -> String {
+        date.map { String($0.timeIntervalSinceReferenceDate) } ?? ""
+    }
+}
+
+@MainActor
 final class SwiftDataAssetRepository: AssetSaving, AssetUpdating, AttachmentManaging, AssetTrashManaging {
     typealias SaveAction = @MainActor (ModelContext) throws -> Void
 

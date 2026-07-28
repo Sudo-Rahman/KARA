@@ -151,9 +151,10 @@ struct AssetDetailView: View {
 
     @ViewBuilder
     private var quantityBadge: some View {
-        if asset.quantity > 1 {
+        let quantity = valuation?.quantity ?? asset.quantity
+        if quantity > 1 {
             SensitiveValue {
-                Text("asset-detail.quantity \(asset.quantity)")
+                Text("asset-detail.quantity \(quantity)")
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)

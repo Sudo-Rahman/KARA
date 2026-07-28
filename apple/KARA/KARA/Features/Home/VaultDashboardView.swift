@@ -24,18 +24,10 @@ struct VaultDashboardView: View {
                 } else {
                     portfolioHero
                     secondaryMetrics
-                    if !valuation.metals.isEmpty {
-                        metalsCard
-                    }
-                    historyCard
                 }
 
                 if !assets.isEmpty {
                     primaryActions
-                }
-
-                if !valuation.categories.isEmpty {
-                    categoryCard
                 }
 
                 if !assets.isEmpty {
@@ -478,9 +470,10 @@ struct VaultDashboardView: View {
 
                 HStack(spacing: 6) {
                     Text(LocalizedStringKey(asset.category.localizationKey))
-                    if asset.quantity > 1 {
+                    let quantity = itemValuation?.quantity ?? asset.quantity
+                    if quantity > 1 {
                         SensitiveValue {
-                            Text("×\(asset.quantity)")
+                            Text("×\(quantity)")
                         }
                     }
                 }

@@ -2,7 +2,12 @@ import Foundation
 
 extension Asset {
     var portfolioSnapshot: PortfolioAssetSnapshot {
-        PortfolioAssetSnapshot(
+        portfolioSnapshot(heldQuantity: quantity)
+    }
+
+    func portfolioSnapshot(heldQuantity: Int) -> PortfolioAssetSnapshot {
+        let quantity = min(max(0, heldQuantity), max(0, self.quantity))
+        return PortfolioAssetSnapshot(
             id: id,
             name: name,
             categoryID: category.rawValue,
@@ -11,18 +16,51 @@ extension Asset {
             grossWeightGrams: weightGrams.flatMap(Self.decimal),
             finenessPermille: finenessPermille.flatMap(Self.decimal),
             metalKarat: metalKarat.map { Decimal($0) },
-            purchaseCost: pricePaidMinorUnits.flatMap {
-                MoneyConverter.decimalAmount(from: $0, currencyCode: currencyCode)
-            },
+            purchaseCost: proratedPurchaseCost(forHeldQuantity: quantity),
             purchaseCurrency: MarketCurrency(rawValue: currencyCode),
             purchaseDate: purchaseDate
         )
+    }
+
+    private func proratedPurchaseCost(forHeldQuantity heldQuantity: Int) -> Decimal? {
+        guard quantity > 0,
+              heldQuantity >= 0,
+              let pricePaidMinorUnits,
+              let originalCost = MoneyConverter.decimalAmount(
+                  from: pricePaidMinorUnits,
+                  currencyCode: currencyCode
+              )
+        else {
+            return nil
+        }
+
+        return originalCost * Decimal(heldQuantity) / Decimal(quantity)
     }
 
     private static func decimal(_ value: Double) -> Decimal? {
         Decimal(
             string: String(value),
             locale: Locale(identifier: "en_US_POSIX")
+        )
+    }
+}
+
+extension SaleLine {
+    var portfolioSnapshotBeforeSale: PortfolioAssetSnapshot {
+        PortfolioAssetSnapshot(
+            id: assetID,
+            name: assetNameSnapshot,
+            categoryID: categoryRawValueSnapshot,
+            metal: metalSnapshot?.marketMetal,
+            quantity: max(0, assetQuantitySnapshot),
+            grossWeightGrams: weightGramsSnapshot,
+            finenessPermille: finenessPermilleSnapshot,
+            metalKarat: metalKaratSnapshot.map { Decimal($0) },
+            purchaseCost: purchaseCostAmountSnapshot,
+            purchaseCurrency: MarketCurrency(
+                rawValue: purchaseCurrencyCodeSnapshot
+            ),
+            purchaseDate: purchaseDateSnapshot
         )
     }
 }

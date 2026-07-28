@@ -382,10 +382,11 @@ struct InventoryView: View {
                             }
                         }
 
-                        if asset.quantity > 1 {
+                        let quantity = item?.quantity ?? asset.quantity
+                        if quantity > 1 {
                             Text("·")
                             SensitiveValue {
-                                Text("×\(asset.quantity)")
+                                Text("×\(quantity)")
                                     .monospacedDigit()
                             }
                         }

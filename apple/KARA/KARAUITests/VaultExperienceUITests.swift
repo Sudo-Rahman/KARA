@@ -70,7 +70,7 @@ final class VaultExperienceUITests: XCTestCase {
     }
 
     @MainActor
-    func testPrivacyAndIntegerSaleSimulation() {
+    func testPrivacyAnalysisAndSaleRecordingEntryPoints() {
         let app = launchSeededVault()
 
         let privacy = app.buttons["vault.privacy-toggle"]
@@ -83,40 +83,103 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(maskedValue.waitForExistence(timeout: 5))
         capture("vault-05-privacy", in: app)
 
-        let saleTab = app.tabBars.buttons["Vente"]
+        let analysisTab = app.tabBars.buttons["Analyse"]
+        XCTAssertTrue(analysisTab.waitForExistence(timeout: 5))
+        analysisTab.tap()
+
+        let analysisScreen = element("analysis.dashboard", in: app)
+        XCTAssertTrue(analysisScreen.waitForExistence(timeout: 5))
+        XCTAssertTrue(element("analysis.period", in: app).exists)
+        XCTAssertTrue(element("analysis.evolution-card", in: app).exists)
+        XCTAssertFalse(analysisScreen.buttons["vault.privacy-toggle"].exists)
+
+        let maskedAnalysisValue = analysisScreen.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Valeur masquée"))
+            .firstMatch
+        XCTAssertTrue(maskedAnalysisValue.waitForExistence(timeout: 5))
+        capture("vault-06-analysis", in: app)
+
+        let saleTab = app.tabBars.buttons["Ventes"]
         XCTAssertTrue(saleTab.waitForExistence(timeout: 5))
         saleTab.tap()
 
-        let saleScreen = element("sale-simulation.screen", in: app)
+        let saleScreen = element("sales.dashboard", in: app)
         XCTAssertTrue(saleScreen.waitForExistence(timeout: 5))
         XCTAssertFalse(saleScreen.buttons["vault.privacy-toggle"].exists)
+        XCTAssertTrue(app.buttons["sales.record"].exists)
+        XCTAssertTrue(app.buttons["sales.alert.create"].exists)
 
-        let maskedSaleValue = saleScreen.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "Valeur masquée"))
-            .firstMatch
-        XCTAssertTrue(maskedSaleValue.waitForExistence(timeout: 5))
+        app.buttons["sales.record"].tap()
+        XCTAssertTrue(element("sale-flow", in: app).waitForExistence(timeout: 5))
 
-        let increase = app.buttons["Augmenter la quantité"].firstMatch
-        reveal(increase, in: app, attempts: 8)
-        XCTAssertTrue(increase.isHittable)
-        increase.tap()
-        capture("vault-06-sale-simulation", in: app)
+        let napoleon = app.buttons[
+            "sale-flow.asset.A1000000-0000-4000-8000-000000000002"
+        ]
+        XCTAssertTrue(napoleon.waitForExistence(timeout: 5))
+        napoleon.tap()
+        XCTAssertTrue(element("sale-flow.quantity", in: app).exists)
+        XCTAssertTrue(element("sale-flow.gross", in: app).exists)
+        capture("vault-07-sale-recording", in: app)
+    }
+
+    @MainActor
+    func testRecordedFullSaleMovesTheAssetOutOfTheVault() {
+        let app = launchSeededVault()
+        let soldAssetID = "A1000000-0000-4000-8000-000000000004"
+
+        app.tabBars.buttons["Ventes"].tap()
+        XCTAssertTrue(
+            element("sales.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+        app.buttons["sales.record"].tap()
+        XCTAssertTrue(element("sale-flow", in: app).waitForExistence(timeout: 5))
+
+        let asset = app.buttons["sale-flow.asset.\(soldAssetID)"]
+        XCTAssertTrue(asset.waitForExistence(timeout: 5))
+        asset.tap()
+
+        let grossAmount = element("sale-flow.gross", in: app)
+        XCTAssertTrue(grossAmount.isHittable)
+        grossAmount.tap()
+        grossAmount.typeText("850")
+        app.swipeUp()
+
+        let submit = app.buttons["Continuer"]
+        XCTAssertTrue(submit.waitForExistence(timeout: 5))
+        submit.tap()
+
+        let confirmation = app.alerts["Confirmer la vente"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        confirmation.buttons["Enregistrer la vente"].tap()
+
+        XCTAssertTrue(
+            element("sale-flow.success", in: app).waitForExistence(timeout: 5)
+        )
+        app.buttons["sale-flow.success.close"].tap()
+        XCTAssertTrue(
+            element("sales.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+        XCTAssertTrue(app.staticTexts["Bracelet Or 18 carats"].exists)
+
+        app.tabBars.buttons["Coffre"].tap()
+        app.buttons["vault.inventory-card"].tap()
+        XCTAssertTrue(
+            element("inventory.screen", in: app).waitForExistence(timeout: 5)
+        )
+        XCTAssertFalse(app.buttons["inventory.asset.\(soldAssetID)"].exists)
     }
 
     @MainActor
     func testHomeDashboardAndSettingsExposeTheirPrimaryContent() {
         let app = launchSeededVault()
 
-        XCTAssertFalse(app.tabBars.buttons["Analyse"].exists)
-
-        let history = element("vault.history", in: app)
-        reveal(history, in: app, attempts: 10)
-        XCTAssertTrue(history.exists)
+        XCTAssertTrue(app.tabBars.buttons["Analyse"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Ventes"].exists)
 
         let metalPrices = element("vault.metal-prices", in: app)
         reveal(metalPrices, in: app, attempts: 16)
         XCTAssertTrue(metalPrices.exists)
-        capture("vault-07-home-dashboard", in: app)
+        capture("vault-08-home-dashboard", in: app)
 
         let settingsTab = app.tabBars.buttons["Réglages"]
         XCTAssertTrue(settingsTab.waitForExistence(timeout: 5))
@@ -141,7 +204,7 @@ final class VaultExperienceUITests: XCTestCase {
         trash.tap()
         XCTAssertTrue(element("settings.trash.screen", in: app).waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["La corbeille est vide"].exists)
-        capture("vault-08-settings-trash", in: app)
+        capture("vault-09-settings-trash", in: app)
     }
 
     @MainActor

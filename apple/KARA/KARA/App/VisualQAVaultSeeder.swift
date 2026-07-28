@@ -55,6 +55,30 @@ enum VisualQAVaultSeeder {
                 createdAt: date(daysAgo: 21, relativeTo: timestamp)
             ))
 
+            let recordedSale = try SalesLedger.record(
+                asset: assets[1],
+                quantity: 1,
+                grossAmount: 690,
+                feesAmount: 15,
+                currencyCode: "EUR",
+                soldAt: date(daysAgo: 31, relativeTo: timestamp),
+                buyerName: "Comptoir Saint-Honoré",
+                note: "Règlement reçu par virement",
+                existingSaleLines: [],
+                alerts: [],
+                createdAt: date(daysAgo: 31, relativeTo: timestamp)
+            )
+            context.insert(recordedSale.sale)
+            context.insert(recordedSale.line)
+
+            context.insert(try PriceAlert.make(
+                assetID: assets[2].id,
+                targetValue: 12_000,
+                currentValue: 6_000,
+                currencyCode: "EUR",
+                createdAt: date(daysAgo: 3, relativeTo: timestamp)
+            ))
+
             try context.save()
         } catch {
             context.rollback()

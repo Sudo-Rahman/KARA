@@ -91,7 +91,11 @@ enum VaultReportSnapshotAssembler {
         valuation: PortfolioValuation,
         valuationAsOf: Date
     ) -> VaultReportSnapshot {
-        let activeAssets = sortedActiveAssets(from: assets)
+        let valuationByAssetID = valuationsByAssetID(from: valuation.assetValuations)
+        let activeAssets = sortedActiveAssets(
+            from: assets,
+            valuations: valuationByAssetID
+        )
         let activeAssetIDs = Set(activeAssets.map(\.id))
 
         var attachmentsByAssetID: [UUID: [VaultReportAttachmentSnapshot]] = [:]
@@ -104,11 +108,6 @@ enum VaultReportSnapshotAssembler {
         }
         for assetID in Array(attachmentsByAssetID.keys) {
             sortAttachments(for: assetID, in: &attachmentsByAssetID)
-        }
-
-        var valuationByAssetID: [UUID: AssetValuation] = [:]
-        for assetValuation in valuation.assetValuations {
-            insert(assetValuation, into: &valuationByAssetID)
         }
 
         let reportAssets = activeAssets.map { asset in
@@ -137,10 +136,18 @@ enum VaultReportSnapshotAssembler {
         await Task.yield()
         try Task.checkCancellation()
 
+        var valuationByAssetID: [UUID: AssetValuation] = [:]
+        valuationByAssetID.reserveCapacity(valuation.assetValuations.count)
+        for (index, assetValuation) in valuation.assetValuations.enumerated() {
+            insert(assetValuation, into: &valuationByAssetID)
+            try await cooperate(after: index + 1)
+        }
+        try Task.checkCancellation()
+
         var activeAssets: [Asset] = []
         activeAssets.reserveCapacity(assets.count)
         for (index, asset) in assets.enumerated() {
-            if asset.deletedAt == nil {
+            if isHeld(asset, valuation: valuationByAssetID[asset.id]) {
                 activeAssets.append(asset)
             }
             try await cooperate(after: index + 1)
@@ -161,14 +168,6 @@ enum VaultReportSnapshotAssembler {
 
         for (index, assetID) in Array(attachmentsByAssetID.keys).enumerated() {
             sortAttachments(for: assetID, in: &attachmentsByAssetID)
-            try await cooperate(after: index + 1)
-        }
-        try Task.checkCancellation()
-
-        var valuationByAssetID: [UUID: AssetValuation] = [:]
-        valuationByAssetID.reserveCapacity(valuation.assetValuations.count)
-        for (index, assetValuation) in valuation.assetValuations.enumerated() {
-            insert(assetValuation, into: &valuationByAssetID)
             try await cooperate(after: index + 1)
         }
         try Task.checkCancellation()
@@ -196,10 +195,29 @@ enum VaultReportSnapshotAssembler {
         )
     }
 
-    private static func sortedActiveAssets(from assets: [Asset]) -> [Asset] {
+    private static func sortedActiveAssets(
+        from assets: [Asset],
+        valuations: [UUID: AssetValuation]
+    ) -> [Asset] {
         assets
-            .filter { $0.deletedAt == nil }
+            .filter { isHeld($0, valuation: valuations[$0.id]) }
             .sorted(by: isNewer)
+    }
+
+    private static func valuationsByAssetID(
+        from valuations: [AssetValuation]
+    ) -> [UUID: AssetValuation] {
+        var valuationsByAssetID: [UUID: AssetValuation] = [:]
+        valuationsByAssetID.reserveCapacity(valuations.count)
+        for valuation in valuations {
+            insert(valuation, into: &valuationsByAssetID)
+        }
+        return valuationsByAssetID
+    }
+
+    private static func isHeld(_ asset: Asset, valuation: AssetValuation?) -> Bool {
+        guard asset.deletedAt == nil else { return false }
+        return (valuation?.quantity ?? asset.quantity) > 0
     }
 
     private static func append(
@@ -253,7 +271,7 @@ enum VaultReportSnapshotAssembler {
                     fallbackName: $0.name
                 )
             },
-            quantity: asset.quantity,
+            quantity: valuation?.quantity ?? asset.quantity,
             purchaseDate: asset.purchaseDate,
             metal: asset.metal,
             weightGrams: decimal(asset.weightGrams),
@@ -261,7 +279,7 @@ enum VaultReportSnapshotAssembler {
             finenessPermille: decimal(asset.finenessPermille),
             gemstoneCaratWeight: decimal(asset.gemstoneCaratWeight),
             gemstoneClarity: nonBlank(asset.gemstoneClarity),
-            pricePaid: money(for: asset),
+            pricePaid: money(for: asset, valuation: valuation),
             sellerName: nonBlank(asset.sellerName),
             storageLocationName: nonBlank(asset.storageLocationName),
             invoiceNumber: nonBlank(asset.invoiceNumber),
@@ -306,7 +324,15 @@ enum VaultReportSnapshotAssembler {
         try Task.checkCancellation()
     }
 
-    private static func money(for asset: Asset) -> VaultReportMoney? {
+    private static func money(
+        for asset: Asset,
+        valuation: AssetValuation?
+    ) -> VaultReportMoney? {
+        if let amount = valuation?.purchaseCost,
+           let currency = valuation?.purchaseCurrency {
+            return VaultReportMoney(amount: amount, currencyCode: currency.rawValue)
+        }
+
         guard let minorUnits = asset.pricePaidMinorUnits,
               let amount = MoneyConverter.decimalAmount(
                   from: minorUnits,

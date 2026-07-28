@@ -11,6 +11,10 @@ enum KaraModelContainerFactory {
             AssetAttachment.self,
             SavedSeller.self,
             StorageLocation.self,
+            Sale.self,
+            SaleLine.self,
+            PriceAlert.self,
+            PriceAlertNotificationOutboxEntry.self,
         ])
     }
 
