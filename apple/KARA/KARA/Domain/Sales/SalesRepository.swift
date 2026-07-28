@@ -194,6 +194,29 @@ final class SalesRepository {
         return alert
     }
 
+    func deletePastAlerts() throws {
+        let persistedAlerts = try rawAlerts()
+        let pastAlertIDs = Set(
+            Self.canonicalAlerts(from: persistedAlerts)
+                .filter { $0.status.isTerminal }
+                .map(\.id)
+        )
+        guard !pastAlertIDs.isEmpty else { return }
+
+        let outboxEntries = try context.fetch(
+            FetchDescriptor<PriceAlertNotificationOutboxEntry>()
+        )
+        for alert in persistedAlerts where pastAlertIDs.contains(alert.id) {
+            context.delete(alert)
+        }
+        for entry in outboxEntries
+        where pastAlertIDs.contains(entry.alertID) {
+            context.delete(entry)
+        }
+
+        try saveOrRollback()
+    }
+
     private func rawSales() throws -> [Sale] {
         try context.fetch(FetchDescriptor<Sale>())
     }

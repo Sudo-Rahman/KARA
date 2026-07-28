@@ -109,7 +109,6 @@ struct SalesDashboardView: View {
         } label: {
             SalesQuickAction(
                 title: "sales.action.record",
-                detail: "sales.action.record.detail",
                 systemImage: "banknote.fill",
                 isPrimary: true
             )
@@ -125,7 +124,6 @@ struct SalesDashboardView: View {
         } label: {
             SalesQuickAction(
                 title: "sales.action.objective",
-                detail: "sales.action.objective.detail",
                 systemImage: "bell.badge.fill",
                 isPrimary: false
             )
@@ -438,7 +436,6 @@ private struct SalesQuickAction: View {
     @Environment(\.isEnabled) private var isEnabled
 
     let title: String.LocalizationValue
-    let detail: String.LocalizationValue
     let systemImage: String
     let isPrimary: Bool
 
@@ -455,16 +452,10 @@ private struct SalesQuickAction: View {
                     )
                     .accessibilityHidden(true)
 
-                VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                    SalesCopy.text(title)
-                        .font(.headline)
-                        .foregroundStyle(theme.ink)
-
-                    SalesCopy.text(detail)
-                        .font(.caption)
-                        .foregroundStyle(theme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                SalesCopy.text(title)
+                    .font(.headline)
+                    .foregroundStyle(theme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .opacity(isEnabled ? 1 : 0.48)
@@ -633,14 +624,16 @@ struct PriceAlertRow: View {
                         chevron
                     }
 
-                    objective(alignment: .leading)
+                    HStack(alignment: .center, spacing: KaraSpacing.small) {
+                        targetValue
+                        Spacer(minLength: KaraSpacing.small)
+                        statusChip
+                    }
                 }
             } else {
                 HStack(spacing: KaraSpacing.medium) {
                     artwork
-                    identity
-                    Spacer(minLength: KaraSpacing.small)
-                    objective(alignment: .trailing)
+                    compactSummary
                     chevron
                 }
             }
@@ -659,46 +652,74 @@ struct PriceAlertRow: View {
 
     private var identity: some View {
         VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-            Text(verbatim: asset?.name ?? SalesCopy.string("sales.asset.unknown"))
-                .font(.headline)
-                .foregroundStyle(theme.ink)
-                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            assetName
 
-            if let current = valuation?.estimatedValueEUR {
-                SensitiveValue {
-                    Text(VaultFormatters.currency(current))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(theme.muted)
-                }
+            currentValue
+        }
+    }
+
+    private var compactSummary: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
+            HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
+                assetName
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                targetValue
+            }
+
+            HStack(alignment: .center, spacing: KaraSpacing.small) {
+                currentValue
+
+                Spacer(minLength: KaraSpacing.small)
+
+                statusChip
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var assetName: some View {
+        Text(verbatim: asset?.name ?? SalesCopy.string("sales.asset.unknown"))
+            .font(.headline)
+            .foregroundStyle(theme.ink)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            .layoutPriority(1)
+    }
+
+    @ViewBuilder
+    private var currentValue: some View {
+        if let current = valuation?.estimatedValueEUR {
+            SensitiveValue {
+                Text(VaultFormatters.currency(current))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(theme.muted)
             }
         }
     }
 
-    private func objective(
-        alignment: HorizontalAlignment
-    ) -> some View {
-        VStack(alignment: alignment, spacing: KaraSpacing.xSmall) {
-            SensitiveValue {
-                Text(VaultFormatters.currency(
-                    alert.targetValue,
-                    code: alert.currencyCode,
-                    maximumFractionDigits: 2
-                ))
-                .font(.headline.monospacedDigit())
-                .foregroundStyle(theme.ink)
-            }
-
-            Text(SalesCopy.resource(alert.status.salesStatusKey))
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(alertStatusColor)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(alertStatusColor.opacity(0.12), in: .capsule)
+    private var targetValue: some View {
+        SensitiveValue {
+            Text(VaultFormatters.currency(
+                alert.targetValue,
+                code: alert.currencyCode,
+                maximumFractionDigits: 2
+            ))
+            .font(.headline.monospacedDigit())
+            .foregroundStyle(theme.ink)
+            .fixedSize(horizontal: true, vertical: false)
         }
-        .frame(
-            maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil,
-            alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing
-        )
+    }
+
+    private var statusChip: some View {
+        Text(SalesCopy.resource(alert.status.salesStatusKey))
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(alertStatusColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(alertStatusColor.opacity(0.12), in: .capsule)
     }
 
     private var chevron: some View {

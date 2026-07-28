@@ -170,6 +170,50 @@ final class VaultExperienceUITests: XCTestCase {
     }
 
     @MainActor
+    func testPastPriceGoalsCanBeDeletedInBulk() {
+        let app = launchSeededVault()
+
+        app.tabBars.buttons["Ventes"].tap()
+        XCTAssertTrue(
+            element("sales.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+
+        app.buttons["Tout voir"].tap()
+        XCTAssertTrue(
+            element("alerts.list", in: app).waitForExistence(timeout: 5)
+        )
+        XCTAssertFalse(app.staticTexts["Vérifiés automatiquement"].exists)
+        XCTAssertTrue(app.staticTexts["À examiner"].exists)
+        XCTAssertTrue(app.staticTexts["Anciens objectifs"].exists)
+
+        let deleteAll = element("alerts.past.delete-all", in: app)
+        XCTAssertTrue(deleteAll.isHittable)
+        deleteAll.tap()
+
+        let confirmation = app.alerts[
+            "Supprimer tous les anciens objectifs ?"
+        ]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 2))
+        confirmation.buttons["Annuler"].tap()
+        XCTAssertTrue(deleteAll.exists)
+
+        deleteAll.tap()
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 2))
+        confirmation.buttons["Tout supprimer"].tap()
+
+        let removalExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: deleteAll
+        )
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [removalExpectation], timeout: 5),
+            .completed
+        )
+        XCTAssertTrue(app.staticTexts["À examiner"].exists)
+        XCTAssertFalse(app.staticTexts["Anciens objectifs"].exists)
+    }
+
+    @MainActor
     func testHomeDashboardAndSettingsExposeTheirPrimaryContent() {
         let app = launchSeededVault()
 

@@ -2,9 +2,7 @@
 "sales.title" = "Sales";
 "sales.subtitle" = "Record a completed sale or set a price goal for an asset.";
 "sales.action.record" = "Record a sale";
-"sales.action.record.detail" = "Keep the amount received and sale details together.";
 "sales.action.objective" = "Set a price goal";
-"sales.action.objective.detail" = "Track a threshold while KARA is open and during background checks allowed by iOS.";
 "sales.action.see-all" = "See all";
 "sales.action.cancel" = "Cancel";
 "sales.action.keep-editing" = "Keep editing";
@@ -52,10 +50,12 @@
 "sales.alert.status.completed" = "Completed";
 "sales.alert.status.cancelled" = "Cancelled";
 "alerts.title" = "Price goals";
-"alerts.notice.title" = "Checked automatically";
-"alerts.notice.detail" = "KARA checks goals when you open the app and regularly while it stays open. iOS may also grant a background update, with no guaranteed schedule.";
 "alerts.active.title" = "To review";
 "alerts.past.title" = "Past goals";
+"alerts.past.delete-all" = "Delete all";
+"alerts.past.delete-all.confirm.title" = "Delete all past goals?";
+"alerts.past.delete-all.confirm.detail" = "Reached, completed and cancelled goals will be permanently deleted.";
+"alerts.past.delete-all.error" = "Past goals could not be deleted. Please try again.";
 
 /* Record a sale */
 "sale-flow.title" = "Record a sale";

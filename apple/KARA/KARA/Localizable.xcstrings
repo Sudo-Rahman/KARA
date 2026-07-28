@@ -285,10 +285,16 @@
     "alerts.active.title" : {
 
     },
-    "alerts.notice.detail" : {
+    "alerts.past.delete-all" : {
 
     },
-    "alerts.notice.title" : {
+    "alerts.past.delete-all.confirm.detail" : {
+
+    },
+    "alerts.past.delete-all.confirm.title" : {
+
+    },
+    "alerts.past.delete-all.error" : {
 
     },
     "alerts.past.title" : {
@@ -6775,16 +6781,10 @@
     "sales.action.objective" : {
 
     },
-    "sales.action.objective.detail" : {
-
-    },
     "sales.action.ok" : {
 
     },
     "sales.action.record" : {
-
-    },
-    "sales.action.record.detail" : {
 
     },
     "sales.action.see-all" : {

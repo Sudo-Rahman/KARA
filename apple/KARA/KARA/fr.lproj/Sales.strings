@@ -2,9 +2,7 @@
 "sales.title" = "Ventes";
 "sales.subtitle" = "Enregistrez une vente finalisée ou fixez un objectif de prix pour un actif.";
 "sales.action.record" = "Enregistrer une vente";
-"sales.action.record.detail" = "Conservez ensemble le montant reçu et les détails de la vente.";
 "sales.action.objective" = "Fixer un objectif de prix";
-"sales.action.objective.detail" = "Suivez un seuil pendant que KARA est ouverte et lors des vérifications autorisées par iOS.";
 "sales.action.see-all" = "Tout voir";
 "sales.action.cancel" = "Annuler";
 "sales.action.keep-editing" = "Continuer la modification";
@@ -52,10 +50,12 @@
 "sales.alert.status.completed" = "Terminé";
 "sales.alert.status.cancelled" = "Annulé";
 "alerts.title" = "Objectifs de prix";
-"alerts.notice.title" = "Vérifiés automatiquement";
-"alerts.notice.detail" = "KARA vérifie vos objectifs à l’ouverture et régulièrement tant que l’app reste ouverte. iOS peut aussi accorder une mise à jour en arrière-plan, sans horaire garanti.";
 "alerts.active.title" = "À examiner";
 "alerts.past.title" = "Anciens objectifs";
+"alerts.past.delete-all" = "Tout supprimer";
+"alerts.past.delete-all.confirm.title" = "Supprimer tous les anciens objectifs ?";
+"alerts.past.delete-all.confirm.detail" = "Les objectifs atteints, terminés ou annulés seront définitivement supprimés.";
+"alerts.past.delete-all.error" = "Les anciens objectifs n’ont pas pu être supprimés. Réessayez.";
 
 /* Enregistrer une vente */
 "sale-flow.title" = "Enregistrer une vente";

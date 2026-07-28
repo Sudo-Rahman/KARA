@@ -282,21 +282,18 @@ struct SaleDetailView: View {
 
 struct PriceAlertsView: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(\.modelContext) private var modelContext
 
     let alerts: [PriceAlert]
     let assets: [Asset]
     let valuation: PortfolioValuation
 
+    @State private var showingDeleteConfirmation = false
+    @State private var showingDeleteError = false
+
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: KaraSpacing.large) {
-                SalesNotice(
-                    systemImage: "bell.badge.fill",
-                    title: "alerts.notice.title",
-                    detail: "alerts.notice.detail",
-                    tint: theme.goldBright
-                )
-
                 if alerts.isEmpty {
                     ContentUnavailableView {
                         Label(
@@ -318,7 +315,8 @@ struct PriceAlertsView: View {
                 if !pastAlerts.isEmpty {
                     alertSection(
                         title: "alerts.past.title",
-                        alerts: pastAlerts
+                        alerts: pastAlerts,
+                        allowsDeletingAll: true
                     )
                 }
             }
@@ -330,6 +328,27 @@ struct PriceAlertsView: View {
         .background(theme.background.ignoresSafeArea())
         .navigationTitle(SalesCopy.string("alerts.title"))
         .navigationBarTitleDisplayMode(.large)
+        .alert(
+            SalesCopy.string("alerts.past.delete-all.confirm.title"),
+            isPresented: $showingDeleteConfirmation
+        ) {
+            Button(
+                SalesCopy.string("alerts.past.delete-all"),
+                role: .destructive,
+                action: deletePastAlerts
+            )
+            Button(SalesCopy.string("sales.action.cancel"), role: .cancel) {}
+        } message: {
+            SalesCopy.text("alerts.past.delete-all.confirm.detail")
+        }
+        .alert(
+            SalesCopy.string("sales.error.title"),
+            isPresented: $showingDeleteError
+        ) {
+            Button(SalesCopy.string("sales.action.ok"), role: .cancel) {}
+        } message: {
+            SalesCopy.text("alerts.past.delete-all.error")
+        }
         .accessibilityIdentifier("alerts.list")
     }
 
@@ -367,13 +386,31 @@ struct PriceAlertsView: View {
 
     private func alertSection(
         title: String.LocalizationValue,
-        alerts: [PriceAlert]
+        alerts: [PriceAlert],
+        allowsDeletingAll: Bool = false
     ) -> some View {
         VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            SalesCopy.text(title)
-                .font(theme.displayFont(size: 21, relativeTo: .title3))
-                .foregroundStyle(theme.ink)
-                .accessibilityAddTraits(.isHeader)
+            HStack(alignment: .firstTextBaseline, spacing: KaraSpacing.small) {
+                SalesCopy.text(title)
+                    .font(theme.displayFont(size: 21, relativeTo: .title3))
+                    .foregroundStyle(theme.ink)
+                    .accessibilityAddTraits(.isHeader)
+
+                Spacer(minLength: KaraSpacing.small)
+
+                if allowsDeletingAll {
+                    Button(role: .destructive) {
+                        showingDeleteConfirmation = true
+                    } label: {
+                        SalesCopy.text("alerts.past.delete-all")
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.red)
+                    .accessibilityIdentifier("alerts.past.delete-all")
+                }
+            }
 
             KaraCard {
                 VStack(alignment: .leading, spacing: 0) {
@@ -395,6 +432,14 @@ struct PriceAlertsView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func deletePastAlerts() {
+        do {
+            try SalesRepository(context: modelContext).deletePastAlerts()
+        } catch {
+            showingDeleteError = true
         }
     }
 }

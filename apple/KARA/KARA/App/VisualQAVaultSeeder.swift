@@ -79,6 +79,29 @@ enum VisualQAVaultSeeder {
                 createdAt: date(daysAgo: 3, relativeTo: timestamp)
             ))
 
+            let reachedAlert = try PriceAlert.make(
+                assetID: assets[0].id,
+                targetValue: 7_000,
+                currentValue: 6_000,
+                currencyCode: "EUR",
+                createdAt: date(daysAgo: 5, relativeTo: timestamp)
+            )
+            _ = reachedAlert.evaluate(
+                currentValue: 7_000,
+                at: date(daysAgo: 4, relativeTo: timestamp)
+            )
+            context.insert(reachedAlert)
+
+            let cancelledAlert = try PriceAlert.make(
+                assetID: assets[0].id,
+                targetValue: 6_900,
+                currentValue: 6_000,
+                currencyCode: "EUR",
+                createdAt: date(daysAgo: 7, relativeTo: timestamp)
+            )
+            cancelledAlert.cancel(at: date(daysAgo: 6, relativeTo: timestamp))
+            context.insert(cancelledAlert)
+
             try context.save()
         } catch {
             context.rollback()

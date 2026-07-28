@@ -714,6 +714,110 @@ struct SalesDomainTests {
         #expect(alerts.first?.status == .cancelled)
     }
 
+    @Test("Deleting past alerts preserves actionable alerts and removes their outbox")
+    func deletesOnlyPastAlertsAndTheirNotificationOutbox() throws {
+        let container = try KaraModelContainerFactory.make(
+            arguments: [KaraModelContainerFactory.inMemoryLaunchArgument],
+            environment: [:]
+        )
+        let context = ModelContext(container)
+        let repository = SalesRepository(context: context)
+        let assetID = UUID()
+        let active = PriceAlert(
+            assetID: assetID,
+            targetValueMinorUnits: 300_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .active
+        )
+        let paused = PriceAlert(
+            assetID: assetID,
+            targetValueMinorUnits: 310_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .paused
+        )
+        let needsReview = PriceAlert(
+            assetID: assetID,
+            targetValueMinorUnits: 320_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .needsReview
+        )
+        let triggeredID = UUID()
+        let triggered = PriceAlert(
+            id: triggeredID,
+            assetID: assetID,
+            targetValueMinorUnits: 330_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .triggered
+        )
+        let triggeredDuplicate = PriceAlert(
+            id: triggeredID,
+            assetID: assetID,
+            targetValueMinorUnits: 330_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .active
+        )
+        let completed = PriceAlert(
+            assetID: assetID,
+            targetValueMinorUnits: 340_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .completed
+        )
+        let cancelled = PriceAlert(
+            assetID: assetID,
+            targetValueMinorUnits: 350_000,
+            currencyCode: "EUR",
+            direction: .above,
+            status: .cancelled
+        )
+        let activeOutbox = PriceAlertNotificationOutboxEntry(
+            id: active.id,
+            alertID: active.id,
+            assetID: assetID,
+            notificationIdentifier: "active",
+            createdAt: Date()
+        )
+        let triggeredOutbox = PriceAlertNotificationOutboxEntry(
+            id: triggered.id,
+            alertID: triggered.id,
+            assetID: assetID,
+            notificationIdentifier: "triggered",
+            createdAt: Date()
+        )
+
+        for alert in [
+            active,
+            paused,
+            needsReview,
+            triggered,
+            triggeredDuplicate,
+            completed,
+            cancelled
+        ] {
+            context.insert(alert)
+        }
+        context.insert(activeOutbox)
+        context.insert(triggeredOutbox)
+        try context.save()
+
+        try repository.deletePastAlerts()
+
+        #expect(
+            Set(try repository.alerts().map(\.id))
+                == Set([active.id, paused.id, needsReview.id])
+        )
+        #expect(
+            try context.fetch(
+                FetchDescriptor<PriceAlertNotificationOutboxEntry>()
+            ).map(\.alertID) == [active.id]
+        )
+    }
+
     @Test("Malformed alert status or direction requires review")
     func malformedAlertStateIsConservative() {
         let malformedStatus = PriceAlert(
