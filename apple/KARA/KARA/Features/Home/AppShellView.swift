@@ -135,6 +135,11 @@ struct AppShellView: View {
             valuationAsOf = marketStore.lastRefreshAt ?? Date()
             await evaluatePriceAlerts()
 
+#if DEBUG
+            if MarketDataStore.usesCachedOnlyLaunchMode {
+                return
+            }
+#endif
             while !Task.isCancelled {
                 do {
                     try await Task.sleep(for: .seconds(60))

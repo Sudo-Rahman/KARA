@@ -22,6 +22,13 @@ nonisolated enum MarketDataStoreRefreshError: Error, Equatable, Sendable {
 @Observable
 final class MarketDataStore {
     nonisolated static let defaultPairs = Set(MarketBootstrap.expectedPairs)
+#if DEBUG
+    nonisolated static let cachedOnlyLaunchArgument = "-KARAUseCachedMarketDataOnly"
+
+    nonisolated static var usesCachedOnlyLaunchMode: Bool {
+        ProcessInfo.processInfo.arguments.contains(cachedOnlyLaunchArgument)
+    }
+#endif
 
     private(set) var spotQuotes: [SpotPair: SpotQuote] = [:]
     private(set) var monthlyDataset: MonthlyDataset?
@@ -75,6 +82,11 @@ final class MarketDataStore {
     func load(pairs: Set<SpotPair> = MarketDataStore.defaultPairs) async {
         await loadCache(pairs: pairs)
         guard !Task.isCancelled else { return }
+#if DEBUG
+        if Self.usesCachedOnlyLaunchMode {
+            return
+        }
+#endif
         await refresh(pairs: pairs)
     }
 

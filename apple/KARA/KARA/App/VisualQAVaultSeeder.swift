@@ -31,15 +31,21 @@ enum VisualQAVaultSeeder {
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
                 kind: .objectPhoto,
-                filename: "Lingotin Or 50 g.png",
+                filename: localized(
+                    french: "Lingotin Or 50 g.png",
+                    english: "50 g Gold Bar.png"
+                ),
                 mimeType: "image/png",
-                data: UIImage(named: "AssetKindBarHero")?.pngData() ?? Data(),
+                data: UIImage(named: "AssetKindBar")?.pngData() ?? Data(),
                 createdAt: date(daysAgo: 23, relativeTo: timestamp)
             ))
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
                 kind: .invoice,
-                filename: "Facture Lingotin 50 g.txt",
+                filename: localized(
+                    french: "Facture Lingotin 50 g.txt",
+                    english: "50 g Gold Bar Invoice.txt"
+                ),
                 mimeType: "text/plain",
                 pageCount: 1,
                 data: Data(Self.invoiceText.utf8),
@@ -48,7 +54,10 @@ enum VisualQAVaultSeeder {
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
                 kind: .certificate,
-                filename: "Certificat d’authenticité.txt",
+                filename: localized(
+                    french: "Certificat d’authenticité.txt",
+                    english: "Certificate of Authenticity.txt"
+                ),
                 mimeType: "text/plain",
                 pageCount: 1,
                 data: Data(Self.certificateText.utf8),
@@ -63,7 +72,10 @@ enum VisualQAVaultSeeder {
                 currencyCode: "EUR",
                 soldAt: date(daysAgo: 31, relativeTo: timestamp),
                 buyerName: "Comptoir Saint-Honoré",
-                note: "Règlement reçu par virement",
+                note: localized(
+                    french: "Règlement reçu par virement",
+                    english: "Payment received by bank transfer"
+                ),
                 existingSaleLines: [],
                 alerts: [],
                 createdAt: date(daysAgo: 31, relativeTo: timestamp)
@@ -113,7 +125,10 @@ enum VisualQAVaultSeeder {
         [
             Asset(
                 id: UUID(uuidString: "A1000000-0000-4000-8000-000000000001")!,
-                name: "Lingotin Or 50 g CPoR",
+                name: localized(
+                    french: "Lingotin Or 50 g CPoR",
+                    english: "50 g CPoR Gold Bar"
+                ),
                 category: .bar,
                 presetID: "bar-gold-50g",
                 quantity: 1,
@@ -124,17 +139,26 @@ enum VisualQAVaultSeeder {
                 pricePaidMinorUnits: 395_000,
                 currencyCode: "EUR",
                 sellerName: "Comptoir des Métaux Précieux",
-                storageLocationName: "Coffre principal",
+                storageLocationName: localized(
+                    french: "Coffre principal",
+                    english: "Main vault"
+                ),
                 invoiceNumber: "FAC-2025-0918",
                 serialNumber: "A982741",
                 acquisitionMethod: .purchase,
-                tags: ["Investissement", "Long terme"],
+                tags: [
+                    localized(french: "Investissement", english: "Investment"),
+                    localized(french: "Long terme", english: "Long term"),
+                ],
                 createdAt: date(daysAgo: 22, relativeTo: timestamp),
                 updatedAt: date(daysAgo: 22, relativeTo: timestamp)
             ),
             Asset(
                 id: UUID(uuidString: "A1000000-0000-4000-8000-000000000002")!,
-                name: "Pièce Napoléon 20 Francs",
+                name: localized(
+                    french: "Pièce Napoléon 20 Francs",
+                    english: "20 Franc Napoleon Coin"
+                ),
                 category: .coin,
                 presetID: "coin-napoleon-20-francs",
                 quantity: 4,
@@ -145,15 +169,24 @@ enum VisualQAVaultSeeder {
                 pricePaidMinorUnits: 210_000,
                 currencyCode: "EUR",
                 sellerName: "Numis Collection",
-                storageLocationName: "Coffre principal",
+                storageLocationName: localized(
+                    french: "Coffre principal",
+                    english: "Main vault"
+                ),
                 acquisitionMethod: .purchase,
-                tags: ["Historique", "Transmission"],
+                tags: [
+                    localized(french: "Historique", english: "Historical"),
+                    localized(french: "Transmission", english: "Legacy"),
+                ],
                 createdAt: date(daysAgo: 15, relativeTo: timestamp),
                 updatedAt: date(daysAgo: 15, relativeTo: timestamp)
             ),
             Asset(
                 id: UUID(uuidString: "A1000000-0000-4000-8000-000000000003")!,
-                name: "Maple Leaf 1 oz",
+                name: localized(
+                    french: "Maple Leaf 1 oz",
+                    english: "1 oz Maple Leaf"
+                ),
                 category: .coin,
                 presetID: "coin-maple-leaf-1oz",
                 quantity: 2,
@@ -164,15 +197,21 @@ enum VisualQAVaultSeeder {
                 pricePaidMinorUnits: 465_000,
                 currencyCode: "EUR",
                 sellerName: "Maison Joubert",
-                storageLocationName: "Coffre principal",
+                storageLocationName: localized(
+                    french: "Coffre principal",
+                    english: "Main vault"
+                ),
                 acquisitionMethod: .purchase,
-                tags: ["Investissement"],
+                tags: [localized(french: "Investissement", english: "Investment")],
                 createdAt: date(daysAgo: 9, relativeTo: timestamp),
                 updatedAt: date(daysAgo: 9, relativeTo: timestamp)
             ),
             Asset(
                 id: UUID(uuidString: "A1000000-0000-4000-8000-000000000004")!,
-                name: "Bracelet Or 18 carats",
+                name: localized(
+                    french: "Bracelet Or 18 carats",
+                    english: "18-Karat Gold Bracelet"
+                ),
                 category: .jewelry,
                 quantity: 1,
                 purchaseDate: date(daysAgo: 95, relativeTo: timestamp),
@@ -183,15 +222,24 @@ enum VisualQAVaultSeeder {
                 pricePaidMinorUnits: 72_000,
                 currencyCode: "EUR",
                 sellerName: "Maison Lémoine",
-                storageLocationName: "Coffre secondaire",
+                storageLocationName: localized(
+                    french: "Coffre secondaire",
+                    english: "Secondary vault"
+                ),
                 acquisitionMethod: .purchase,
-                tags: ["Bijou", "Famille"],
+                tags: [
+                    localized(french: "Bijou", english: "Jewellery"),
+                    localized(french: "Famille", english: "Family"),
+                ],
                 createdAt: date(daysAgo: 5, relativeTo: timestamp),
                 updatedAt: date(daysAgo: 5, relativeTo: timestamp)
             ),
             Asset(
                 id: UUID(uuidString: "A1000000-0000-4000-8000-000000000005")!,
-                name: "Lingot Argent 1 kg",
+                name: localized(
+                    french: "Lingot Argent 1 kg",
+                    english: "1 kg Silver Bar"
+                ),
                 category: .bar,
                 presetID: "bar-silver-1kg",
                 quantity: 1,
@@ -202,7 +250,10 @@ enum VisualQAVaultSeeder {
                 pricePaidMinorUnits: 86_000,
                 currencyCode: "EUR",
                 sellerName: "Comptoir des Métaux Précieux",
-                storageLocationName: "Coffre secondaire",
+                storageLocationName: localized(
+                    french: "Coffre secondaire",
+                    english: "Secondary vault"
+                ),
                 invoiceNumber: "FAC-2026-0611",
                 serialNumber: "SIL-104729",
                 acquisitionMethod: .purchase,
@@ -221,22 +272,55 @@ enum VisualQAVaultSeeder {
         ) ?? timestamp
     }
 
-    private static let invoiceText = """
-    KARA — FACTURE D’ACHAT
+    private static func localized(
+        french: String,
+        english: String
+    ) -> String {
+        Locale.current.language.languageCode?.identifier == "fr"
+            ? french
+            : english
+    }
 
-    Lingotin Or 50 g CPoR
-    Pureté : 999,9 ‰
-    Référence : KARA-QA-2026-0042
-    Montant réglé : 3 950,00 EUR
-    """
+    private static var invoiceText: String {
+        localized(
+            french: """
+            KARA — FACTURE D’ACHAT
 
-    private static let certificateText = """
-    KARA — CERTIFICAT D’AUTHENTICITÉ
+            Lingotin Or 50 g CPoR
+            Pureté : 999,9 ‰
+            Référence : KARA-QA-2026-0042
+            Montant réglé : 3 950,00 EUR
+            """,
+            english: """
+            KARA — PURCHASE INVOICE
 
-    Lingotin Or 50 g CPoR
-    Métal : or fin
-    Pureté : 999,9 ‰
-    Numéro de série : A982741
-    """
+            50 g CPoR Gold Bar
+            Purity: 999.9‰
+            Reference: KARA-QA-2026-0042
+            Amount paid: EUR 3,950.00
+            """
+        )
+    }
+
+    private static var certificateText: String {
+        localized(
+            french: """
+            KARA — CERTIFICAT D’AUTHENTICITÉ
+
+            Lingotin Or 50 g CPoR
+            Métal : or fin
+            Pureté : 999,9 ‰
+            Numéro de série : A982741
+            """,
+            english: """
+            KARA — CERTIFICATE OF AUTHENTICITY
+
+            50 g CPoR Gold Bar
+            Metal: fine gold
+            Purity: 999.9‰
+            Serial number: A982741
+            """
+        )
+    }
 }
 #endif
