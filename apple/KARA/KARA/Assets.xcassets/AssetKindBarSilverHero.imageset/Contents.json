@@ -1,0 +1,8 @@
+{
+  "images" : [
+    { "filename" : "AssetKindBarSilverHero.png", "idiom" : "universal", "scale" : "1x" },
+    { "filename" : "AssetKindBarSilverHero@2x.png", "idiom" : "universal", "scale" : "2x" },
+    { "filename" : "AssetKindBarSilverHero@3x.png", "idiom" : "universal", "scale" : "3x" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}

@@ -228,6 +228,7 @@ struct SaleSimulationView: View {
 
                     AssetArtworkView(
                         category: asset.category,
+                        metal: asset.metal,
                         photoData: photoData,
                         size: 54,
                         privacyBehavior: .sensitive

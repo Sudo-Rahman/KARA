@@ -16,6 +16,7 @@ struct KARAApp: App {
     @State private var aiFormAutofillPreferences = AIFormAutofillPreferences()
     @State private var appLockPreferences: AppLockPreferences
     @State private var appLockController: AppLockController
+    @State private var onboardingPermissionsModel: OnboardingPermissionsModel
     @State private var priceAlertNotificationNavigationInbox:
         PriceAlertNotificationNavigationInbox
     private let initialPersistencePhase: PersistencePhase
@@ -34,9 +35,15 @@ struct KARAApp: App {
         )
 
         let preferences = AppLockPreferences()
+        let appLockController = AppLockController(preferences: preferences)
         _appLockPreferences = State(initialValue: preferences)
-        _appLockController = State(
-            initialValue: AppLockController(preferences: preferences)
+        _appLockController = State(initialValue: appLockController)
+        _onboardingPermissionsModel = State(
+            initialValue: OnboardingPermissionsModel(
+                camera: .live,
+                notifications: .live(),
+                appLock: .live(controller: appLockController)
+            )
         )
     }
 
@@ -49,6 +56,7 @@ struct KARAApp: App {
                 .environment(aiFormAutofillPreferences)
                 .environment(appLockPreferences)
                 .environment(appLockController)
+                .environment(onboardingPermissionsModel)
                 .environment(priceAlertNotificationNavigationInbox)
                 .preferredColorScheme(.dark)
         }

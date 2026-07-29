@@ -173,6 +173,7 @@ struct SaleDetailView: View {
             HStack(spacing: KaraSpacing.medium) {
                 AssetArtworkView(
                     category: line?.categorySnapshot ?? .custom,
+                    metal: line?.metalSnapshot,
                     photoData: photoData,
                     size: 64,
                     privacyBehavior: .sensitive
@@ -552,6 +553,7 @@ struct PriceAlertDetailView: View {
                 HStack(spacing: KaraSpacing.medium) {
                     AssetArtworkView(
                         category: asset?.category ?? .custom,
+                        metal: asset?.metal,
                         photoData: photoData,
                         size: 58,
                         privacyBehavior: .sensitive

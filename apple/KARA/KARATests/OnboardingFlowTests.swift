@@ -4,14 +4,16 @@ import Testing
 @Suite("Onboarding state")
 struct OnboardingFlowTests {
     @Test
-    func advanceTraversesExactlyFourSteps() {
+    func advanceTraversesExactlyFiveSteps() {
         var state = OnboardingFlowState()
 
         #expect(state.step == .revelation)
-        #expect(state.advance() == .advanced(.organization))
-        #expect(state.step == .organization)
-        #expect(state.advance() == .advanced(.privacy))
-        #expect(state.step == .privacy)
+        #expect(state.advance() == .advanced(.inventory))
+        #expect(state.step == .inventory)
+        #expect(state.advance() == .advanced(.valuation))
+        #expect(state.step == .valuation)
+        #expect(state.advance() == .advanced(.permissions))
+        #expect(state.step == .permissions)
         #expect(state.advance() == .advanced(.intelligence))
         #expect(state.step == .intelligence)
         #expect(state.advance() == .completed)

@@ -4,6 +4,7 @@ struct SalesAssetPickerItem: Identifiable {
     let id: UUID
     let name: String
     let category: AssetCategory
+    let metal: PreciousMetal?
     let photoData: Data?
     let detail: String?
     let trailingValue: String?
@@ -18,6 +19,7 @@ struct SalesAssetPickerItem: Identifiable {
         id = asset.id
         name = asset.name
         category = asset.category
+        metal = asset.metal
         self.photoData = photoData
         detail = SalesAssetIdentification.detail(for: asset)
         self.trailingValue = trailingValue
@@ -167,6 +169,7 @@ struct SalesAssetPicker: View {
         HStack(alignment: .center, spacing: KaraSpacing.medium) {
             AssetArtworkView(
                 category: item.category,
+                metal: item.metal,
                 photoData: item.photoData,
                 size: dynamicTypeSize.isAccessibilitySize ? 58 : 52,
                 privacyBehavior: .sensitive
@@ -255,6 +258,7 @@ struct SalesAssetPicker: View {
             HStack(alignment: .center, spacing: KaraSpacing.medium) {
                 AssetArtworkView(
                     category: item.category,
+                    metal: item.metal,
                     photoData: item.photoData,
                     size: 52,
                     privacyBehavior: .sensitive

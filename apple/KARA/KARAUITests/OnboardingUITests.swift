@@ -6,12 +6,12 @@ final class OnboardingUITests: XCTestCase {
     }
 
     @MainActor
-    func testPrimaryButtonCompletesAllFourActsInFrench() {
+    func testPrimaryButtonCompletesAllFiveActsInFrench() {
         let app = launch(language: "fr")
         let action = app.buttons["onboarding.primary.action"]
 
         XCTAssertTrue(action.waitForExistence(timeout: 10))
-        XCTAssertEqual(action.label, "Commencer")
+        XCTAssertEqual(action.label, "Découvrir KARA")
         action.tap()
 
         XCTAssertTrue(waitForLabel("Continuer", on: action))
@@ -20,7 +20,10 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(waitForLabel("Continuer", on: action))
         action.tap()
 
-        XCTAssertTrue(waitForLabel("Ajouter mon premier objet", on: action))
+        XCTAssertTrue(waitForLabel("Continuer", on: action))
+        action.tap()
+
+        XCTAssertTrue(waitForLabel("Ouvrir mon coffre", on: action))
         action.tap()
 
         XCTAssertTrue(
@@ -38,8 +41,8 @@ final class OnboardingUITests: XCTestCase {
         pager.swipeLeft()
 
         XCTAssertTrue(waitForLabel("Continuer", on: action))
-        XCTAssertTrue(app.staticTexts["Chaque objet"].exists)
-        XCTAssertTrue(app.staticTexts["trouve sa place."].exists)
+        XCTAssertTrue(app.staticTexts["Chaque objet,"].exists)
+        XCTAssertTrue(app.staticTexts["parfaitement documenté."].exists)
     }
 
     @MainActor
@@ -48,14 +51,16 @@ final class OnboardingUITests: XCTestCase {
         let action = app.buttons["onboarding.primary.action"]
 
         XCTAssertTrue(action.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Know what\nyou hold."].exists)
-        XCTAssertTrue(app.staticTexts["See what it’s worth."].exists)
+        XCTAssertTrue(app.staticTexts["Your collection."].exists)
+        XCTAssertTrue(app.staticTexts["Down to every detail."].exists)
         action.tap()
         XCTAssertTrue(waitForLabel("Continue", on: action))
         action.tap()
         XCTAssertTrue(waitForLabel("Continue", on: action))
         action.tap()
-        XCTAssertTrue(waitForLabel("Add my first item", on: action))
+        XCTAssertTrue(waitForLabel("Continue", on: action))
+        action.tap()
+        XCTAssertTrue(waitForLabel("Open my vault", on: action))
         action.tap()
         XCTAssertTrue(
             app.buttons["home.add"].waitForExistence(timeout: 10)
@@ -73,6 +78,46 @@ final class OnboardingUITests: XCTestCase {
             app.buttons["home.add"].waitForExistence(timeout: 10)
         )
         XCTAssertFalse(app.buttons["onboarding.primary.action"].exists)
+    }
+
+    @MainActor
+    func testVisibleSkipOpensTheDashboard() {
+        let app = launch(language: "fr")
+        let skip = app.buttons["onboarding.skip"]
+
+        XCTAssertTrue(skip.waitForExistence(timeout: 10))
+        skip.tap()
+
+        XCTAssertTrue(
+            app.buttons["home.add"].waitForExistence(timeout: 10)
+        )
+    }
+
+    @MainActor
+    func testPermissionPageExposesAllThreeSetupItems() {
+        let app = launch(language: "fr")
+        let pager = app.scrollViews["onboarding.pager"]
+
+        XCTAssertTrue(pager.waitForExistence(timeout: 10))
+        pager.swipeLeft()
+        pager.swipeLeft()
+        pager.swipeLeft()
+
+        let camera = app.descendants(matching: .any)[
+            "onboarding.permissions.camera"
+        ]
+        let notifications = app.descendants(matching: .any)[
+            "onboarding.permissions.notifications"
+        ]
+        let appLock = app.descendants(matching: .any)[
+            "onboarding.permissions.appLock"
+        ]
+
+        XCTAssertTrue(
+            camera.waitForExistence(timeout: 5)
+        )
+        XCTAssertTrue(notifications.exists)
+        XCTAssertTrue(appLock.exists)
     }
 
     @MainActor

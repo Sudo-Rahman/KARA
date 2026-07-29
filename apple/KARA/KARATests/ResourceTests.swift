@@ -1,5 +1,6 @@
 import Testing
 import UIKit
+@testable import KARA
 
 @Suite("Bundled resources")
 struct ResourceTests {
@@ -22,7 +23,7 @@ struct ResourceTests {
     @Test
     @MainActor
     func assetCategoryArtworkIsBundled() {
-        for name in ["AssetKindBar", "AssetKindCoin", "AssetKindJewelry", "AssetKindOther"] {
+        for name in genericArtworkNames(hero: false) {
             let artwork = UIImage(named: name)
 
             #expect(artwork != nil, "Missing category artwork: \(name)")
@@ -34,14 +35,7 @@ struct ResourceTests {
     @Test
     @MainActor
     func assetCategoryHeroArtworkIsBundledAndPanoramic() {
-        let names = [
-            "AssetKindBarHero",
-            "AssetKindCoinHero",
-            "AssetKindJewelryHero",
-            "AssetKindOtherHero",
-        ]
-
-        for name in names {
+        for name in genericArtworkNames(hero: true) {
             let artwork = UIImage(named: name)
             let width = artwork?.cgImage?.width ?? 0
             let height = artwork?.cgImage?.height ?? 0
@@ -50,6 +44,21 @@ struct ResourceTests {
             #expect(width >= 1_500, "Hero artwork is too narrow: \(name)")
             #expect(height >= 800, "Hero artwork is too short: \(name)")
             #expect(Double(width) / Double(max(height, 1)) > 1.7, "Hero artwork is not panoramic: \(name)")
+        }
+    }
+
+    private func genericArtworkNames(hero: Bool) -> [String] {
+        AssetCategory.allCases.flatMap { category in
+            [
+                PreciousMetal.gold,
+                .silver,
+                .platinum,
+                .palladium,
+            ].map { metal in
+                hero
+                    ? category.heroImageName(for: metal)
+                    : category.imageName(for: metal)
+            }
         }
     }
 

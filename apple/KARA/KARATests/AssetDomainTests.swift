@@ -52,6 +52,30 @@ struct AssetDomainTests {
         #expect(AssetCategory.coin.localizationKey == "asset.category.coin")
     }
 
+    @Test("Generic artwork names combine category, metal and format")
+    func genericArtworkNamesAreMetalSpecific() {
+        let bases: [AssetCategory: String] = [
+            .bar: "AssetKindBar",
+            .coin: "AssetKindCoin",
+            .jewelry: "AssetKindJewelry",
+            .custom: "AssetKindOther",
+        ]
+
+        for (category, base) in bases {
+            #expect(category.imageName == base)
+            #expect(category.imageName(for: nil) == base)
+            #expect(category.imageName(for: .gold) == base)
+            #expect(category.imageName(for: .other) == base)
+            #expect(category.imageName(for: .silver) == "\(base)Silver")
+            #expect(category.imageName(for: .platinum) == "\(base)Platinum")
+            #expect(category.imageName(for: .palladium) == "\(base)Palladium")
+            #expect(category.heroImageName(for: .gold) == "\(base)Hero")
+            #expect(category.heroImageName(for: .silver) == "\(base)SilverHero")
+            #expect(category.heroImageName(for: .platinum) == "\(base)PlatinumHero")
+            #expect(category.heroImageName(for: .palladium) == "\(base)PalladiumHero")
+        }
+    }
+
     @Test("Catalog filters compose form and metal without losing presentation metadata")
     func catalogFiltersByCategoryAndMetal() throws {
         let silverBars = AssetCatalog.presets(category: .bar, metal: .silver)

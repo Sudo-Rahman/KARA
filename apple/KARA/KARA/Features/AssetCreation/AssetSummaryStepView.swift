@@ -94,7 +94,10 @@ struct AssetSummaryStepView: View {
 
     private var summaryHero: some View {
         HStack(spacing: KaraSpacing.medium) {
-            Image(state.draft.category?.imageName ?? AssetCategory.custom.imageName)
+            Image(
+                (state.draft.category ?? .custom)
+                    .imageName(for: state.draft.metal)
+            )
                 .resizable()
                 .scaledToFill()
                 .frame(width: 78, height: 78)

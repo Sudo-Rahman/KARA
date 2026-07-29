@@ -1,0 +1,8 @@
+{
+  "images" : [
+    { "filename" : "AssetKindCoinPlatinum.png", "idiom" : "universal", "scale" : "1x" },
+    { "filename" : "AssetKindCoinPlatinum@2x.png", "idiom" : "universal", "scale" : "2x" },
+    { "filename" : "AssetKindCoinPlatinum@3x.png", "idiom" : "universal", "scale" : "3x" }
+  ],
+  "info" : { "author" : "xcode", "version" : 1 }
+}

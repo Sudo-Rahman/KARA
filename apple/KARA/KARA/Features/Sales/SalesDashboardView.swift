@@ -564,6 +564,7 @@ struct SaleRow: View {
     private var artwork: some View {
         AssetArtworkView(
             category: line?.categorySnapshot ?? .custom,
+            metal: line?.metalSnapshot,
             photoData: photoData,
             size: 50,
             privacyBehavior: .sensitive
@@ -668,6 +669,7 @@ struct PriceAlertRow: View {
     private var artwork: some View {
         AssetArtworkView(
             category: asset?.category ?? .custom,
+            metal: asset?.metal,
             photoData: photoData,
             size: 50,
             privacyBehavior: .sensitive

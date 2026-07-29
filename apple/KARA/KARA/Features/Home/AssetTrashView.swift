@@ -102,6 +102,7 @@ struct AssetTrashView: View {
         HStack(spacing: KaraSpacing.medium) {
             AssetArtworkView(
                 category: asset.category,
+                metal: asset.metal,
                 photoData: firstObjectPhotoData(for: asset.id, attachments: attachments),
                 size: 48
             )

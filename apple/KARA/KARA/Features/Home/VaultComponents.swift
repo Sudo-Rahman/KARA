@@ -117,6 +117,7 @@ struct AssetArtworkView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let category: AssetCategory
+    var metal: PreciousMetal? = nil
     var photoData: Data?
     var size: CGFloat = 58
     var privacyBehavior: AssetArtworkPrivacyBehavior = .alwaysVisible
@@ -130,7 +131,7 @@ struct AssetArtworkView: View {
                     .scaledToFill()
 
             case .categoryArtwork:
-                Image(category.imageName)
+                Image(category.imageName(for: metal))
                     .resizable()
                     .scaledToFill()
             }

@@ -3,15 +3,17 @@ import SwiftUI
 
 enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     case revelation
-    case organization
-    case privacy
+    case inventory
+    case valuation
+    case permissions
     case intelligence
 
     var id: String {
         switch self {
         case .revelation: "revelation"
-        case .organization: "organization"
-        case .privacy: "privacy"
+        case .inventory: "inventory"
+        case .valuation: "valuation"
+        case .permissions: "permissions"
         case .intelligence: "intelligence"
         }
     }
@@ -19,8 +21,9 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     var title: LocalizedStringResource {
         switch self {
         case .revelation: "onboarding.revelation.title"
-        case .organization: "onboarding.organization.title"
-        case .privacy: "onboarding.privacy.title"
+        case .inventory: "onboarding.inventory.title"
+        case .valuation: "onboarding.valuation.title"
+        case .permissions: "onboarding.permissions.title"
         case .intelligence: "onboarding.intelligence.title"
         }
     }
@@ -28,8 +31,9 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     var body: LocalizedStringResource {
         switch self {
         case .revelation: "onboarding.revelation.body"
-        case .organization: "onboarding.organization.body"
-        case .privacy: "onboarding.privacy.body"
+        case .inventory: "onboarding.inventory.body"
+        case .valuation: "onboarding.valuation.body"
+        case .permissions: "onboarding.permissions.body"
         case .intelligence: "onboarding.intelligence.body"
         }
     }
@@ -37,8 +41,9 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     var accentTitle: LocalizedStringResource {
         switch self {
         case .revelation: "onboarding.revelation.accentTitle"
-        case .organization: "onboarding.organization.accentTitle"
-        case .privacy: "onboarding.privacy.accentTitle"
+        case .inventory: "onboarding.inventory.accentTitle"
+        case .valuation: "onboarding.valuation.accentTitle"
+        case .permissions: "onboarding.permissions.accentTitle"
         case .intelligence: "onboarding.intelligence.accentTitle"
         }
     }
@@ -46,8 +51,9 @@ enum OnboardingStep: Int, CaseIterable, Identifiable, Hashable {
     var action: LocalizedStringResource {
         switch self {
         case .revelation: "onboarding.revelation.action"
-        case .organization: "onboarding.organization.action"
-        case .privacy: "onboarding.privacy.action"
+        case .inventory: "onboarding.inventory.action"
+        case .valuation: "onboarding.valuation.action"
+        case .permissions: "onboarding.permissions.action"
         case .intelligence: "onboarding.intelligence.action"
         }
     }

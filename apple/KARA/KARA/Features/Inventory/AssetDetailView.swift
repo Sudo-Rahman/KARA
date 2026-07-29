@@ -97,7 +97,10 @@ struct AssetDetailView: View {
     private var hero: some View {
         GeometryReader { proxy in
             ZStack(alignment: .bottomLeading) {
-                AssetDetailHeroImage(category: asset.category)
+                AssetDetailHeroImage(
+                    category: asset.category,
+                    metal: asset.metal
+                )
 
                 AssetDetailHeroScrim()
 
@@ -707,12 +710,13 @@ private struct AssetDetailHeroImage: View {
     @Environment(KaraTheme.self) private var theme
 
     let category: AssetCategory
+    let metal: PreciousMetal?
 
     var body: some View {
         ZStack {
             theme.surface
 
-            Image(category.heroImageName)
+            Image(category.heroImageName(for: metal))
                 .resizable()
                 .scaledToFill()
         }

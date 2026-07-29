@@ -315,8 +315,16 @@ final class AssetCreationUITests: XCTestCase {
         )
         action.tap()
         XCTAssertTrue(
+            waitForLabel(language == "fr" ? "Continuer" : "Continue", on: action)
+        )
+        action.tap()
+        XCTAssertTrue(
+            waitForLabel(language == "fr" ? "Continuer" : "Continue", on: action)
+        )
+        action.tap()
+        XCTAssertTrue(
             waitForLabel(
-                language == "fr" ? "Ajouter mon premier objet" : "Add my first item",
+                language == "fr" ? "Ouvrir mon coffre" : "Open my vault",
                 on: action
             )
         )

@@ -693,6 +693,18 @@ struct AssetIssueBanner: View {
 
 extension AssetCategory {
     var imageName: String {
+        imageName(for: nil)
+    }
+
+    func imageName(for metal: PreciousMetal?) -> String {
+        "\(artworkBaseName)\(artworkMetalSuffix(for: metal))"
+    }
+
+    func heroImageName(for metal: PreciousMetal?) -> String {
+        "\(artworkBaseName)\(artworkMetalSuffix(for: metal))Hero"
+    }
+
+    private var artworkBaseName: String {
         switch self {
         case .bar: "AssetKindBar"
         case .coin: "AssetKindCoin"
@@ -701,12 +713,16 @@ extension AssetCategory {
         }
     }
 
-    var heroImageName: String {
-        switch self {
-        case .bar: "AssetKindBarHero"
-        case .coin: "AssetKindCoinHero"
-        case .jewelry: "AssetKindJewelryHero"
-        case .custom: "AssetKindOtherHero"
+    private func artworkMetalSuffix(for metal: PreciousMetal?) -> String {
+        switch metal {
+        case .silver:
+            "Silver"
+        case .platinum:
+            "Platinum"
+        case .palladium:
+            "Palladium"
+        case .gold, .other, nil:
+            ""
         }
     }
 

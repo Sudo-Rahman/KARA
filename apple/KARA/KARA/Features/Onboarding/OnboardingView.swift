@@ -2,8 +2,9 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(OnboardingPermissionsModel.self) private var permissions
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.scenePhase) private var scenePhase
 
     let mode: OnboardingMode
     let onFinish: (OnboardingMode) -> Void
@@ -14,21 +15,19 @@ struct OnboardingView: View {
     @State private var primaryFeedback = 0
 
     var body: some View {
-        GeometryReader { proxy in
-            if dynamicTypeSize.isAccessibilitySize {
-                accessibilityLayout(in: proxy)
-            } else {
-                referenceLayout(in: proxy)
-            }
+        VStack(spacing: 0) {
+            topBar
+            pager
+                .frame(maxHeight: .infinity)
+            footer
         }
+        .safeAreaPadding(.top, KaraSpacing.xSmall)
+        .safeAreaPadding(.bottom, KaraSpacing.small)
         .background {
-            ZStack {
-                Color.black
-                    .ignoresSafeArea()
-
-                onboardingBackground
-                    .offset(y: -24)
-            }
+            OnboardingBackdrop(
+                step: flowState.step,
+                reduceMotion: reduceMotion
+            )
         }
         .sensoryFeedback(.selection, trigger: flowState.step)
         .sensoryFeedback(.impact(weight: .light), trigger: primaryFeedback)
@@ -38,73 +37,61 @@ struct OnboardingView: View {
         .onChange(of: pageID) { _, newPageID in
             guard
                 let newPageID,
-                let step = OnboardingStep.allCases.first(where: { $0.id == newPageID })
+                let step = OnboardingStep.allCases.first(where: {
+                    $0.id == newPageID
+                })
             else {
                 return
             }
             flowState.select(step)
         }
-    }
-
-    private func referenceLayout(in proxy: GeometryProxy) -> some View {
-        let width = proxy.size.width
-        let height = proxy.size.height
-
-        return ZStack {
-            pager
-                .frame(width: width, height: 236)
-                .position(x: width / 2, y: height * 0.66)
-
-            progressIndicator
-                .position(
-                    x: width / 2,
-                    y: (height * 0.83) + (proxy.safeAreaInsets.bottom * 0.52)
-                )
-
-            primaryButton
-                .frame(width: width - 36, height: 52)
-                .position(
-                    x: width / 2,
-                    y: (height * 0.91) + (proxy.safeAreaInsets.bottom * 0.62)
-                )
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active, flowState.step == .permissions else {
+                return
+            }
+            Task {
+                await permissions.refresh()
+            }
+        }
+        .task(id: flowState.step) {
+            guard flowState.step == .permissions else { return }
+            await permissions.refresh()
         }
     }
 
-    private func accessibilityLayout(in proxy: GeometryProxy) -> some View {
-        VStack(spacing: KaraSpacing.large) {
-            Spacer(minLength: min(190, proxy.size.height * 0.25))
+    private var topBar: some View {
+        HStack(spacing: KaraSpacing.medium) {
+            Text("KARA")
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .tracking(2.4)
+                .foregroundStyle(theme.goldBright)
+                .accessibilityAddTraits(.isHeader)
 
-            pager
-                .frame(maxHeight: .infinity)
+            Spacer(minLength: KaraSpacing.medium)
 
-            progressIndicator
-
-            primaryButton
-                .frame(minHeight: 64)
-                .padding(.horizontal, 20)
+            Button("onboarding.skip") {
+                onSkip(mode)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(theme.ink)
+            .frame(minWidth: 64, minHeight: 44)
+            .accessibilityIdentifier("onboarding.skip")
         }
-        .safeAreaPadding(.vertical, KaraSpacing.small)
-        .background(Color.black.ignoresSafeArea())
-    }
-
-    private var onboardingBackground: some View {
-        Image("OnboardingBackgroundRevelation")
-            .resizable()
-            .interpolation(.high)
-            .scaledToFill()
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        .padding(.horizontal, KaraSpacing.large)
+        .frame(minHeight: 52)
     }
 
     private var pager: some View {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
                 ForEach(OnboardingStep.allCases) { step in
-                    OnboardingTitlePage(step: step)
-                        .containerRelativeFrame(.horizontal)
-                        .id(step.id)
-                        .accessibilityIdentifier("onboarding.page.\(step.id)")
+                    OnboardingPage(
+                        step: step,
+                        isActive: flowState.step == step
+                    )
+                    .containerRelativeFrame(.horizontal)
+                    .id(step.id)
+                    .accessibilityIdentifier("onboarding.page.\(step.id)")
                 }
             }
             .scrollTargetLayout()
@@ -115,16 +102,33 @@ struct OnboardingView: View {
         .accessibilityIdentifier("onboarding.pager")
     }
 
+    private var footer: some View {
+        VStack(spacing: 12) {
+            progressIndicator
+
+            Button(action: advance) {
+                Text(flowState.step.action)
+            }
+            .buttonStyle(KaraPrimaryActionButtonStyle())
+            .accessibilityIdentifier("onboarding.primary.action")
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, KaraSpacing.small)
+    }
+
     private var progressIndicator: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: KaraSpacing.small) {
             ForEach(OnboardingStep.allCases) { step in
-                Circle()
+                Capsule()
                     .fill(
                         step == flowState.step
                             ? theme.goldBright
                             : Color.white.opacity(0.24)
                     )
-                    .frame(width: 8, height: 8)
+                    .frame(
+                        width: step == flowState.step ? 22 : 7,
+                        height: 7
+                    )
             }
         }
         .animation(
@@ -138,14 +142,6 @@ struct OnboardingView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(flowState.step.progressText))
         .accessibilityIdentifier("onboarding.progress")
-    }
-
-    private var primaryButton: some View {
-        Button(action: advance) {
-            Text(flowState.step.action)
-        }
-        .buttonStyle(KaraPrimaryActionButtonStyle())
-        .accessibilityIdentifier("onboarding.primary.action")
     }
 
     private func advance() {
@@ -162,73 +158,60 @@ struct OnboardingView: View {
     }
 }
 
-private struct OnboardingTitlePage: View {
+private struct OnboardingBackdrop: View {
     @Environment(KaraTheme.self) private var theme
 
     let step: OnboardingStep
+    let reduceMotion: Bool
 
     var body: some View {
-        Group {
-            if step == .intelligence {
-                ScrollView(.vertical) {
-                    pageContent
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 2)
-                }
-                .scrollIndicators(.visible)
-                .scrollBounceBehavior(.basedOnSize)
+        ZStack {
+            theme.background
+
+            if step == .revelation {
+                Image("OnboardingBackgroundRevelation")
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFill()
+                    .transition(.opacity)
+
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.04),
+                        Color.black.opacity(0.10),
+                        theme.background.opacity(0.92),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             } else {
-                pageContent
+                RadialGradient(
+                    colors: [
+                        theme.cobalt.opacity(0.20),
+                        theme.background.opacity(0),
+                    ],
+                    center: .topTrailing,
+                    startRadius: 0,
+                    endRadius: 420
+                )
+
+                RadialGradient(
+                    colors: [
+                        theme.gold.opacity(0.08),
+                        theme.background.opacity(0),
+                    ],
+                    center: .bottomLeading,
+                    startRadius: 0,
+                    endRadius: 360
+                )
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(.horizontal, 39)
-    }
-
-    private var pageContent: some View {
-        VStack(alignment: .leading, spacing: step == .intelligence ? KaraSpacing.medium : 1) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(step.title)
-                    .foregroundStyle(theme.ink)
-                    .lineSpacing(-7)
-
-                Text(step.accentTitle)
-                    .foregroundStyle(theme.goldBright)
-            }
-            .font(theme.displayFont(size: 39, relativeTo: .largeTitle))
-            .tracking(-1.35)
-
-            if step == .intelligence {
-                AIOnboardingConsentControl()
-            }
-        }
-        .fixedSize(horizontal: false, vertical: true)
-    }
-}
-
-private struct AIOnboardingConsentControl: View {
-    @Environment(KaraTheme.self) private var theme
-    @Environment(AIFormAutofillPreferences.self) private var preferences
-
-    var body: some View {
-        @Bindable var preferences = preferences
-
-        VStack(alignment: .leading, spacing: KaraSpacing.small) {
-            Text("onboarding.intelligence.body")
-                .font(.subheadline)
-                .foregroundStyle(theme.muted)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Toggle("onboarding.intelligence.toggle.title", isOn: $preferences.isEnabled)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(theme.ink)
-                .tint(theme.cobaltBright)
-                .accessibilityIdentifier("onboarding.intelligence.toggle")
-
-            Text("onboarding.intelligence.toggle.detail")
-                .font(.caption)
-                .foregroundStyle(theme.muted)
-                .fixedSize(horizontal: false, vertical: true)
-        }
+        .animation(
+            reduceMotion ? nil : .easeOut(duration: 0.38),
+            value: step
+        )
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

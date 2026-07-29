@@ -448,6 +448,7 @@ struct VaultDashboardView: View {
         HStack(spacing: KaraSpacing.medium) {
             AssetArtworkView(
                 category: asset.category,
+                metal: asset.metal,
                 photoData: photoData,
                 size: 52,
                 privacyBehavior: .sensitive
