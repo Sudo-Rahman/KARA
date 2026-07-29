@@ -99,6 +99,16 @@ final class VaultExperienceUITests: XCTestCase {
         XCTAssertTrue(maskedAnalysisValue.waitForExistence(timeout: 5))
         capture("vault-06-analysis", in: app)
 
+        let performanceCard = element("analysis.evolution-card", in: app)
+        XCTAssertTrue(performanceCard.isHittable)
+        performanceCard.tap()
+
+        let performanceScreen = element("analysis.performance", in: app)
+        XCTAssertTrue(performanceScreen.waitForExistence(timeout: 5))
+        XCTAssertTrue(element("analysis.performance.overview", in: app).exists)
+        XCTAssertTrue(element("analysis.performance.ranking", in: app).exists)
+        capture("vault-07-performance", in: app)
+
         let saleTab = app.tabBars.buttons["Ventes"]
         XCTAssertTrue(saleTab.waitForExistence(timeout: 5))
         saleTab.tap()
@@ -130,7 +140,34 @@ final class VaultExperienceUITests: XCTestCase {
         )
         XCTAssertTrue(element("sale-flow.quantity", in: app).exists)
         XCTAssertTrue(element("sale-flow.gross", in: app).exists)
-        capture("vault-07-sale-recording", in: app)
+        capture("vault-08-sale-recording", in: app)
+    }
+
+    @MainActor
+    func testAllocationCardOpensPortfolioBreakdown() {
+        let app = launchSeededVault()
+
+        app.tabBars.buttons["Analyse"].tap()
+        XCTAssertTrue(
+            element("analysis.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+
+        let allocationCard = element("analysis.allocation-card", in: app)
+        reveal(allocationCard, in: app, attempts: 8)
+        XCTAssertTrue(allocationCard.isHittable)
+        allocationCard.tap()
+
+        XCTAssertTrue(
+            element("analysis.allocation", in: app).waitForExistence(timeout: 5)
+        )
+        XCTAssertTrue(element("analysis.allocation.picker", in: app).exists)
+        XCTAssertTrue(element("analysis.allocation.chart-card", in: app).exists)
+        XCTAssertTrue(element("analysis.allocation.reading", in: app).exists)
+
+        let exposures = element("analysis.allocation.exposures", in: app)
+        reveal(exposures, in: app, attempts: 8)
+        XCTAssertTrue(exposures.exists)
+        capture("vault-07-allocation", in: app)
     }
 
     @MainActor

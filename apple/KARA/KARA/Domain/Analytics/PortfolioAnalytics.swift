@@ -2,6 +2,7 @@ import Foundation
 
 nonisolated enum PortfolioAnalyticsPeriod: String, CaseIterable, Equatable, Sendable {
     case threeMonths
+    case sixMonths
     case oneYear
     case all
 
@@ -55,6 +56,8 @@ nonisolated enum PortfolioAnalyticsPeriod: String, CaseIterable, Equatable, Send
         switch self {
         case .threeMonths:
             -2
+        case .sixMonths:
+            -5
         case .oneYear:
             -11
         case .all:
@@ -89,6 +92,7 @@ nonisolated struct PortfolioAnalyticsSnapshot: Equatable, Sendable {
     let valueChange: PortfolioAnalyticsValueChange?
     let history: [PortfolioHistoryPoint]
     let historyCoverage: PortfolioAnalyticsHistoryCoverage
+    let performance: PortfolioPerformanceSummary
     let metals: PortfolioAnalyticsBreakdown
     let categories: PortfolioAnalyticsBreakdown
     let storageLocations: PortfolioAnalyticsBreakdown
@@ -147,6 +151,9 @@ nonisolated struct PortfolioAnalyticsEngine: Sendable {
                 : nil,
             history: visibleHistory,
             historyCoverage: historyCoverage,
+            performance: PortfolioPerformanceCalculator.summarize(
+                valuation.assetValuations
+            ),
             metals: metals,
             categories: categories,
             storageLocations: storageLocations,

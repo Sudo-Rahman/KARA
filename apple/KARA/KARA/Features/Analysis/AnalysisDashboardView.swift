@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AnalysisRoute: Hashable {
-    case evolution
+    case performance
     case allocation
     case sales
 }
@@ -49,7 +49,7 @@ struct AnalysisDashboardView: View {
                 } else {
                     periodPicker
 
-                    NavigationLink(value: AnalysisRoute.evolution) {
+                    NavigationLink(value: AnalysisRoute.performance) {
                         AnalysisEvolutionCard(
                             snapshot: snapshot,
                             isRefreshing: isRefreshing
@@ -59,7 +59,7 @@ struct AnalysisDashboardView: View {
 
                     NavigationLink(value: AnalysisRoute.allocation) {
                         AnalysisAllocationPreview(
-                            breakdown: snapshot.metals
+                            snapshot: snapshot
                         )
                     }
                     .buttonStyle(.plain)
@@ -68,10 +68,6 @@ struct AnalysisDashboardView: View {
                         AnalysisSalesPreview(summary: snapshot.sales)
                     }
                     .buttonStyle(.plain)
-
-                    if !snapshot.insights.isEmpty {
-                        insightsCard(snapshot.insights)
-                    }
                 }
 
                 if valuation.coverage.totalRecordCount == 0,
@@ -160,38 +156,17 @@ struct AnalysisDashboardView: View {
         }
     }
 
-    private func insightsCard(
-        _ insights: [PortfolioAnalyticsInsight]
-    ) -> some View {
-        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
-            AnalysisCopy.text("analysis.insights.title")
-                .font(theme.displayFont(size: 21, relativeTo: .title3))
-                .foregroundStyle(theme.ink)
-
-            KaraCard {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(insights.enumerated()), id: \.offset) { index, insight in
-                        if index > 0 {
-                            Divider()
-                                .overlay(theme.muted.opacity(0.16))
-                        }
-
-                        AnalysisInsightRow(insight: insight)
-                            .padding(.vertical, KaraSpacing.small)
-                    }
-                }
-            }
-        }
-    }
-
     @ViewBuilder
     private func destination(
         for route: AnalysisRoute,
         snapshot: PortfolioAnalyticsSnapshot
     ) -> some View {
         switch route {
-        case .evolution:
-            AnalysisEvolutionView(snapshot: snapshot)
+        case .performance:
+            AnalysisPerformanceView(
+                snapshot: snapshot,
+                valuationAsOf: valuationAsOf
+            )
         case .allocation:
             AnalysisAllocationView(snapshot: snapshot)
         case .sales:

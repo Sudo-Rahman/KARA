@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct AnalysisNotice: View {
@@ -198,12 +199,13 @@ struct AnalysisEvolutionCard: View {
 
 struct AnalysisAllocationPreview: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    let breakdown: PortfolioAnalyticsBreakdown
+    let snapshot: PortfolioAnalyticsSnapshot
 
     var body: some View {
         KaraCard(padding: KaraSpacing.large) {
-            VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+            VStack(alignment: .leading, spacing: KaraSpacing.large) {
                 HStack(alignment: .firstTextBaseline) {
                     AnalysisCopy.text("analysis.allocation.title")
                         .font(theme.displayFont(size: 21, relativeTo: .title3))
@@ -217,62 +219,130 @@ struct AnalysisAllocationPreview: View {
                         .accessibilityHidden(true)
                 }
 
-                if let leading = breakdown.items.first,
-                   let share = leading.sharePercentage {
-                    HStack(spacing: KaraSpacing.medium) {
-                        ZStack {
-                            Circle()
-                                .stroke(theme.surface, lineWidth: 10)
-                                .accessibilityHidden(true)
-                            Circle()
-                                .trim(from: 0, to: min(1, max(0, share.vaultDouble / 100)))
-                                .stroke(
-                                    theme.goldBright,
-                                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
-                                )
-                                .rotationEffect(.degrees(-90))
-                                .accessibilityHidden(true)
-
-                            SensitiveValue {
-                                Text(VaultFormatters.percentage(share, maximumFractionDigits: 0))
-                                    .font(.headline.monospacedDigit())
-                                    .foregroundStyle(theme.ink)
-                            }
-                        }
-                        .frame(width: 78, height: 78)
-
-                        VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                            AnalysisCopy.text("analysis.allocation.leading")
-                                .font(.caption)
-                                .foregroundStyle(theme.muted)
-
-                            AnalysisBreakdownLabel(
-                                key: leading.key,
-                                kind: .metals
-                            )
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(theme.ink)
-
-                            SensitiveValue {
-                                Text(VaultFormatters.currency(leading.valueEUR))
-                                    .font(.subheadline.monospacedDigit())
-                                    .foregroundStyle(theme.goldBright)
-                            }
-                        }
-                    }
-                } else {
+                if breakdown.items.isEmpty {
                     AnalysisCopy.text("analysis.allocation.unavailable")
                         .font(.subheadline)
                         .foregroundStyle(theme.muted)
-                        .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
+                } else if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: KaraSpacing.large) {
+                        previewChart
+                            .frame(maxWidth: .infinity)
+                        previewLegend
+                    }
+                } else {
+                    HStack(spacing: KaraSpacing.large) {
+                        previewChart
+                        previewLegend
+                    }
                 }
 
-                AnalysisCopy.text("analysis.allocation.detail")
-                    .font(.caption)
-                    .foregroundStyle(theme.muted)
+                if !breakdown.items.isEmpty {
+                    HStack(spacing: KaraSpacing.small) {
+                        Label(
+                            AnalysisCopy.formatted(
+                                String.LocalizationValue(
+                                    AnalysisAllocationCountCopy
+                                        .groupLocalizationKey(
+                                            for: breakdown.items.count
+                                        )
+                                ),
+                                breakdown.items.count
+                            ),
+                            systemImage: "square.grid.2x2"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(theme.muted)
+
+                        Spacer(minLength: KaraSpacing.small)
+
+                        AnalysisCopy.text("analysis.allocation.explore")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(theme.cobaltBright)
+                    }
+                }
             }
         }
         .accessibilityIdentifier("analysis.allocation-card")
+    }
+
+    private var breakdown: PortfolioAnalyticsBreakdown {
+        snapshot.categories
+    }
+
+    private var previewChart: some View {
+        ZStack {
+            SensitiveValue {
+                Chart {
+                    ForEach(Array(breakdown.items.enumerated()), id: \.element.id) { index, item in
+                        SectorMark(
+                            angle: .value("Value", item.valueEUR.vaultDouble),
+                            innerRadius: .ratio(0.68),
+                            angularInset: 1.6
+                        )
+                        .cornerRadius(2)
+                        .foregroundStyle(
+                            AnalysisAllocationPalette.color(for: index, theme: theme)
+                        )
+                    }
+                }
+                .chartLegend(.hidden)
+                .accessibilityHidden(true)
+            }
+
+            VStack(spacing: 2) {
+                SensitiveValue {
+                    Text(VaultFormatters.currency(
+                        breakdown.coverage.totalKnownValueEUR
+                    ))
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                    .foregroundStyle(theme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.64)
+                }
+
+                AnalysisCopy.text("analysis.allocation.total-value")
+                    .font(.caption2)
+                    .foregroundStyle(theme.muted)
+            }
+            .padding(.horizontal, KaraSpacing.small)
+        }
+        .frame(width: 120, height: 120)
+    }
+
+    private var previewLegend: some View {
+        VStack(alignment: .leading, spacing: KaraSpacing.medium) {
+            ForEach(Array(breakdown.items.prefix(3).enumerated()), id: \.element.id) {
+                index,
+                item in
+                HStack(spacing: KaraSpacing.small) {
+                    Circle()
+                        .fill(AnalysisAllocationPalette.color(for: index, theme: theme))
+                        .frame(width: 9, height: 9)
+                        .accessibilityHidden(true)
+
+                    AnalysisBreakdownLabel(key: item.key, kind: .categories)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(theme.ink)
+                        .lineLimit(1)
+
+                    Spacer(minLength: KaraSpacing.xSmall)
+
+                    if let share = item.sharePercentage {
+                        SensitiveValue {
+                            Text(VaultFormatters.percentage(
+                                share,
+                                maximumFractionDigits: 0
+                            ))
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(theme.goldBright)
+                        }
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -397,131 +467,10 @@ struct AnalysisSalesPreview: View {
     }
 }
 
-struct AnalysisInsightRow: View {
-    @Environment(KaraTheme.self) private var theme
-
-    let insight: PortfolioAnalyticsInsight
-
-    var body: some View {
-        HStack(alignment: .top, spacing: KaraSpacing.medium) {
-            Image(systemName: symbolName)
-                .font(.headline)
-                .foregroundStyle(tint)
-                .frame(width: 36, height: 36)
-                .background(tint.opacity(0.11), in: .circle)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                if hasSensitiveTitle {
-                    SensitiveValue {
-                        insightTitle
-                    }
-                } else {
-                    insightTitle
-                }
-
-                Text(verbatim: detail)
-                    .font(.caption)
-                    .foregroundStyle(theme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    private var insightTitle: some View {
-        Text(verbatim: title)
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(theme.ink)
-    }
-
-    private var hasSensitiveTitle: Bool {
-        switch insight {
-        case .majorityMetal, .realizedSalesResult:
-            true
-        case .valuationDataIncomplete,
-             .salesPerformanceDataIncomplete,
-             .storageLocationDataIncomplete:
-            false
-        }
-    }
-
-    private var title: String {
-        switch insight {
-        case .valuationDataIncomplete:
-            AnalysisCopy.string("analysis.insight.valuation.title")
-        case .salesPerformanceDataIncomplete:
-            AnalysisCopy.string("analysis.insight.sales.title")
-        case .storageLocationDataIncomplete:
-            AnalysisCopy.string("analysis.insight.storage.title")
-        case let .majorityMetal(metal, share):
-            AnalysisCopy.formatted(
-                "analysis.insight.metal.title",
-                localizedMetal(metal),
-                VaultFormatters.percentage(share, maximumFractionDigits: 0)
-            )
-        case let .realizedSalesResult(amount):
-            AnalysisCopy.formatted(
-                "analysis.insight.result.title",
-                VaultFormatters.currency(amount, showsPositiveSign: true)
-            )
-        }
-    }
-
-    private var detail: String {
-        switch insight {
-        case let .valuationDataIncomplete(count):
-            AnalysisCopy.formatted("analysis.insight.valuation.detail", count)
-        case let .salesPerformanceDataIncomplete(count):
-            AnalysisCopy.formatted("analysis.insight.sales.detail", count)
-        case let .storageLocationDataIncomplete(count):
-            AnalysisCopy.formatted("analysis.insight.storage.detail", count)
-        case .majorityMetal:
-            AnalysisCopy.string("analysis.insight.metal.detail")
-        case .realizedSalesResult:
-            AnalysisCopy.string("analysis.insight.result.detail")
-        }
-    }
-
-    private var symbolName: String {
-        switch insight {
-        case .valuationDataIncomplete, .salesPerformanceDataIncomplete:
-            "exclamationmark.triangle.fill"
-        case .storageLocationDataIncomplete:
-            "mappin.and.ellipse"
-        case .majorityMetal:
-            "circle.hexagongrid.fill"
-        case let .realizedSalesResult(amount):
-            amount >= 0 ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill"
-        }
-    }
-
-    private var tint: Color {
-        switch insight {
-        case .valuationDataIncomplete,
-             .salesPerformanceDataIncomplete,
-             .storageLocationDataIncomplete:
-            theme.goldBright
-        case .majorityMetal:
-            theme.cobaltBright
-        case let .realizedSalesResult(amount):
-            amount >= 0 ? .green : .red
-        }
-    }
-
-    private func localizedMetal(_ metal: MarketMetal) -> String {
-        let key = metal.preciousMetal.localizationKey
-        let localized = String(localized: LocalizedStringResource(
-            String.LocalizationValue(key)
-        ))
-        return localized == key ? metal.rawValue : localized
-    }
-}
-
 enum AnalysisBreakdownKind: String, CaseIterable, Identifiable {
-    case metals
     case categories
     case locations
+    case metals
 
     var id: Self { self }
 
@@ -551,7 +500,7 @@ struct AnalysisBreakdownLabel: View {
             }
         case .categories:
             if let category = AssetCategory(rawValue: key) {
-                Text(LocalizedStringKey(category.localizationKey))
+                AnalysisCopy.text(category.analysisAllocationLabel)
             } else {
                 Text(verbatim: key)
             }

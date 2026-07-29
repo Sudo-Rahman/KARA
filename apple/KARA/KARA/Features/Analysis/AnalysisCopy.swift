@@ -36,11 +36,42 @@ nonisolated enum AnalysisSalesCountCopy {
     }
 }
 
+nonisolated enum AnalysisAllocationCountCopy {
+    static func recordLocalizationKey(for count: Int) -> String {
+        count == 1
+            ? "analysis.allocation.records.one"
+            : "analysis.allocation.records.other"
+    }
+
+    static func groupLocalizationKey(for count: Int) -> String {
+        count == 1
+            ? "analysis.allocation.groups.one"
+            : "analysis.allocation.groups.other"
+    }
+}
+
+extension AssetCategory {
+    var analysisAllocationLabel: String.LocalizationValue {
+        switch self {
+        case .bar:
+            "analysis.allocation.category.bar"
+        case .coin:
+            "analysis.allocation.category.coin"
+        case .jewelry:
+            "analysis.allocation.category.jewelry"
+        case .custom:
+            "analysis.allocation.category.custom"
+        }
+    }
+}
+
 extension PortfolioAnalyticsPeriod {
     var analysisLabel: LocalizedStringResource {
         switch self {
         case .threeMonths:
             AnalysisCopy.resource("analysis.period.three-months")
+        case .sixMonths:
+            AnalysisCopy.resource("analysis.period.six-months")
         case .oneYear:
             AnalysisCopy.resource("analysis.period.one-year")
         case .all:
@@ -52,6 +83,8 @@ extension PortfolioAnalyticsPeriod {
         switch self {
         case .threeMonths:
             .threeMonths
+        case .sixMonths:
+            .sixMonths
         case .oneYear:
             .twelveMonths
         case .all:

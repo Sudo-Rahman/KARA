@@ -25,6 +25,7 @@ struct PortfolioAnalyticsTests {
         #expect(
             PortfolioAnalyticsPeriod.allCases == [
                 .threeMonths,
+                .sixMonths,
                 .oneYear,
                 .all,
             ]
@@ -55,6 +56,74 @@ struct PortfolioAnalyticsTests {
         #expect(change.endValueEUR == 130)
         #expect(change.amountEUR == 20)
         #expect(change.percentage == Decimal(20) / Decimal(110) * 100)
+    }
+
+    @Test("Six months includes the current month and the five preceding months")
+    func filtersSixMonthsOfHistory() {
+        let january = historyPoint(year: 2026, month: 1, day: 31, value: 90)
+        let february = historyPoint(year: 2026, month: 2, day: 28, value: 100)
+        let july = historyPoint(year: 2026, month: 7, day: 15, value: 130, isCurrent: true)
+        let snapshot = PortfolioAnalyticsEngine().snapshot(
+            valuation: valuation(
+                totalValueEUR: 130,
+                history: [january, february, july]
+            ),
+            period: .sixMonths,
+            asOf: utcDate(year: 2026, month: 7, day: 15),
+            calendar: utcCalendar
+        )
+
+        #expect(snapshot.history.map(\.date) == [february.date, july.date])
+    }
+
+    @Test("Performance uses only comparable assets and ranks gains deterministically")
+    func buildsComparablePerformanceSummary() throws {
+        let leadingID = UUID(uuidString: "A1000000-0000-4000-8000-000000000001")!
+        let secondID = UUID(uuidString: "A1000000-0000-4000-8000-000000000002")!
+        let snapshot = PortfolioAnalyticsEngine().snapshot(
+            valuation: valuation(
+                totalValueEUR: 1_900,
+                assetValuations: [
+                    assetValuation(
+                        id: secondID,
+                        name: "Lingot",
+                        categoryID: AssetCategory.bar.rawValue,
+                        metal: .gold,
+                        valueEUR: 800,
+                        purchaseCostEUR: 700
+                    ),
+                    assetValuation(
+                        id: leadingID,
+                        name: "Napoléon",
+                        categoryID: AssetCategory.coin.rawValue,
+                        metal: .gold,
+                        valueEUR: 1_000,
+                        purchaseCostEUR: 700
+                    ),
+                    assetValuation(
+                        name: "Sans prix d’achat",
+                        categoryID: AssetCategory.jewelry.rawValue,
+                        metal: .gold,
+                        valueEUR: 100
+                    ),
+                ]
+            ),
+            period: .all
+        )
+
+        let performance = snapshot.performance
+        #expect(performance.currentValueEUR == 1_800)
+        #expect(performance.purchaseCostEUR == 1_400)
+        #expect(performance.unrealizedGainEUR == 400)
+        #expect(performance.returnPercentage == Decimal(400) / Decimal(1_400) * 100)
+        #expect(performance.rankedAssets.map(\.assetID) == [leadingID, secondID])
+        #expect(performance.coverage.includedRecordCount == 2)
+        #expect(performance.coverage.totalRecordCount == 3)
+        #expect(!performance.coverage.isComplete)
+        #expect(performance.categories.map(\.categoryID) == [
+            AssetCategory.coin.rawValue,
+            AssetCategory.bar.rawValue,
+        ])
     }
 
     @Test("The selected monthly period also scopes realized sales")
@@ -460,6 +529,7 @@ struct PortfolioAnalyticsTests {
         categoryID: String,
         metal: MarketMetal?,
         valueEUR: Decimal?,
+        purchaseCostEUR: Decimal? = nil,
         status: PortfolioAssetValuationStatus = .valued
     ) -> AssetValuation {
         AssetValuation(
@@ -470,13 +540,21 @@ struct PortfolioAnalyticsTests {
             quantity: 1,
             fineWeightGrams: valueEUR == nil ? nil : 1,
             estimatedValueEUR: valueEUR,
-            purchaseCost: nil,
-            purchaseCurrency: nil,
-            currentValueInPurchaseCurrency: nil,
-            purchaseCostEUR: nil,
-            gainInPurchaseCurrency: nil,
-            gainEUR: nil,
-            gainPercentage: nil,
+            purchaseCost: purchaseCostEUR,
+            purchaseCurrency: purchaseCostEUR == nil ? nil : .eur,
+            currentValueInPurchaseCurrency: purchaseCostEUR == nil ? nil : valueEUR,
+            purchaseCostEUR: purchaseCostEUR,
+            gainInPurchaseCurrency: valueEUR.flatMap { value in
+                purchaseCostEUR.map { value - $0 }
+            },
+            gainEUR: valueEUR.flatMap { value in
+                purchaseCostEUR.map { value - $0 }
+            },
+            gainPercentage: valueEUR.flatMap { value in
+                purchaseCostEUR.flatMap { cost in
+                    cost == 0 ? nil : (value - cost) / cost * 100
+                }
+            },
             status: status
         )
     }

@@ -285,10 +285,43 @@
     "analysis.allocation.categories" : {
 
     },
-    "analysis.allocation.detail" : {
+    "analysis.allocation.category.bar" : {
 
     },
-    "analysis.allocation.leading" : {
+    "analysis.allocation.category.coin" : {
+
+    },
+    "analysis.allocation.category.custom" : {
+
+    },
+    "analysis.allocation.category.jewelry" : {
+
+    },
+    "analysis.allocation.chart.detail" : {
+
+    },
+    "analysis.allocation.concentration.balanced" : {
+
+    },
+    "analysis.allocation.concentration.detail" : {
+
+    },
+    "analysis.allocation.concentration.diversified" : {
+
+    },
+    "analysis.allocation.concentration.high" : {
+
+    },
+    "analysis.allocation.concentration.very-high" : {
+
+    },
+    "analysis.allocation.explore" : {
+
+    },
+    "analysis.allocation.exposures.detail" : {
+
+    },
+    "analysis.allocation.exposures.title" : {
 
     },
     "analysis.allocation.locations" : {
@@ -297,19 +330,40 @@
     "analysis.allocation.metals" : {
 
     },
+    "analysis.allocation.metric.assets" : {
+
+    },
+    "analysis.allocation.metric.coverage" : {
+
+    },
+    "analysis.allocation.metric.groups" : {
+
+    },
+    "analysis.allocation.missing" : {
+
+    },
     "analysis.allocation.partial" : {
 
     },
     "analysis.allocation.picker" : {
 
     },
-    "analysis.allocation.records" : {
+    "analysis.allocation.reading.detail" : {
+
+    },
+    "analysis.allocation.reading.title" : {
 
     },
     "analysis.allocation.subtitle" : {
 
     },
     "analysis.allocation.title" : {
+
+    },
+    "analysis.allocation.total-value" : {
+
+    },
+    "analysis.allocation.unassigned" : {
 
     },
     "analysis.allocation.unavailable" : {
@@ -336,9 +390,6 @@
     "analysis.evolution.current-value" : {
 
     },
-    "analysis.evolution.detail.subtitle" : {
-
-    },
     "analysis.evolution.incomplete-data" : {
 
     },
@@ -348,49 +399,58 @@
     "analysis.evolution.not-enough-data" : {
 
     },
-    "analysis.evolution.reading.detail" : {
-
-    },
-    "analysis.evolution.reading.title" : {
-
-    },
-    "analysis.evolution.title" : {
-
-    },
     "analysis.evolution.unknown-purchase-dates" : {
 
     },
-    "analysis.insight.metal.detail" : {
+    "analysis.performance.as-of" : {
 
     },
-    "analysis.insight.metal.title" : {
+    "analysis.performance.categories.detail" : {
 
     },
-    "analysis.insight.result.detail" : {
+    "analysis.performance.categories.title" : {
 
     },
-    "analysis.insight.result.title" : {
+    "analysis.performance.coverage" : {
 
     },
-    "analysis.insight.sales.detail" : {
+    "analysis.performance.current-value" : {
 
     },
-    "analysis.insight.sales.title" : {
+    "analysis.performance.period-change" : {
 
     },
-    "analysis.insight.storage.detail" : {
+    "analysis.performance.period-unavailable" : {
 
     },
-    "analysis.insight.storage.title" : {
+    "analysis.performance.purchase-cost" : {
 
     },
-    "analysis.insight.valuation.detail" : {
+    "analysis.performance.ranking.detail" : {
 
     },
-    "analysis.insight.valuation.title" : {
+    "analysis.performance.ranking.title" : {
 
     },
-    "analysis.insights.title" : {
+    "analysis.performance.reading.detail" : {
+
+    },
+    "analysis.performance.reading.title" : {
+
+    },
+    "analysis.performance.subtitle" : {
+
+    },
+    "analysis.performance.title" : {
+
+    },
+    "analysis.performance.unavailable.detail" : {
+
+    },
+    "analysis.performance.unavailable.title" : {
+
+    },
+    "analysis.performance.unrealized-gain" : {
 
     },
     "analysis.period.all" : {
@@ -400,6 +460,9 @@
 
     },
     "analysis.period.one-year" : {
+
+    },
+    "analysis.period.six-months" : {
 
     },
     "analysis.period.three-months" : {
@@ -3382,6 +3445,9 @@
           }
         }
       }
+    },
+    "Category" : {
+
     },
     "characteristics.body" : {
       "localizations" : {
@@ -6920,6 +6986,9 @@
 
     },
     "Selected value" : {
+
+    },
+    "Series" : {
 
     },
     "settings.about.detail" : {
