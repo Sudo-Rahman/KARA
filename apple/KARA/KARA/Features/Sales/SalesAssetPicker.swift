@@ -168,7 +168,8 @@ struct SalesAssetPicker: View {
             AssetArtworkView(
                 category: item.category,
                 photoData: item.photoData,
-                size: dynamicTypeSize.isAccessibilitySize ? 58 : 52
+                size: dynamicTypeSize.isAccessibilitySize ? 58 : 52,
+                privacyBehavior: .sensitive
             )
 
             identity(for: item)
@@ -255,7 +256,8 @@ struct SalesAssetPicker: View {
                 AssetArtworkView(
                     category: item.category,
                     photoData: item.photoData,
-                    size: 52
+                    size: 52,
+                    privacyBehavior: .sensitive
                 )
 
                 identity(for: item)

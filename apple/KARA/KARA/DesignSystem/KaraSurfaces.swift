@@ -38,15 +38,18 @@ struct KaraCard<Content: View>: View {
 
     private let contentPadding: CGFloat
     private let minHeight: CGFloat?
+    private let height: CGFloat?
     private let content: Content
 
     init(
         padding: CGFloat = KaraSpacing.medium,
         minHeight: CGFloat? = nil,
+        height: CGFloat? = nil,
         @ViewBuilder content: () -> Content
     ) {
         contentPadding = padding
         self.minHeight = minHeight
+        self.height = height
         self.content = content()
     }
 
@@ -55,7 +58,8 @@ struct KaraCard<Content: View>: View {
             .padding(contentPadding)
             .frame(
                 maxWidth: .infinity,
-                minHeight: minHeight,
+                minHeight: height ?? minHeight,
+                maxHeight: height,
                 alignment: .topLeading
             )
             .background {

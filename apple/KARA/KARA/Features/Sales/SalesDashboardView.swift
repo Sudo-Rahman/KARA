@@ -565,7 +565,8 @@ struct SaleRow: View {
         AssetArtworkView(
             category: line?.categorySnapshot ?? .custom,
             photoData: photoData,
-            size: 50
+            size: 50,
+            privacyBehavior: .sensitive
         )
     }
 
@@ -668,7 +669,8 @@ struct PriceAlertRow: View {
         AssetArtworkView(
             category: asset?.category ?? .custom,
             photoData: photoData,
-            size: 50
+            size: 50,
+            privacyBehavior: .sensitive
         )
     }
 

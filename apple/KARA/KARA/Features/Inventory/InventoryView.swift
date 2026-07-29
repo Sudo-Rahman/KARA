@@ -360,7 +360,8 @@ struct InventoryView: View {
                 AssetArtworkView(
                     category: asset.category,
                     photoData: photoData,
-                    size: 62
+                    size: 62,
+                    privacyBehavior: .sensitive
                 )
 
                 VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {

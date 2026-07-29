@@ -113,18 +113,23 @@ extension VaultSectionHeader where Trailing == EmptyView {
 
 struct AssetArtworkView: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(PrivacyPreferences.self) private var privacyPreferences
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let category: AssetCategory
     var photoData: Data?
     var size: CGFloat = 58
+    var privacyBehavior: AssetArtworkPrivacyBehavior = .alwaysVisible
 
     var body: some View {
         Group {
-            if let photoData, let image = UIImage(data: photoData) {
+            switch artworkSource {
+            case let .userPhoto(image):
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-            } else {
+
+            case .categoryArtwork:
                 Image(category.imageName)
                     .resizable()
                     .scaledToFill()
@@ -138,6 +143,51 @@ struct AssetArtworkView: View {
                 .stroke(Color.white.opacity(0.10), lineWidth: 1)
         }
         .accessibilityHidden(true)
+        .animation(
+            KaraMotion.controlResponse(reduceMotion: reduceMotion),
+            value: privacyPreferences.hidesSensitiveValues
+        )
+    }
+
+    private var artworkSource: AssetArtworkSource {
+        AssetArtworkSource.resolve(
+            photoData: photoData,
+            privacyBehavior: privacyBehavior,
+            hidesSensitiveValues: privacyPreferences.hidesSensitiveValues
+        )
+    }
+}
+
+enum AssetArtworkPrivacyBehavior: Equatable {
+    case alwaysVisible
+    case sensitive
+}
+
+enum AssetArtworkSource {
+    case categoryArtwork
+    case userPhoto(UIImage)
+
+    static func resolve(
+        photoData: Data?,
+        privacyBehavior: AssetArtworkPrivacyBehavior,
+        hidesSensitiveValues: Bool
+    ) -> AssetArtworkSource {
+        if privacyBehavior == .sensitive, hidesSensitiveValues {
+            return .categoryArtwork
+        }
+
+        guard let photoData, let image = UIImage(data: photoData) else {
+            return .categoryArtwork
+        }
+
+        return .userPhoto(image)
+    }
+
+    var usesUserPhoto: Bool {
+        if case .userPhoto = self {
+            return true
+        }
+        return false
     }
 }
 

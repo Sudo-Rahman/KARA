@@ -174,7 +174,8 @@ struct SaleDetailView: View {
                 AssetArtworkView(
                     category: line?.categorySnapshot ?? .custom,
                     photoData: photoData,
-                    size: 64
+                    size: 64,
+                    privacyBehavior: .sensitive
                 )
 
                 VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
@@ -552,7 +553,8 @@ struct PriceAlertDetailView: View {
                     AssetArtworkView(
                         category: asset?.category ?? .custom,
                         photoData: photoData,
-                        size: 58
+                        size: 58,
+                        privacyBehavior: .sensitive
                     )
 
                     VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {

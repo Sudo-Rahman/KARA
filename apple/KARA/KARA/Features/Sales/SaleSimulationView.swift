@@ -229,7 +229,8 @@ struct SaleSimulationView: View {
                     AssetArtworkView(
                         category: asset.category,
                         photoData: photoData,
-                        size: 54
+                        size: 54,
+                        privacyBehavior: .sensitive
                     )
 
                     VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {

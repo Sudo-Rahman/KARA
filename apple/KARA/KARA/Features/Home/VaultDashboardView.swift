@@ -204,7 +204,7 @@ struct VaultDashboardView: View {
     private var gainMetricCard: some View {
         KaraCard(
             padding: KaraSpacing.medium,
-            minHeight: compactMetricCardHeight
+            height: compactMetricCardHeight
         ) {
             KaraMetric(title: "vault.metric.unrealized-gain", systemImage: "chart.line.uptrend.xyaxis") {
                 if let gain = valuation.totalGainEUR {
@@ -222,25 +222,15 @@ struct VaultDashboardView: View {
                         .font(.title3.weight(.semibold))
                 }
             } detail: {
-                VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {
-                    if let percentage = valuation.gainPercentage {
-                        SensitiveValue {
-                            Text(VaultFormatters.percentage(percentage, showsPositiveSign: true))
-                                .monospacedDigit()
-                                .foregroundStyle(performanceColor(percentage))
-                                .karaMarketNumericTransition(value: percentage)
-                        }
-                    } else {
-                        Text("vault.performance.missing-cost")
+                if let percentage = valuation.gainPercentage {
+                    SensitiveValue {
+                        Text(VaultFormatters.percentage(percentage, showsPositiveSign: true))
+                            .monospacedDigit()
+                            .foregroundStyle(performanceColor(percentage))
+                            .karaMarketNumericTransition(value: percentage)
                     }
-
-                    if valuation.coverage.performanceRecordCount < valuation.coverage.valuedRecordCount {
-                        SensitiveValue {
-                            Text("vault.performance.partial \(valuation.coverage.performanceRecordCount) \(valuation.coverage.valuedRecordCount)")
-                                .font(.caption2)
-                                .foregroundStyle(theme.goldBright)
-                        }
-                    }
+                } else {
+                    Text("vault.performance.missing-cost")
                 }
             }
         }
@@ -252,7 +242,7 @@ struct VaultDashboardView: View {
         } label: {
             KaraCard(
                 padding: KaraSpacing.medium,
-                minHeight: compactMetricCardHeight
+                height: compactMetricCardHeight
             ) {
                 KaraMetric(title: "vault.metric.inventory", systemImage: "shippingbox.fill") {
                     SensitiveValue {
@@ -459,7 +449,8 @@ struct VaultDashboardView: View {
             AssetArtworkView(
                 category: asset.category,
                 photoData: photoData,
-                size: 52
+                size: 52,
+                privacyBehavior: .sensitive
             )
 
             VStack(alignment: .leading, spacing: KaraSpacing.xSmall) {

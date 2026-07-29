@@ -108,14 +108,6 @@ struct AnalysisEvolutionCard: View {
                     .foregroundStyle(theme.goldBright)
                     .fixedSize(horizontal: false, vertical: true)
                 }
-
-                Label(
-                    AnalysisCopy.resource("analysis.evolution.monthly-note"),
-                    systemImage: "calendar"
-                )
-                .font(.caption)
-                .foregroundStyle(theme.muted)
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityIdentifier("analysis.evolution-card")
