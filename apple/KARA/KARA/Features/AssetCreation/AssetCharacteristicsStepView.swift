@@ -102,7 +102,7 @@ struct AssetCharacteristicsStepView: View {
                         .submitLabel(.next)
                         .focused($focusedField, equals: .name)
                         .onSubmit { focusedField = .weight }
-                        .assetInputSurface()
+                        .karaTextInputSurface()
                         .accessibilityIdentifier("details.name")
                 }
 
@@ -134,7 +134,7 @@ struct AssetCharacteristicsStepView: View {
                     }
                 }
                 .pickerStyle(.menu)
-                .assetPickerSurface()
+                .karaCobaltControlSurface()
                 .accessibilityIdentifier("details.metal")
             }
         }
@@ -156,7 +156,7 @@ struct AssetCharacteristicsStepView: View {
                         )
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .weight)
-                        .assetInputSurface()
+                        .karaTextInputSurface()
                         .accessibilityIdentifier("details.weight")
 
                         Text("characteristics.unit.grams")
@@ -201,7 +201,7 @@ struct AssetCharacteristicsStepView: View {
                     )
                     .keyboardType(.numberPad)
                     .focused($focusedField, equals: .metalKarat)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityIdentifier("details.metal-karat")
 
                     Text("ct")
@@ -231,7 +231,7 @@ struct AssetCharacteristicsStepView: View {
                 )
                 .keyboardType(.decimalPad)
                 .focused($focusedField, equals: .fineness)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityIdentifier("details.fineness")
 
                 Text("‰")
@@ -263,7 +263,7 @@ struct AssetCharacteristicsStepView: View {
                             )
                             .keyboardType(.decimalPad)
                             .focused($focusedField, equals: .gemstoneWeight)
-                            .assetInputSurface()
+                            .karaTextInputSurface()
                             .accessibilityIdentifier("details.gemstone-carat")
 
                             Text("ct")
@@ -280,7 +280,7 @@ struct AssetCharacteristicsStepView: View {
                         )
                         .textInputAutocapitalization(.characters)
                         .focused($focusedField, equals: .gemstoneClarity)
-                        .assetInputSurface()
+                        .karaTextInputSurface()
                         .accessibilityIdentifier("details.gemstone-clarity")
                     }
                 }

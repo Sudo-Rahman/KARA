@@ -22,6 +22,30 @@ Toute confirmation doit apparaître dans un dialogue centré au milieu de l’é
 - Dans la corbeille, la suppression définitive d’un élément à l’unité est immédiate et ne demande jamais de confirmation. Seule l’action globale « Tout supprimer » demande confirmation.
 - Lors de l’ajout ou de la modification d’une action nécessitant une confirmation, auditer le type de présentation et le comportement d’annulation avant de terminer.
 
+## Clavier et focus
+
+Tous les écrans de saisie doivent permettre de fermer le clavier de manière cohérente et évidente.
+
+- En dehors des écrans d’ajout et de modification d’un actif, utiliser le modificateur commun `karaDismissibleKeyboard(focusedField:)` sur le conteneur de saisie.
+- Le comportement commun doit fermer le clavier uniquement lorsqu’un tap sur une zone non interactive retire le focus du champ.
+- Un défilement, même rapide, ne doit jamais fermer le clavier. Il doit rester possible de consulter le reste du formulaire sans perdre le champ actif.
+- Ne pas ajouter de bouton « Terminé » au-dessus du clavier : les actions persistantes du formulaire restent seules dans la barre inférieure.
+- La fermeture du clavier doit uniquement retirer le focus. Elle ne doit ni modifier la valeur saisie, ni valider le formulaire, ni déclencher une navigation.
+- Le geste de fermeture ne doit jamais intercepter les champs, boutons, liens, pickers, toggles ou steppers.
+- Les écrans d’ajout et de modification d’un actif sont explicitement exclus de ce comportement commun jusqu’à leur traitement dédié.
+- Lors de l’ajout ou de la modification d’un écran de saisie, tester au minimum la fermeture par tap extérieur, la conservation du clavier pendant le défilement et le pavé numérique lorsqu’il est utilisé.
+
+## Couleurs des contrôles de saisie
+
+Les contrôles interactifs posés sur une surface cobalt doivent utiliser `cobaltBright`, jamais le gold, pour leur contenu.
+
+- Utiliser `karaCobaltControlSurface()` pour les `Picker`, sélecteurs et contrôles comparables sur fond cobalt.
+- La valeur affichée, le texte, le tint et les icônes interactives d’un contrôle sur fond cobalt doivent être en `cobaltBright`.
+- Les `DatePicker`, y compris leur valeur compacte et leur calendrier, doivent utiliser le tint `cobaltBright`.
+- Utiliser `karaTextInputSurface()` pour les champs de saisie textuelle standards afin d’harmoniser leur surface, leur texte et la couleur du curseur.
+- Ne pas laisser un contrôle de saisie hériter implicitement du tint gold global de l’application.
+- Lors de l’ajout ou de la modification d’un contrôle, vérifier ses états normal, sélectionné, désactivé et contraste renforcé.
+
 ## Règles Git
 
 - Les fichiers situés dans `docs/superpowers/**` sont des documents de travail locaux.

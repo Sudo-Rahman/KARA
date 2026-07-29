@@ -134,6 +134,30 @@ final class VaultExperienceUITests: XCTestCase {
     }
 
     @MainActor
+    func testSaleFormDismissesKeyboardOnlyAfterOutsideTap() {
+        let app = launchSeededVault()
+
+        app.tabBars.buttons["Ventes"].tap()
+        XCTAssertTrue(
+            element("sales.dashboard", in: app).waitForExistence(timeout: 5)
+        )
+        app.buttons["sales.record"].tap()
+        XCTAssertTrue(element("sale-flow", in: app).waitForExistence(timeout: 5))
+
+        let grossAmount = element("sale-flow.gross", in: app)
+        XCTAssertTrue(grossAmount.isHittable)
+        grossAmount.tap()
+        grossAmount.typeText("2500")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+
+        app.swipeUp()
+        XCTAssertTrue(app.keyboards.firstMatch.exists)
+
+        app.staticTexts["Frais"].firstMatch.tap()
+        XCTAssertTrue(waitForDisappearance(of: app.keyboards.firstMatch))
+    }
+
+    @MainActor
     func testRecordedFullSaleMovesTheAssetOutOfTheVault() {
         let app = launchSeededVault()
         let soldAssetID = "A1000000-0000-4000-8000-000000000004"
@@ -495,5 +519,17 @@ final class VaultExperienceUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    @MainActor
+    private func waitForDisappearance(
+        of element: XCUIElement,
+        timeout: TimeInterval = 5
+    ) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

@@ -191,7 +191,7 @@ struct AssetEditorView: View {
                 .submitLabel(.next)
                 .focused($focusedField, equals: .name)
                 .onSubmit { focusedField = .weight }
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.name"))
                 .accessibilityIdentifier("asset-editor.name")
             }
@@ -208,7 +208,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetPickerSurface()
+            .karaCobaltControlSurface()
             .accessibilityIdentifier("asset-editor.category")
 
             if !availablePresets.isEmpty {
@@ -231,7 +231,7 @@ struct AssetEditorView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .assetPickerSurface()
+                    .karaCobaltControlSurface()
                     .accessibilityIdentifier("asset-editor.preset")
                 }
             }
@@ -268,7 +268,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetPickerSurface()
+            .karaCobaltControlSurface()
             .accessibilityIdentifier("asset-editor.metal")
 
             editorDivider
@@ -308,7 +308,7 @@ struct AssetEditorView: View {
                     )
                     .keyboardType(.numberPad)
                     .focused($focusedField, equals: .karat)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.karat"))
                     .accessibilityIdentifier("asset-editor.karat")
 
@@ -357,6 +357,7 @@ struct AssetEditorView: View {
                     displayedComponents: .date
                 )
                 .datePickerStyle(.compact)
+                .tint(theme.cobaltBright)
                 .accessibilityIdentifier("asset-editor.purchase-date")
             }
 
@@ -394,7 +395,7 @@ struct AssetEditorView: View {
                 }
             }
             .pickerStyle(.menu)
-            .assetPickerSurface()
+            .karaCobaltControlSurface()
             .accessibilityIdentifier("asset-editor.acquisition-method")
 
             editorDivider
@@ -409,7 +410,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: .seller)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.seller"))
                 .accessibilityIdentifier("asset-editor.seller")
             }
@@ -431,7 +432,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: .storage)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.storage"))
                 .accessibilityIdentifier("asset-editor.storage")
             }
@@ -448,7 +449,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .invoice)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.invoice"))
                 .accessibilityIdentifier("asset-editor.invoice")
             }
@@ -465,7 +466,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .serialNumber)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.serial-number"))
                 .accessibilityIdentifier("asset-editor.serial-number")
             }
@@ -524,7 +525,7 @@ struct AssetEditorView: View {
                 )
                 .textInputAutocapitalization(.characters)
                 .focused($focusedField, equals: .gemstoneClarity)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.gemstone-clarity"))
                 .accessibilityIdentifier("asset-editor.gemstone-clarity")
             }
@@ -612,7 +613,7 @@ struct AssetEditorView: View {
         )
         .keyboardType(.decimalPad)
         .focused($focusedField, equals: .price)
-        .assetInputSurface()
+        .karaTextInputSurface()
         .accessibilityLabel(AssetEditorCopy.string("asset-editor.field.price"))
         .accessibilityIdentifier("asset-editor.price")
     }
@@ -628,7 +629,7 @@ struct AssetEditorView: View {
             }
         }
         .pickerStyle(.menu)
-        .assetPickerSurface()
+        .karaCobaltControlSurface()
         .accessibilityIdentifier("asset-editor.currency")
     }
 
@@ -739,7 +740,7 @@ struct AssetEditorView: View {
             )
             .keyboardType(keyboard)
             .focused($focusedField, equals: focus)
-            .assetInputSurface()
+            .karaTextInputSurface()
             .accessibilityLabel(AssetEditorCopy.string(label))
             .accessibilityIdentifier(identifier)
 

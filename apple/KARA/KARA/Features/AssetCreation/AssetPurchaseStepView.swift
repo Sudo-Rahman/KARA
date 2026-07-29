@@ -76,6 +76,7 @@ struct AssetPurchaseStepView: View {
                         displayedComponents: .date
                     )
                     .datePickerStyle(.compact)
+                    .tint(theme.cobaltBright)
                     .accessibilityIdentifier("details.purchase-date")
                 }
 
@@ -92,7 +93,7 @@ struct AssetPurchaseStepView: View {
                         )
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .price)
-                        .assetInputSurface()
+                        .karaTextInputSurface()
                         .accessibilityIdentifier("details.price")
 
                         Picker("details.currency", selection: currencyBinding) {
@@ -102,10 +103,7 @@ struct AssetPurchaseStepView: View {
                             }
                         }
                         .pickerStyle(.menu)
-                        .fixedSize()
-                        .frame(minHeight: 46)
-                        .padding(.horizontal, KaraSpacing.small)
-                        .background(theme.cobalt.opacity(0.16), in: .rect(cornerRadius: 12))
+                        .karaCobaltControlSurface()
                         .accessibilityIdentifier("details.currency")
                     }
                 }
@@ -120,7 +118,7 @@ struct AssetPurchaseStepView: View {
                     )
                     .textInputAutocapitalization(.characters)
                     .focused($focusedField, equals: .invoiceNumber)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityIdentifier("details.invoice-number")
                 }
             }
@@ -177,7 +175,7 @@ struct AssetPurchaseStepView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .assetPickerSurface()
+                    .karaCobaltControlSurface()
                     .accessibilityIdentifier("details.acquisition-method")
                 }
 
@@ -191,7 +189,7 @@ struct AssetPurchaseStepView: View {
                     )
                     .textInputAutocapitalization(.characters)
                     .focused($focusedField, equals: .serialNumber)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityIdentifier("details.serial-number")
                 }
 
@@ -397,7 +395,7 @@ private struct SavedValueComboBox<FocusValue: Hashable>: View {
                     .foregroundStyle(theme.muted)
                     .accessibilityHidden(true)
             }
-            .assetInputSurface()
+            .karaTextInputSurface()
 
             if isFocused, !suggestions.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {

@@ -440,7 +440,11 @@ struct AssetGoldPurityPicker: View {
                     } label: {
                         Text("\(purity.karat) ct")
                             .font(.subheadline.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(selectedKarat == purity.karat ? theme.ink : theme.muted)
+                            .foregroundStyle(
+                                selectedKarat == purity.karat
+                                    ? theme.cobaltBright
+                                    : theme.muted
+                            )
                             .padding(.horizontal, KaraSpacing.medium)
                             .frame(minHeight: 44)
                             .background(
@@ -562,7 +566,7 @@ private struct AssetTagChip: View {
         HStack(spacing: KaraSpacing.xSmall) {
             Text(verbatim: tag)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(theme.ink)
+                .foregroundStyle(theme.cobaltBright)
                 .lineLimit(1)
 
             Button(action: onRemove) {
@@ -572,7 +576,7 @@ private struct AssetTagChip: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .foregroundStyle(theme.muted)
+            .foregroundStyle(theme.cobaltBright)
             .accessibilityLabel(removeAccessibilityLabel)
             .accessibilityValue(Text(verbatim: tag))
             .accessibilityIdentifier(accessibilityIdentifier)
@@ -650,31 +654,6 @@ private struct AssetTagFlowLayout: Layout {
             x += size.width + horizontalSpacing
             rowHeight = max(rowHeight, size.height)
         }
-    }
-}
-
-extension View {
-    func assetInputSurface() -> some View {
-        self
-            .font(.body)
-            .padding(.horizontal, 12)
-            .frame(minHeight: 46)
-            .background(Color.black.opacity(0.24), in: .rect(cornerRadius: 12))
-    }
-
-    func assetPickerSurface() -> some View {
-        modifier(AssetPickerSurfaceModifier())
-    }
-}
-
-private struct AssetPickerSurfaceModifier: ViewModifier {
-    @Environment(KaraTheme.self) private var theme
-
-    func body(content: Content) -> some View {
-        content
-            .frame(maxWidth: .infinity, minHeight: 46, alignment: .leading)
-            .padding(.horizontal, 12)
-            .background(theme.cobalt.opacity(0.16), in: .rect(cornerRadius: 12))
     }
 }
 

@@ -712,6 +712,7 @@ private struct RenameAssetAttachmentSheet: View {
 
     @State private var filename: String
     @State private var showsError = false
+    @FocusState private var isFilenameFocused: Bool
 
     init(
         assetID: UUID,
@@ -732,8 +733,8 @@ private struct RenameAssetAttachmentSheet: View {
                 TextField(AssetDocumentsCopy.string("documents.rename.field"), text: $filename)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(KaraSpacing.medium)
-                    .background(theme.surface, in: .rect(cornerRadius: 14))
+                    .focused($isFilenameFocused)
+                    .karaTextInputSurface()
 
                 if showsError {
                     Label(
@@ -747,6 +748,7 @@ private struct RenameAssetAttachmentSheet: View {
                 Spacer()
             }
             .padding(KaraSpacing.large)
+            .karaDismissibleKeyboard(isFocused: $isFilenameFocused)
             .background(theme.background.ignoresSafeArea())
             .navigationTitle(AssetDocumentsCopy.string("documents.rename.title"))
             .navigationBarTitleDisplayMode(.inline)

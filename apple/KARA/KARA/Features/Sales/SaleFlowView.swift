@@ -142,7 +142,7 @@ struct SaleFlowView: View {
             .padding(.top, KaraSpacing.medium)
             .padding(.bottom, KaraSpacing.xxLarge)
         }
-        .scrollDismissesKeyboard(.interactively)
+        .karaDismissibleKeyboard(focusedField: $focusedField)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             submitBar
         }
@@ -195,7 +195,7 @@ struct SaleFlowView: View {
                     )
                     .keyboardType(.decimalPad)
                     .focused($focusedField, equals: .grossAmount)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityIdentifier("sale-flow.gross")
 
                     Picker(
@@ -207,7 +207,7 @@ struct SaleFlowView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .assetPickerSurface()
+                    .karaCobaltControlSurface()
                     .accessibilityIdentifier("sale-flow.currency")
                 }
             }
@@ -239,7 +239,7 @@ struct SaleFlowView: View {
                 )
                 .keyboardType(.decimalPad)
                 .focused($focusedField, equals: .fees)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityIdentifier("sale-flow.fees")
             }
         }
@@ -257,6 +257,7 @@ struct SaleFlowView: View {
                 displayedComponents: .date
             )
             .datePickerStyle(.compact)
+            .tint(theme.cobaltBright)
             .accessibilityIdentifier("sale-flow.date")
 
             salesDivider
@@ -271,7 +272,7 @@ struct SaleFlowView: View {
                 )
                 .textInputAutocapitalization(.words)
                 .focused($focusedField, equals: .buyer)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityIdentifier("sale-flow.buyer")
             }
 
@@ -288,7 +289,7 @@ struct SaleFlowView: View {
                 )
                 .lineLimit(2 ... 5)
                 .focused($focusedField, equals: .note)
-                .assetInputSurface()
+                .karaTextInputSurface()
                 .accessibilityIdentifier("sale-flow.note")
             }
         }

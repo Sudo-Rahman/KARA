@@ -125,7 +125,7 @@ struct PriceAlertFlowView: View {
             .padding(.top, KaraSpacing.medium)
             .padding(.bottom, KaraSpacing.xxLarge)
         }
-        .scrollDismissesKeyboard(.interactively)
+        .karaDismissibleKeyboard(focusedField: $focusedField)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             submitBar
         }
@@ -180,7 +180,7 @@ struct PriceAlertFlowView: View {
                     )
                     .keyboardType(.decimalPad)
                     .focused($focusedField, equals: .target)
-                    .assetInputSurface()
+                    .karaTextInputSurface()
                     .accessibilityIdentifier("alert-flow.target")
 
                     Text(verbatim: "EUR")
