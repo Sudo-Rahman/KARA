@@ -8,8 +8,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/brand/kara-app-icon.png" />
-	<link rel="apple-touch-icon" href="/brand/kara-app-icon.png" />
+	<link rel="icon" href="/brand/kara-app-icon-96.webp" type="image/webp" />
+	<link rel="apple-touch-icon" href="/brand/kara-app-icon-180.png" />
 	<meta name="theme-color" content="#050507" />
 </svelte:head>
 

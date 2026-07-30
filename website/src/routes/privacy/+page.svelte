@@ -42,7 +42,6 @@
 <LegalShell
 	{content}
 	{locale}
-	currentPath="/privacy"
 	supportEmail={publicConfig.supportEmail ?? ''}
 	legalName={publicConfig.legalName ?? 'Kara'}
 />

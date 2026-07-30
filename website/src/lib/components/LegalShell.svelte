@@ -4,30 +4,23 @@
 	import { localizeHref } from '$lib/paraglide/runtime';
 	import { normalizeLocalizedHref } from '$lib/localized-href';
 	import type { EditorialDocument, EditorialLocale } from '$lib/content/editorial';
+	import SiteHeader from '$lib/components/SiteHeader.svelte';
 
 	let {
 		content,
 		locale,
-		currentPath,
 		supportEmail,
 		legalName
 	}: {
 		content: EditorialDocument;
 		locale: EditorialLocale;
-		currentPath: '/privacy' | '/support';
 		supportEmail: string;
 		legalName: string;
 	} = $props();
 
-	const alternativeLocale = $derived(
-		({ fr: 'en', en: 'fr' } satisfies Record<EditorialLocale, EditorialLocale>)[locale]
-	);
 	const homeHref = $derived(normalizeLocalizedHref(localizeHref('/', { locale })) as Pathname);
 	const privacyHref = $derived(localizeHref('/privacy', { locale }) as Pathname);
 	const supportHref = $derived(localizeHref('/support', { locale }) as Pathname);
-	const alternativeHref = $derived(
-		localizeHref(currentPath, { locale: alternativeLocale }) as Pathname
-	);
 	const normalizedSupportEmail = $derived(supportEmail.trim());
 </script>
 
@@ -35,38 +28,7 @@
 	<div class="ambient ambient-one" aria-hidden="true"></div>
 	<div class="ambient ambient-two" aria-hidden="true"></div>
 
-	<header class="site-header">
-		<div class="header-inner">
-			<a class="brand" href={resolve(homeHref)} aria-label={content.backHomeLabel}>
-				<span class="brand-mark" aria-hidden="true">K</span>
-				<span class="wordmark">KARA</span>
-			</a>
-
-			<nav
-				class="header-navigation"
-				aria-label={locale === 'fr' ? 'Navigation des pages' : 'Page navigation'}
-			>
-				<div class="section-links">
-					<a href={resolve(privacyHref)} aria-current={currentPath === '/privacy' ? 'page' : undefined}>
-						{content.privacyLabel}
-					</a>
-					<a href={resolve(supportHref)} aria-current={currentPath === '/support' ? 'page' : undefined}>
-						{content.supportLabel}
-					</a>
-				</div>
-				<a
-					class="language-link"
-					href={resolve(alternativeHref)}
-					data-sveltekit-reload
-					hreflang={alternativeLocale}
-					lang={alternativeLocale}
-					aria-label={content.languageLabel}
-				>
-					{content.alternativeLanguage}
-				</a>
-			</nav>
-		</div>
-	</header>
+	<SiteHeader mode="sticky" />
 
 	<main id="main-content" tabindex="-1">
 		<header class="page-hero">
@@ -246,17 +208,6 @@
 		background: radial-gradient(circle, oklch(0.42 0.15 258 / 0.13), transparent 70%);
 	}
 
-	.site-header {
-		position: sticky;
-		top: 0;
-		z-index: 20;
-		padding-top: env(safe-area-inset-top, 0px);
-		border-bottom: 1px solid oklch(0.29 0.018 258 / 0.55);
-		background: oklch(0.075 0 0 / 0.83);
-		backdrop-filter: blur(18px) saturate(130%);
-	}
-
-	.header-inner,
 	.page-hero,
 	.reading-layout,
 	.footer-inner {
@@ -266,82 +217,10 @@
 		padding-right: max(var(--page-gutter, clamp(1rem, 3.5vw, 3.5rem)), env(safe-area-inset-right, 0px));
 	}
 
-	.header-inner {
-		display: flex;
-		min-height: 72px;
-		align-items: center;
-		justify-content: space-between;
-		gap: 24px;
-	}
-
-	.brand {
-		display: inline-flex;
-		min-height: 44px;
-		align-items: center;
-		gap: 10px;
-		color: inherit;
-		text-decoration: none;
-	}
-
-	.brand-mark {
-		display: grid;
-		width: 30px;
-		height: 30px;
-		place-items: center;
-		border: 1px solid oklch(0.8 0.13 88 / 0.62);
-		border-radius: 3px;
-		color: var(--color-gold, oklch(0.8 0.13 88));
-		font-family: Georgia, serif;
-		font-size: 14px;
-	}
-
-	.wordmark,
 	.footer-wordmark {
 		font-family: Georgia, serif;
 		font-size: 15px;
 		letter-spacing: 0.19em;
-	}
-
-	.header-navigation,
-	.section-links {
-		display: flex;
-		align-items: center;
-	}
-
-	.header-navigation {
-		gap: clamp(12px, 3vw, 40px);
-	}
-
-	.section-links {
-		gap: clamp(16px, 2.5vw, 32px);
-	}
-
-	.header-navigation a {
-		display: inline-flex;
-		min-height: 44px;
-		align-items: center;
-		color: var(--color-muted, oklch(0.69 0.014 258));
-		font-size: var(--text-label, 0.82rem);
-		text-decoration: none;
-		transition: color 180ms ease-out;
-	}
-
-	.header-navigation a:hover,
-	.header-navigation a[aria-current='page'] {
-		color: var(--color-ink, oklch(0.965 0.006 95));
-	}
-
-	.header-navigation a[aria-current='page'] {
-		text-decoration: underline;
-		text-decoration-color: var(--color-cobalt-bright, oklch(0.72 0.15 258));
-		text-decoration-thickness: 2px;
-		text-underline-offset: 7px;
-	}
-
-	.language-link {
-		border: 1px solid var(--color-line, oklch(0.29 0.018 258));
-		border-radius: 999px;
-		padding-inline: 16px;
 	}
 
 	.page-hero {
@@ -778,22 +657,6 @@
 	}
 
 	@media (max-width: 40rem) {
-		.header-inner {
-			min-height: 64px;
-		}
-
-		.brand-mark {
-			display: none;
-		}
-
-		.section-links a[aria-current='page'] {
-			display: none;
-		}
-
-		.language-link {
-			padding-inline: 14px;
-		}
-
 		.page-hero {
 			gap: 48px;
 			padding-block: 72px 80px;
@@ -874,7 +737,6 @@
 	}
 
 	@media print {
-		.site-header,
 		.ambient,
 		.contents,
 		.site-footer,
