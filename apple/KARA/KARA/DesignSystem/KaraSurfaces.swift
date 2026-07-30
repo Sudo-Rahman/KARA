@@ -5,7 +5,7 @@ extension View {
     /// animated dismissal behavior as native lists on supported systems.
     @ViewBuilder
     func karaCoordinatedSwipeActions() -> some View {
-#if compiler(>=6.3)
+#if compiler(>=6.4)
         if #available(iOS 27.0, *) {
             swipeActionsContainer()
         } else {
