@@ -15,7 +15,6 @@
 <figure class={`device ${className}`} aria-label={alt}>
 	<div class="device__rail" aria-hidden="true"></div>
 	<div class="device__shell">
-		<div class="device__island" aria-hidden="true"></div>
 		<img
 			{src}
 			{alt}
@@ -33,29 +32,59 @@
 		position: relative;
 		width: min(100%, 23rem);
 		margin: 0;
+		isolation: isolate;
 		filter: drop-shadow(0 2rem 3rem oklch(0% 0 0 / 0.42));
 		transform: translateZ(0);
 	}
 
 	.device__rail {
 		position: absolute;
-		inset: 8% -0.25rem 9%;
-		border-radius: 2.7rem;
+		inset: 3.8% -1.15% 4%;
+		border-radius: 13.1% / 6%;
 		background: linear-gradient(
 			100deg,
-			oklch(0.27 0.018 258),
-			oklch(0.5 0.028 88) 16%,
-			oklch(0.17 0.014 258) 44%,
-			oklch(0.42 0.025 258) 78%,
-			oklch(0.2 0.014 258)
+			oklch(0.19 0.014 258),
+			oklch(0.64 0.03 88) 8%,
+			oklch(0.23 0.018 258) 21%,
+			oklch(0.13 0.01 258) 50%,
+			oklch(0.48 0.025 258) 82%,
+			oklch(0.16 0.012 258)
 		);
+		box-shadow:
+			inset 0 0 0 1px oklch(0.82 0.025 88 / 0.22),
+			inset 0.12rem 0 0.22rem oklch(1 0 0 / 0.08),
+			inset -0.12rem 0 0.22rem oklch(0 0 0 / 0.58);
+	}
+
+	.device__rail::before,
+	.device__rail::after {
+		position: absolute;
+		z-index: -1;
+		width: 1.45%;
+		border-radius: 999px;
+		background: linear-gradient(oklch(0.5 0.025 258), oklch(0.12 0.01 258));
+		box-shadow: inset 0 0 0 1px oklch(0.82 0.025 88 / 0.2);
+		content: '';
+	}
+
+	.device__rail::before {
+		top: 24%;
+		left: -0.8%;
+		height: 15%;
+	}
+
+	.device__rail::after {
+		top: 29%;
+		right: -0.8%;
+		height: 12%;
 	}
 
 	.device__shell {
 		position: relative;
 		overflow: hidden;
-		padding: 0.42rem;
-		border-radius: 3.1rem;
+		padding: 1.65%;
+		border: 1px solid transparent;
+		border-radius: 12.45% / 5.72%;
 		background:
 			linear-gradient(oklch(0.12 0.008 258), oklch(0.055 0.004 258)) padding-box,
 			linear-gradient(
@@ -66,60 +95,26 @@
 					oklch(0.18 0.015 258)
 				)
 				border-box;
-		border: 1px solid transparent;
 	}
 
 	.device__shell::after {
 		position: absolute;
-		inset: 0.48rem;
+		inset: 1.7%;
 		z-index: 2;
-		border-radius: 2.66rem;
+		border-radius: 11.2% / 5.15%;
 		box-shadow:
 			inset 0 0 0 1px oklch(1 0 0 / 0.12),
-			inset 0 0.7rem 1.4rem oklch(1 0 0 / 0.035);
+			inset 0 0.45rem 0.9rem oklch(1 0 0 / 0.035);
 		pointer-events: none;
 		content: '';
-	}
-
-	.device__island {
-		position: absolute;
-		top: 1rem;
-		left: 50%;
-		z-index: 3;
-		width: 31%;
-		height: 1.65rem;
-		border-radius: 999px;
-		background: oklch(0.025 0 0);
-		transform: translateX(-50%);
-		box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.035);
 	}
 
 	img {
 		display: block;
 		width: 100%;
 		height: auto;
-		border-radius: 2.7rem;
+		border-radius: 11.2% / 5.15%;
 		background: oklch(0.04 0 0);
-	}
-
-	@media (max-width: 30rem) {
-		.device__shell {
-			border-radius: 2.55rem;
-		}
-
-		.device__shell::after,
-		img {
-			border-radius: 2.18rem;
-		}
-
-		.device__rail {
-			border-radius: 2.2rem;
-		}
-
-		.device__island {
-			top: 0.85rem;
-			height: 1.3rem;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

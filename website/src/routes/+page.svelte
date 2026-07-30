@@ -359,208 +359,37 @@
 
 	onMount(() => {
 		let cancelled = false;
+		let motionRequest = 0;
 		let revertAnimations: (() => void) | undefined;
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-		if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			void (async () => {
-				const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
-					import('gsap'),
-					import('gsap/ScrollTrigger')
-				]);
+		const startMotion = () => {
+			if (cancelled || reducedMotion.matches || !pageRoot) return;
+			const request = ++motionRequest;
+			void import('$lib/landing/motion')
+				.then(({ createLandingMotion }) => {
+					if (cancelled || request !== motionRequest || !pageRoot) return;
+					revertAnimations = createLandingMotion(pageRoot);
+				})
+				.catch(() => {
+					// Motion is progressive enhancement; the complete static composition remains visible.
+				});
+		};
 
-				if (cancelled || !pageRoot) return;
+		const syncMotionPreference = () => {
+			motionRequest += 1;
+			revertAnimations?.();
+			revertAnimations = undefined;
+			startMotion();
+		};
 
-				gsap.registerPlugin(ScrollTrigger);
-				const context = gsap.context(() => {
-					const load = gsap.timeline({ defaults: { ease: 'power4.out' } });
-					load
-						.from('.hero-word > span', {
-							yPercent: 108,
-							duration: 0.95,
-							stagger: 0.09
-						})
-						.from(
-							'.hero-animate',
-							{ y: 22, opacity: 0, duration: 0.72, stagger: 0.08 },
-							0.22
-						)
-						.from(
-							'.aperture-rotator',
-							{ scale: 0.72, rotation: -18, opacity: 0, duration: 1.25 },
-							0.08
-						)
-						.from(
-							'.hero-device',
-							{ y: 90, rotation: 5, opacity: 0, duration: 1.08 },
-							0.34
-						);
-
-					gsap.to('.aperture-rotator', {
-						rotation: 72,
-						scale: 1.12,
-						ease: 'none',
-						scrollTrigger: {
-							trigger: '.hero',
-							start: 'top top',
-							end: 'bottom top',
-							scrub: 1
-						}
-					});
-
-					gsap.to('.hero-device', {
-						yPercent: 18,
-						rotation: -2.5,
-						ease: 'none',
-						scrollTrigger: {
-							trigger: '.hero',
-							start: 'top top',
-							end: 'bottom top',
-							scrub: 1
-						}
-					});
-
-					gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((element, index) => {
-						gsap.to(element, {
-							yPercent: index % 2 === 0 ? -14 : 12,
-							xPercent: index % 2 === 0 ? -5 : 4,
-							ease: 'none',
-							scrollTrigger: {
-								trigger: element.closest('section') ?? element,
-								start: 'top bottom',
-								end: 'bottom top',
-								scrub: 1.2
-							}
-						});
-					});
-
-					const manifestoMotion = gsap.timeline({
-						scrollTrigger: {
-							trigger: '.manifesto',
-							start: 'top bottom',
-							end: 'bottom top',
-							scrub: 1.1
-						}
-					});
-
-					manifestoMotion
-						.fromTo(
-							'.manifesto-vault__shell',
-							{ scale: 0.96, rotation: -2.4, xPercent: 2 },
-							{ scale: 1.08, rotation: 2.8, xPercent: -2, ease: 'none' },
-							0
-						)
-						.fromTo(
-							'.manifesto-vault__device',
-							{ yPercent: 16, rotation: 2.5 },
-							{ yPercent: -9, rotation: -2.2, ease: 'none' },
-							0
-						)
-						.fromTo(
-							'.manifesto-vault__glow',
-							{ scale: 0.68, opacity: 0.28 },
-							{ scale: 1.25, opacity: 0.78, ease: 'none' },
-							0
-						);
-
-					gsap.to('.showcase-stage__dial', {
-						rotation: 128,
-						scale: 1.06,
-						ease: 'none',
-						scrollTrigger: {
-							trigger: '.showcase',
-							start: 'top bottom',
-							end: 'bottom top',
-							scrub: 1.2
-						}
-					});
-
-					gsap.fromTo(
-						'.journey-progress',
-						{ scaleX: 0 },
-						{
-							scaleX: 1,
-							ease: 'none',
-							scrollTrigger: {
-								trigger: '.journey',
-								start: 'top 65%',
-								end: 'bottom 70%',
-								scrub: 0.8
-							}
-						}
-					);
-
-					gsap.fromTo(
-						'.journey-step > span',
-						{ scale: 0.35 },
-						{
-							scale: 1,
-							stagger: 0.16,
-							ease: 'power4.out',
-							scrollTrigger: {
-								trigger: '.journey-steps',
-								start: 'top 78%',
-								end: 'bottom 52%',
-								scrub: 0.55
-							}
-						}
-					);
-
-					gsap.fromTo(
-						'.privacy-orbit',
-						{ scale: 0.78, rotation: -22 },
-						{
-							scale: 1.05,
-							rotation: 48,
-							ease: 'none',
-							scrollTrigger: {
-								trigger: '.privacy-section',
-								start: 'top bottom',
-								end: 'bottom top',
-								scrub: 1
-							}
-						}
-					);
-
-					gsap.fromTo(
-						'.final-aperture',
-						{ scale: 0.78, rotation: -28, opacity: 0.12 },
-						{
-							scale: 1.12,
-							rotation: 44,
-							opacity: 0.42,
-							ease: 'none',
-							scrollTrigger: {
-								trigger: '.final-cta',
-								start: 'top bottom',
-								end: 'bottom top',
-								scrub: 1.1
-							}
-						}
-					);
-
-					gsap.fromTo(
-						'.final-glow',
-						{ scale: 0.72, opacity: 0.18 },
-						{
-							scale: 1.24,
-							opacity: 0.62,
-							ease: 'none',
-							scrollTrigger: {
-								trigger: '.final-cta',
-								start: 'top bottom',
-								end: 'bottom top',
-								scrub: 1.1
-							}
-						}
-					);
-				}, pageRoot);
-
-				revertAnimations = () => context.revert();
-			})();
-		}
+		reducedMotion.addEventListener('change', syncMotionPreference);
+		startMotion();
 
 		return () => {
 			cancelled = true;
+			motionRequest += 1;
+			reducedMotion.removeEventListener('change', syncMotionPreference);
 			revertAnimations?.();
 		};
 	});
@@ -609,6 +438,7 @@
 
 <div class="kara-landing" bind:this={pageRoot}>
 	<SiteHeader mode="overlay" />
+	<div class="mobile-scroll-progress" aria-hidden="true"><span></span></div>
 
 	<main id="main-content">
 		<section class="hero relative isolate flex min-h-[100svh] items-center overflow-hidden">
@@ -717,6 +547,10 @@
 							<p>{item.body}</p>
 							<small>{item.note}</small>
 							<div class="showcase-mobile-device">
+								<div class="showcase-mobile-device__orbit" aria-hidden="true">
+									<span></span>
+								</div>
+								<div class="showcase-mobile-device__beam" aria-hidden="true"></div>
 								<DeviceFrame src={item.screen} alt={item.alt} />
 							</div>
 						</article>
@@ -750,8 +584,10 @@
 		</section>
 
 		<section class="journey relative isolate overflow-hidden">
-			<div class="journey-material" data-parallax aria-hidden="true">
-				<img src="/landing/materials/silver-coin.webp" alt="" width="1536" height="1024" />
+			<div class="journey-material" aria-hidden="true">
+				<div class="journey-material__asset" data-parallax>
+					<img src="/landing/materials/silver-coin.webp" alt="" width="1536" height="864" />
+				</div>
 			</div>
 
 			<div class="mx-auto w-full max-w-[90rem] px-4 py-28 sm:px-8 md:py-40 lg:px-12">
@@ -815,7 +651,11 @@
 					<div class="sensitive-demo">
 						<div>
 							<span>{copy.estimatedValue}</span>
-							<strong>{valuesVisible ? copy.visibleValue : copy.hiddenValue}</strong>
+							{#key valuesVisible}
+								<strong class="sensitive-value" aria-live="polite">
+									{valuesVisible ? copy.visibleValue : copy.hiddenValue}
+								</strong>
+							{/key}
 						</div>
 						<button
 							type="button"
@@ -823,11 +663,15 @@
 							aria-pressed={valuesVisible}
 							aria-label={valuesVisible ? copy.hideValues : copy.showValues}
 						>
-							{#if valuesVisible}
-								<EyeOffIcon size={21} strokeWidth={1.8} aria-hidden="true" />
-							{:else}
-								<EyeIcon size={21} strokeWidth={1.8} aria-hidden="true" />
-							{/if}
+							{#key valuesVisible}
+								<span class="sensitive-toggle__icon" aria-hidden="true">
+									{#if valuesVisible}
+										<EyeOffIcon size={21} strokeWidth={1.8} />
+									{:else}
+										<EyeIcon size={21} strokeWidth={1.8} />
+									{/if}
+								</span>
+							{/key}
 						</button>
 						<small>{copy.valueHint}</small>
 					</div>
@@ -922,6 +766,10 @@
 		background: var(--landing-void);
 		color: var(--landing-ink);
 		font-family: 'Geologica Variable', 'Arial Fallback', sans-serif;
+	}
+
+	.mobile-scroll-progress {
+		display: none;
 	}
 
 	.kara-landing :global(a),
@@ -1100,7 +948,7 @@
 	.hero-visual :global(.hero-device) {
 		z-index: 4;
 		width: min(19.5rem, 48vw);
-		margin-left: 14%;
+		margin-left: 0;
 	}
 
 	.hero-metal {
@@ -1279,8 +1127,8 @@
 
 	.manifesto-vault__device {
 		position: absolute;
-		top: 48.5%;
-		left: 55.2%;
+		top: 46.9%;
+		left: 58.7%;
 		z-index: 2;
 		width: clamp(8.5rem, 10vw, 10rem);
 		translate: -50% -50%;
@@ -1392,7 +1240,97 @@
 	}
 
 	.showcase-mobile-device {
+		position: relative;
 		display: none;
+		isolation: isolate;
+	}
+
+	.showcase-mobile-device__orbit,
+	.showcase-mobile-device__beam {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		pointer-events: none;
+		translate: -50% -50%;
+	}
+
+	.showcase-mobile-device::before {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: -2;
+		width: min(24rem, 82vw);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle,
+			oklch(0.56 0.2 258 / 0.28),
+			oklch(0.34 0.16 258 / 0.12) 38%,
+			transparent 68%
+		);
+		filter: blur(1.8rem);
+		content: '';
+		translate: -50% -50%;
+	}
+
+	.showcase-mobile-device__orbit {
+		z-index: -1;
+		width: min(31rem, 108vw);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: repeating-conic-gradient(
+			from 0deg,
+			oklch(0.86 0.12 92 / 0.54) 0deg 0.55deg,
+			transparent 0.55deg 8deg
+		);
+		-webkit-mask: radial-gradient(
+			circle,
+			transparent 0 59%,
+			#000 59.4% 60.2%,
+			transparent 60.6% 76%,
+			#000 76.4% 77.1%,
+			transparent 77.5%
+		);
+		mask: radial-gradient(
+			circle,
+			transparent 0 59%,
+			#000 59.4% 60.2%,
+			transparent 60.6% 76%,
+			#000 76.4% 77.1%,
+			transparent 77.5%
+		);
+	}
+
+	.showcase-mobile-device__orbit span {
+		position: absolute;
+		top: 22.3%;
+		left: 50%;
+		width: 0.62rem;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: var(--landing-gold);
+		box-shadow: 0 0 1.2rem oklch(0.86 0.12 92 / 0.72);
+		translate: -50% 0;
+	}
+
+	.showcase-mobile-device__beam {
+		z-index: 0;
+		width: min(21rem, 78vw);
+		height: 78%;
+		background: linear-gradient(
+			100deg,
+			transparent 14%,
+			oklch(0.74 0.15 258 / 0.04) 42%,
+			oklch(0.86 0.12 92 / 0.18) 50%,
+			transparent 58%
+		);
+		filter: blur(0.8rem);
+		-webkit-mask-image: linear-gradient(transparent, #000 22% 78%, transparent);
+		mask-image: linear-gradient(transparent, #000 22% 78%, transparent);
+	}
+
+	.showcase-mobile-device :global(.device) {
+		z-index: 2;
 	}
 
 	.showcase-stage {
@@ -1537,26 +1475,45 @@
 
 	.journey-material {
 		position: absolute;
-		right: -13%;
-		bottom: -8%;
-		width: min(61vw, 58rem);
-		aspect-ratio: 1.5;
-		opacity: 0.55;
-		-webkit-mask-image: radial-gradient(ellipse at 56% 52%, #000 20%, transparent 70%);
-		mask-image: radial-gradient(ellipse at 56% 52%, #000 20%, transparent 70%);
+		inset: 0;
+		z-index: 0;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		overflow: hidden;
+		pointer-events: none;
 	}
 
-	.journey-material::after {
+	.journey-material__asset {
+		position: relative;
+		flex: 0 0 auto;
+		width: min(92vw, 78rem);
+		aspect-ratio: 16 / 9;
+		margin-right: clamp(1.5rem, 4vw, 4rem);
+		opacity: 0.4;
+		-webkit-mask-image: radial-gradient(ellipse at 76% 48%, #000 22%, #000 42%, transparent 78%);
+		mask-image: radial-gradient(ellipse at 76% 48%, #000 22%, #000 42%, transparent 78%);
+	}
+
+	.journey-material__asset::after {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(90deg, var(--landing-void), transparent 55%);
+		background:
+			linear-gradient(90deg, var(--landing-void) 0%, transparent 52%),
+			linear-gradient(
+				180deg,
+				var(--landing-void) 0%,
+				transparent 20%,
+				transparent 74%,
+				var(--landing-void) 100%
+			);
 		content: '';
 	}
 
-	.journey-material img {
+	.journey-material__asset img {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		object-fit: contain;
 	}
 
 	.journey-heading {
@@ -1624,6 +1581,9 @@
 		font-size: clamp(1.2rem, 2vw, 1.55rem);
 		font-weight: 560;
 		letter-spacing: -0.018em;
+		text-shadow:
+			0 1px 1px oklch(0% 0 0 / 0.92),
+			0 0 0.85rem oklch(0% 0 0 / 0.72);
 	}
 
 	.journey-step p {
@@ -1632,6 +1592,9 @@
 		color: var(--landing-muted);
 		font-size: 1rem;
 		line-height: 1.65;
+		text-shadow:
+			0 1px 1px oklch(0% 0 0 / 0.92),
+			0 0 0.85rem oklch(0% 0 0 / 0.72);
 	}
 
 	.privacy-section {
@@ -1842,22 +1805,74 @@
 	}
 
 	.sensitive-demo button {
+		position: relative;
+		display: grid;
 		width: 2.75rem;
 		height: 2.75rem;
+		place-items: center;
 		padding: 0;
 		border: 0;
 		border-radius: 50%;
 		background: oklch(0.62 0.2 258);
 		color: white;
 		cursor: pointer;
+		line-height: 0;
+		overflow: hidden;
 		transition:
 			transform 160ms var(--ease-out-quart),
 			background-color 160ms var(--ease-out-quart);
 	}
 
+	.sensitive-toggle__icon {
+		display: grid;
+		width: 100%;
+		height: 100%;
+		place-items: center;
+		color: white !important;
+		animation: sensitive-icon-in 320ms var(--ease-out-expo);
+	}
+
+	.sensitive-toggle__icon :global(svg) {
+		transform: translateX(0.02rem);
+	}
+
+	.sensitive-value {
+		display: block;
+		transform-origin: left center;
+		animation: sensitive-value-in 360ms var(--ease-out-expo);
+	}
+
 	.sensitive-demo button:hover {
 		background: oklch(0.7 0.18 258);
 		transform: scale(1.04);
+	}
+
+	.sensitive-demo button:active {
+		transform: scale(0.94);
+	}
+
+	@keyframes sensitive-icon-in {
+		from {
+			opacity: 0;
+			transform: rotate(-18deg) scale(0.72);
+		}
+		to {
+			opacity: 1;
+			transform: rotate(0) scale(1);
+		}
+	}
+
+	@keyframes sensitive-value-in {
+		from {
+			opacity: 0.35;
+			filter: blur(0.28rem);
+			transform: translateY(0.35rem) scale(0.96);
+		}
+		to {
+			opacity: 1;
+			filter: blur(0);
+			transform: translateY(0) scale(1);
+		}
 	}
 
 	.sensitive-demo small {
@@ -2064,6 +2079,28 @@
 	}
 
 	@media (max-width: 63.99rem) {
+		.mobile-scroll-progress {
+			position: fixed;
+			top: env(safe-area-inset-top, 0px);
+			right: 0;
+			left: 0;
+			z-index: 60;
+			display: block;
+			height: 2px;
+			background: oklch(0.74 0.15 258 / 0.16);
+			pointer-events: none;
+		}
+
+		.mobile-scroll-progress span {
+			display: block;
+			width: 100%;
+			height: 100%;
+			background: var(--landing-gold);
+			box-shadow: 0 0 0.85rem oklch(0.86 0.12 92 / 0.72);
+			transform: scaleX(0);
+			transform-origin: left center;
+		}
+
 		.hero {
 			padding-top: 2rem;
 		}
@@ -2082,11 +2119,11 @@
 
 		.hero-visual :global(.hero-device) {
 			width: min(18rem, 49vw);
-			margin-left: 8%;
+			margin-left: 0;
 		}
 
 		.journey-material {
-			opacity: 0.48;
+			opacity: 0.9;
 		}
 
 		.manifesto-vault {
@@ -2095,7 +2132,7 @@
 			right: auto;
 			left: auto;
 			width: min(62rem, 120vw);
-			margin: -2rem -12vw -5rem auto;
+			margin: -2rem -12vw 3.5rem auto;
 			translate: 0 0;
 		}
 
@@ -2121,6 +2158,7 @@
 			display: grid;
 			place-items: center;
 			margin-top: 2.25rem;
+			perspective: 1000px;
 		}
 
 		.showcase-mobile-device :global(.device) {
@@ -2177,7 +2215,7 @@
 
 		.hero-visual :global(.hero-device) {
 			width: min(16.5rem, 66vw);
-			margin-left: 2%;
+			margin-left: 0;
 		}
 
 		.hero-metal--ring {
@@ -2203,11 +2241,11 @@
 		.manifesto-vault {
 			width: 54rem;
 			max-width: none;
-			margin: -2rem 0 -5rem -17.25rem;
+			margin: -2rem 0 4rem calc(50% - 31.7rem);
 		}
 
 		.manifesto-vault__device {
-			width: 8.25rem;
+			width: 9.6rem;
 		}
 
 		.showcase {
@@ -2234,10 +2272,22 @@
 			font-size: clamp(2rem, 9vw, 2.75rem);
 		}
 
-		.journey-material {
-			right: -66%;
-			bottom: 10%;
-			width: 150vw;
+		.journey-material__asset {
+			width: min(170vw, 44rem);
+			margin-right: 0.75rem;
+			opacity: 0.3;
+			-webkit-mask-image: radial-gradient(
+				ellipse at 76% 48%,
+				#000 18%,
+				#000 40%,
+				transparent 76%
+			);
+			mask-image: radial-gradient(
+				ellipse at 76% 48%,
+				#000 18%,
+				#000 40%,
+				transparent 76%
+			);
 		}
 
 		.journey-steps {
@@ -2259,8 +2309,7 @@
 		.journey-progress {
 			width: 100%;
 			height: 100%;
-			transform: none !important;
-			transform-origin: top;
+			transform-origin: center top;
 		}
 
 		.journey-step {
@@ -2299,6 +2348,19 @@
 			display: none;
 		}
 
+		.privacy-orbit > span,
+		.showcase-mobile-device__orbit span {
+			animation: mobile-orbit-signal 2.6s ease-in-out infinite;
+		}
+
+		.privacy-orbit > span:nth-child(2) {
+			animation-delay: -0.8s;
+		}
+
+		.privacy-orbit > span:nth-child(3) {
+			animation-delay: -1.6s;
+		}
+
 		.sensitive-demo {
 			padding: 1.15rem;
 		}
@@ -2332,12 +2394,22 @@
 			min-height: 34rem;
 		}
 
-		.manifesto-vault {
-			margin-left: -18.5rem;
-		}
-
 		.privacy-node {
 			font-size: 0.75rem;
+		}
+	}
+
+	@keyframes mobile-orbit-signal {
+		0%,
+		100% {
+			opacity: 0.58;
+			box-shadow: 0 0 0.5rem oklch(0.86 0.12 92 / 0.48);
+			transform: scale(0.82);
+		}
+		50% {
+			opacity: 1;
+			box-shadow: 0 0 1.35rem oklch(0.86 0.12 92 / 0.86);
+			transform: scale(1);
 		}
 	}
 
@@ -2363,6 +2435,10 @@
 
 		.journey-progress {
 			transform: none !important;
+		}
+
+		.mobile-scroll-progress {
+			display: none;
 		}
 	}
 </style>

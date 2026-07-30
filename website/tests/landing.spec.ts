@@ -85,6 +85,91 @@ test('keeps every chapter on a narrow mobile viewport', async ({ page }) => {
 	expect(overflow).toBeLessThanOrEqual(1);
 });
 
+test('keeps the vault phone and circular privacy control optically centred on mobile', async ({
+	page,
+	browserName
+}) => {
+	test.skip(browserName !== 'chromium', 'The geometry assertion is covered once in Chromium.');
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.goto('/');
+
+	const geometry = await page.evaluate(() => {
+		const shell = document.querySelector<HTMLElement>('.manifesto-vault__shell');
+		const device = document.querySelector<HTMLElement>('.manifesto-vault__device');
+		const deviceShell = document.querySelector<HTMLElement>(
+			'.manifesto-vault__device .device__shell'
+		);
+		const heroAperture = document.querySelector<HTMLElement>('.aperture-rotator');
+		const heroDevice = document.querySelector<HTMLElement>('.hero-device');
+		const button = document.querySelector<HTMLButtonElement>('.sensitive-demo button');
+		const icon = button?.querySelector<SVGElement>('svg');
+		if (!shell || !device || !deviceShell || !heroAperture || !heroDevice || !button || !icon) {
+			throw new Error('Missing geometry target');
+		}
+
+		const shellBox = shell.getBoundingClientRect();
+		const deviceBox = device.getBoundingClientRect();
+		const heroApertureBox = heroAperture.getBoundingClientRect();
+		const heroDeviceBox = heroDevice.getBoundingClientRect();
+		const buttonBox = button.getBoundingClientRect();
+		const iconBox = icon.getBoundingClientRect();
+		const horizontalRadius = Number.parseFloat(getComputedStyle(deviceShell).borderTopLeftRadius);
+
+		return {
+			heroDeltaX:
+				heroDeviceBox.left +
+				heroDeviceBox.width / 2 -
+				(heroApertureBox.left + heroApertureBox.width / 2),
+			vaultDeltaX: deviceBox.left + deviceBox.width / 2 - (shellBox.left + shellBox.width * 0.587),
+			vaultDeltaY: deviceBox.top + deviceBox.height / 2 - (shellBox.top + shellBox.height * 0.469),
+			iconDeltaX: iconBox.left + iconBox.width / 2 - (buttonBox.left + buttonBox.width / 2),
+			iconDeltaY: iconBox.top + iconBox.height / 2 - (buttonBox.top + buttonBox.height / 2),
+			deviceRadiusRatio: horizontalRadius / deviceBox.width
+		};
+	});
+
+	expect(Math.abs(geometry.heroDeltaX)).toBeLessThanOrEqual(0.5);
+	expect(Math.abs(geometry.vaultDeltaX)).toBeLessThanOrEqual(0.5);
+	expect(Math.abs(geometry.vaultDeltaY)).toBeLessThanOrEqual(0.5);
+	expect(Math.abs(geometry.iconDeltaX)).toBeLessThanOrEqual(0.75);
+	expect(Math.abs(geometry.iconDeltaY)).toBeLessThanOrEqual(0.75);
+	expect(geometry.deviceRadiusRatio).toBeLessThan(0.16);
+});
+
+test('runs a dedicated scroll choreography on compact viewports', async ({ page, browserName }) => {
+	test.skip(browserName !== 'chromium', 'The motion assertion is covered once in Chromium.');
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto('/');
+	await page.waitForTimeout(700);
+
+	const firstDevice = page.locator('.showcase-mobile-device .device').first();
+	const initialTransform = await firstDevice.evaluate((element) => getComputedStyle(element).transform);
+	const manifestoDevice = page.locator('.manifesto-vault__device');
+	await expect.poll(() => manifestoDevice.evaluate((element) => element.style.transform)).not.toBe('');
+
+	const manifestoPhoneClearance = await page.evaluate(() => {
+		const section = document.querySelector<HTMLElement>('.manifesto');
+		const device = document.querySelector<HTMLElement>('.manifesto-vault__device');
+		if (!section || !device) throw new Error('Missing manifesto containment target');
+
+		return section.getBoundingClientRect().bottom - device.getBoundingClientRect().bottom;
+	});
+	expect(manifestoPhoneClearance).toBeGreaterThanOrEqual(24);
+
+	await page.locator('.showcase-step').first().scrollIntoViewIfNeeded();
+	await page.evaluate(() => window.scrollBy({ top: 420, behavior: 'instant' }));
+
+	await expect
+		.poll(() => firstDevice.evaluate((element) => getComputedStyle(element).transform))
+		.not.toBe(initialTransform);
+
+	const progressScale = await page.locator('.mobile-scroll-progress span').evaluate((element) => {
+		return new DOMMatrixReadOnly(getComputedStyle(element).transform).a;
+	});
+	expect(progressScale).toBeGreaterThan(0.15);
+});
+
 test('preserves the complete experience when reduced motion is requested', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await page.goto('/');
@@ -94,9 +179,29 @@ test('preserves the complete experience when reduced motion is requested', async
 		page.getByRole('heading', { level: 2, name: /Un coffre numérique|A digital vault/ })
 	).toBeVisible();
 	await expect(page.locator('.manifesto-vault__shell')).toBeVisible();
+	await expect(page.locator('.mobile-scroll-progress')).toBeHidden();
 	expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(
 		true
 	);
+});
+
+test('reacts when the motion preference changes while the page is open', async ({
+	page,
+	browserName
+}) => {
+	test.skip(browserName !== 'chromium', 'The live preference assertion is covered once in Chromium.');
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto('/');
+
+	const device = page.locator('.showcase-mobile-device .device').first();
+	await expect.poll(() => device.evaluate((element) => element.style.transform)).not.toBe('');
+
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await expect.poll(() => device.evaluate((element) => element.style.transform)).toBe('');
+	await expect(page.locator('.mobile-scroll-progress')).toBeHidden();
+
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await expect.poll(() => device.evaluate((element) => element.style.transform)).not.toBe('');
 });
 
 test('passes an automated accessibility scan on the primary page', async ({ page }) => {
