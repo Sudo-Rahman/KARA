@@ -8,10 +8,6 @@
 	</array>
 	<key>KARAAPIBaseURL</key>
 	<string>$(KARA_API_BASE_URL)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>KARA uses the camera to identify an asset and scan its invoice.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>KARA uses Face ID to protect access to your private vault.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Geologica-Variable.ttf</string>
@@ -21,7 +17,5 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
 </dict>
 </plist>
