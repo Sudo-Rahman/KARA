@@ -19,7 +19,7 @@ nonisolated enum MarketDataClientError: Error, Equatable, Sendable {
 }
 
 nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked Sendable {
-    static let productionBaseURL = URL(string: "https://kara.rahman-dev.ovh")!
+    static let productionBaseURL = URL(string: "https://kara.sudo-rahman.fr")!
 
     private static var configuredBaseURL: URL {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "KARAAPIBaseURL") as? String,

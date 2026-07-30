@@ -188,12 +188,6 @@ struct AssetDocumentsView: View {
                 )
             } description: {
                 Text(AssetDocumentsCopy.string("documents.empty.body"))
-            } actions: {
-                Button(AssetDocumentsCopy.string("documents.empty.action")) {
-                    beginImport(kind: .other)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(theme.cobaltBright)
             }
             .foregroundStyle(theme.ink)
 
