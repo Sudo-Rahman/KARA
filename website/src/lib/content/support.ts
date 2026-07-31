@@ -2,16 +2,16 @@ import type { EditorialDocument, EditorialLocale } from './editorial';
 
 export const supportContent = {
 	fr: {
-		metaTitle: 'Support et avant-première — Kara',
+		metaTitle: 'Support — Kara',
 		metaDescription:
-			'Découvrez le fonctionnement prévu de Kara avant son lancement et contactez-nous sans exposer votre patrimoine.',
+			'Consultez le fonctionnement de Kara et contactez le support sans exposer votre patrimoine.',
 		eyebrow: 'Support',
-		title: 'Une réponse claire, avant même le lancement.',
+		title: 'Une réponse claire, quand vous en avez besoin.',
 		intro:
-			'Kara est encore en préparation : aucune application publique n’est disponible aujourd’hui. Ce centre d’aide présente les choix produit validés, sans faire passer une fonction future pour une fonction déjà livrée.',
+			'Ce centre d’aide présente le fonctionnement de Kara, ses choix de confidentialité et les précautions à prendre pour protéger les informations de votre patrimoine.',
 		updatedLabel: 'Informations mises à jour le',
-		updatedDate: '25 juillet 2026',
-		updatedDateIso: '2026-07-25',
+		updatedDate: '30 juillet 2026',
+		updatedDateIso: '2026-07-30',
 		skipLinkLabel: 'Aller au contenu',
 		contentsLabel: 'Accès rapide',
 		backHomeLabel: 'Retour à l’accueil',
@@ -21,57 +21,57 @@ export const supportContent = {
 		alternativeLanguage: 'English',
 		footerTagline: 'Votre patrimoine, clairement.',
 		legalOperatorLabel: 'Site édité par',
-		highlights: ['Pré-lancement transparent', 'Inventaire non stocké par Kara', 'Contact direct'],
+		highlights: ['Support pratique', 'Inventaire non stocké par Kara', 'Contact direct'],
 		sections: [
 			{
 				kind: 'text',
-				id: 'disponibilite',
-				title: 'Kara est en préparation',
+				id: 'utilisation',
+				title: 'Kara au quotidien',
 				paragraphs: [
-					'Les versions iOS et Android ne sont pas encore publiées. Les badges stores de ce site restent désactivés tant qu’aucune fiche officielle n’est disponible.',
-					'Au lancement, Kara doit permettre de suivre des lingots, pièces, bijoux et autres métaux précieux physiques, avec leurs quantités, poids, pureté, prix d’achat et lieux de conservation.'
+					'Kara permet de suivre des lingots, pièces, bijoux et autres métaux précieux physiques, avec leurs quantités, poids, pureté, prix d’achat et lieux de conservation.',
+					'L’application rassemble l’inventaire, les documents, les valorisations, les simulations de vente et les rapports dans un coffre privé.'
 				],
 				points: [
 					{
-						title: 'Plateformes prévues',
-						body: 'Une application iOS et une application Android, avec la même promesse de confidentialité.'
+						title: 'Plateformes',
+						body: 'Kara existe sur iOS et Android, avec la même promesse de confidentialité.'
 					},
 					{
 						title: 'Accès',
-						body: 'Aucun compte Kara : l’application utilisera le compte système déjà configuré sur l’appareil.'
+						body: 'Aucun compte Kara : l’application utilise le compte système déjà configuré sur l’appareil pour la sauvegarde privée.'
 					},
 					{
-						title: 'Évolution',
-						body: 'Les détails d’interface peuvent encore évoluer avant la publication sur les stores.'
+						title: 'Assistance',
+						body: 'Le support répond aux questions sur l’utilisation, la confidentialité et les services en ligne de Kara.'
 					}
 				],
 				note:
-					'Cette page sera mise à jour avec les procédures de diagnostic réelles lorsque des versions publiques auront été testées et publiées.'
+					'Pour nous aider à diagnostiquer un problème, indiquez la version de Kara, le modèle de l’appareil et la version du système, sans joindre de donnée patrimoniale.'
 			},
 			{
 				kind: 'faq',
 				id: 'confidentialite-prevue',
-				title: 'Confidentialité prévue',
+				title: 'Confidentialité',
 				items: [
 					{
-						question: 'Où mon inventaire sera-t-il conservé ?',
+						question: 'Où mon inventaire est-il conservé ?',
 						answer: [
-							'Il sera géré sur l’appareil. La sauvegarde privée doit utiliser iCloud sur iOS et l’espace AppData de Google Drive sur Android. Kara ne stockera aucune copie de l’inventaire complet.',
-							'Si vous activez le préremplissage par IA, seule la photo ou la copie d’analyse de facture choisie, limitée à six pages, transitera temporairement via Kara vers OpenAI. Le backend Kara ne la stockera pas.'
+							'Il est géré sur l’appareil. La sauvegarde privée utilise iCloud sur iOS et l’espace AppData de Google Drive sur Android. Kara ne stocke aucune copie de l’inventaire complet.',
+							'Si vous activez le préremplissage par IA, seule la photo ou la copie d’analyse de facture choisie, limitée à six pages, transite temporairement via Kara vers OpenAI. Le backend Kara ne la stocke pas.'
 						]
 					},
 					{
-						question: 'Le préremplissage par IA sera-t-il obligatoire ?',
+						question: 'Le préremplissage par IA est-il obligatoire ?',
 						answer: [
-							'Non. Il sera désactivé par défaut et vous pourrez revenir sur votre choix à tout moment. Son seul objectif sera de proposer des valeurs pour les champs de l’application, sans suivi, publicité ni profilage.',
-							'Les données envoyées par l’API OpenAI standard ne servent pas à entraîner ses modèles par défaut. OpenAI pourra toutefois conserver des journaux anti-abus susceptibles d’inclure ce contenu pendant un maximum de 30 jours. Le préremplissage nécessite une connexion internet et n’effectue aucune analyse locale.'
+							'Non. Il est désactivé par défaut et vous pouvez revenir sur votre choix à tout moment. Son seul objectif est de proposer des valeurs pour les champs de l’application, sans suivi, publicité ni profilage.',
+							'Les données envoyées par l’API OpenAI standard ne servent pas à entraîner ses modèles par défaut. OpenAI peut toutefois conserver des journaux anti-abus susceptibles d’inclure ce contenu pendant un maximum de 30 jours. Le préremplissage nécessite une connexion internet et n’effectue aucune analyse locale.'
 						]
 					},
 					{
-						question: 'Quelles données techniques Kara conservera-t-elle pour une extraction en ligne ?',
+						question: 'Quelles données techniques Kara conserve-t-elle pour une extraction en ligne ?',
 						answer: [
-							'Pour les quotas, les limites dites « par installation » seront techniquement appliquées à la clé App Attest. Redis conservera seulement des pseudonymes HMAC et des marqueurs de fenêtre pendant au plus 24 heures. Un marqueur de quarantaine associé à cette clé ou à l’adresse IP pourra subsister sept jours si le seuil d’abus est atteint. Le keyId et l’adresse IP ne seront pas conservés sous leur forme brute.',
-							'Les journaux opérationnels Kara seront conservés pendant un maximum de 30 jours. Ils pourront contenir l’identifiant de requête, le type et la taille du média, le nombre de pages, le statut, la latence et les jetons traités, mais jamais le média, les champs extraits, le keyId, l’adresse IP ou leurs pseudonymes HMAC.'
+							'Pour les quotas, les limites dites « par installation » sont techniquement appliquées à la clé App Attest. Redis conserve seulement des pseudonymes HMAC et des marqueurs de fenêtre pendant au plus 24 heures. Un marqueur de quarantaine associé à cette clé ou à l’adresse IP peut subsister sept jours si le seuil d’abus est atteint. Le keyId et l’adresse IP ne sont pas conservés sous leur forme brute.',
+							'Les journaux opérationnels Kara sont conservés pendant un maximum de 30 jours. Ils peuvent contenir l’identifiant de requête, le type et la taille du média, le nombre de pages, le statut, la latence et les jetons traités, mais jamais le média, les champs extraits, le keyId, l’adresse IP ou leurs pseudonymes HMAC.'
 						]
 					},
 					{
@@ -83,70 +83,70 @@ export const supportContent = {
 					{
 						question: 'Les cours révéleront-ils le contenu de mon inventaire ?',
 						answer: [
-							'Non. La récupération de cours de référence ne doit joindre ni objets, ni prix d’achat, ni lieux de conservation. Une valeur pourra aussi être ajustée manuellement.'
+							'Non. La récupération de cours de référence ne joint ni objets, ni prix d’achat, ni lieux de conservation. Une valeur peut aussi être ajustée manuellement.'
 						]
 					}
 				]
 			},
 			{
 				kind: 'faq',
-				id: 'fonctions-annoncees',
-				title: 'Fonctions annoncées',
+				id: 'fonctionnalites',
+				title: 'Fonctionnalités',
 				items: [
 					{
-						question: 'Que pourrai-je suivre dans Kara ?',
+						question: 'Que puis-je suivre dans Kara ?',
 						answer: [
-							'Le produit est prévu pour inventorier des lingots, pièces, bijoux et autres objets en métaux précieux, puis regrouper leur valeur estimée, leur coût d’acquisition, leur répartition et leur plus-value.'
+							'Kara inventorie des lingots, pièces, bijoux et autres objets en métaux précieux, puis regroupe leur valeur estimée, leur coût d’acquisition, leur répartition et leur plus-value.'
 						]
 					},
 					{
-						question: 'Les simulations seront-elles des conseils de vente ?',
+						question: 'Les simulations sont-elles des conseils de vente ?',
 						answer: [
-							'Non. Les scénarios seront estimatifs, hors frais et fiscalité. Kara ne fournira pas de conseil financier ou fiscal.'
+							'Non. Les scénarios sont estimatifs, hors frais et fiscalité. Kara ne fournit pas de conseil financier ou fiscal.'
 						]
 					},
 					{
-						question: 'Les rapports et PDF seront-ils envoyés à Kara ?',
+						question: 'Les rapports et PDF sont-ils envoyés à Kara ?',
 						answer: [
-							'Non. Leur génération est prévue localement sur l’appareil. Si vous choisissez ensuite de partager un PDF, sa destination dépendra de votre action et du service sélectionné.'
+							'Non. Ils sont générés localement sur l’appareil. Si vous choisissez ensuite de partager un PDF, sa destination dépend de votre action et du service sélectionné.'
 						]
 					}
 				]
 			},
 			{
 				kind: 'text',
-				id: 'suivre-lancement',
-				title: 'Suivre le lancement',
+				id: 'telechargements',
+				title: 'Téléchargements officiels',
 				paragraphs: [
-					'Nous n’ajoutons ni compte d’attente ni formulaire marketing à ce site. Les liens directs seront activés dès que les fiches officielles App Store et Google Play existeront.',
-					'Avant cette date, méfiez-vous de tout téléchargement présenté comme une version officielle de Kara en dehors des liens publiés ici.'
+					'Kara ne propose ni compte d’attente ni formulaire marketing sur ce site.',
+					'Utilisez uniquement les liens App Store et Google Play affichés sur le site officiel. N’installez aucune version présentée comme officielle depuis une autre source.'
 				]
 			},
 			{
 				kind: 'contact',
 				id: 'contact',
-				title: 'Une question avant le lancement ?',
+				title: 'Besoin d’aide ?',
 				paragraphs: [
 					'Écrivez-nous directement. Votre logiciel de messagerie s’ouvrira : aucun formulaire serveur ne collecte votre demande sur ce site. Pour signaler un problème d’extraction, indiquez seulement l’identifiant de requête si l’application vous en fournit un ; ne joignez ni média, ni champs extraits, ni identifiant App Attest, ni information réelle sur votre patrimoine.'
 				],
 				emailLabel: 'Écrire au support',
-				emailSubject: 'Question avant le lancement de Kara',
+				emailSubject: 'Support Kara',
 				emailUnavailable:
-					'L’adresse de support n’est pas encore publiée. Elle sera disponible ici avant le lancement de l’application.'
+					'L’adresse de support est momentanément indisponible. Réessayez plus tard.'
 			}
 		]
 	},
 	en: {
-		metaTitle: 'Support and preview — Kara',
+		metaTitle: 'Support — Kara',
 		metaDescription:
-			'Learn how Kara is intended to work before launch and contact us without exposing your holdings.',
+			'Learn how Kara works, review its privacy safeguards, and contact support without exposing your holdings.',
 		eyebrow: 'Support',
-		title: 'A clear answer, even before launch.',
+		title: 'A clear answer, when you need it.',
 		intro:
-			'Kara is still in development: no public app is available today. This help centre presents validated product decisions without describing a future feature as if it had already shipped.',
+			'This help centre explains how Kara works, its privacy choices, and the precautions to take when protecting information about your holdings.',
 		updatedLabel: 'Information updated',
-		updatedDate: 'July 25, 2026',
-		updatedDateIso: '2026-07-25',
+		updatedDate: 'July 30, 2026',
+		updatedDateIso: '2026-07-30',
 		skipLinkLabel: 'Skip to content',
 		contentsLabel: 'Quick access',
 		backHomeLabel: 'Back to home',
@@ -156,57 +156,57 @@ export const supportContent = {
 		alternativeLanguage: 'Français',
 		footerTagline: 'Your wealth, clearly.',
 		legalOperatorLabel: 'Website operated by',
-		highlights: ['Transparent preview', 'No inventory stored by Kara', 'Direct contact'],
+		highlights: ['Practical support', 'No inventory stored by Kara', 'Direct contact'],
 		sections: [
 			{
 				kind: 'text',
-				id: 'availability',
-				title: 'Kara is in development',
+				id: 'everyday-use',
+				title: 'Using Kara every day',
 				paragraphs: [
-					'The iOS and Android apps have not been released yet. This website keeps its store badges disabled until official listings are available.',
-					'At launch, Kara is intended to track physical gold bars, coins, jewellery, and other precious-metal assets together with their quantities, weights, purity, purchase prices, and storage locations.'
+					'Kara tracks physical gold bars, coins, jewellery, and other precious-metal assets together with their quantities, weights, purity, purchase prices, and storage locations.',
+					'The app brings inventory, documents, valuations, sale simulations, and reports together in one private vault.'
 				],
 				points: [
 					{
-						title: 'Planned platforms',
-						body: 'An iOS app and an Android app, both built around the same privacy promise.'
+						title: 'Platforms',
+						body: 'Kara is available for iOS and Android, both built around the same privacy promise.'
 					},
 					{
 						title: 'Access',
-						body: 'No Kara account: the app will use the system account already configured on the device.'
+						body: 'No Kara account: the app uses the system account already configured on the device for private backup.'
 					},
 					{
-						title: 'Product evolution',
-						body: 'Interface details may still change before the store release.'
+						title: 'Assistance',
+						body: 'Support answers questions about using Kara, privacy, and its online services.'
 					}
 				],
 				note:
-					'This page will be updated with real troubleshooting procedures once public builds have been tested and released.'
+					'To help us diagnose an issue, provide the Kara version, device model, and operating-system version without attaching any holdings data.'
 			},
 			{
 				kind: 'faq',
-				id: 'planned-privacy',
-				title: 'Planned privacy model',
+				id: 'privacy',
+				title: 'Privacy',
 				items: [
 					{
-						question: 'Where will my inventory be stored?',
+						question: 'Where is my inventory stored?',
 						answer: [
-							'It will be managed on the device. Private backup is intended to use iCloud on iOS and Google Drive AppData on Android. Kara will not store a copy of your complete inventory.',
-							'If you enable AI-assisted form filling, only the selected photo or invoice analysis copy, limited to six pages, will temporarily pass through Kara to OpenAI. The Kara backend will not store it.'
+							'It is managed on the device. Private backup uses iCloud on iOS and Google Drive AppData on Android. Kara does not store a copy of your complete inventory.',
+							'If you enable AI-assisted form filling, only the selected photo or invoice analysis copy, limited to six pages, temporarily passes through Kara to OpenAI. The Kara backend does not store it.'
 						]
 					},
 					{
-						question: 'Will AI-assisted form filling be required?',
+						question: 'Is AI-assisted form filling required?',
 						answer: [
-							'No. It will be off by default, and you will be able to change your choice at any time. Its sole purpose will be to suggest values for app fields, with no tracking, advertising, or profiling.',
+							'No. It is off by default, and you can change your choice at any time. Its sole purpose is to suggest values for app fields, with no tracking, advertising, or profiling.',
 							'Data submitted through the standard OpenAI API is not used to train its models by default. OpenAI may nevertheless keep abuse-monitoring logs, which may include this content, for up to 30 days. Form filling requires an internet connection and performs no local analysis.'
 						]
 					},
 					{
-						question: 'What technical data will Kara retain for an online extraction?',
+						question: 'What technical data does Kara retain for an online extraction?',
 						answer: [
-							'For quotas, limits described as “per installation” will technically be applied to the App Attest key. Redis will hold only HMAC pseudonyms and window markers for no more than 24 hours. A quarantine marker associated with that key or the IP address may remain for seven days if the abuse threshold is reached. The keyId and IP address will not be retained in raw form.',
-							'Kara operational logs will be retained for no more than 30 days. They may include the request ID, media type and size, page count, status, latency, and token counts, but never the media, extracted fields, keyId, IP address, or their HMAC pseudonyms.'
+							'For quotas, limits described as “per installation” may technically be applied to the App Attest key. Redis holds only HMAC pseudonyms and window markers for no more than 24 hours. A quarantine marker associated with that key or the IP address may remain for seven days if the abuse threshold is reached. The keyId and IP address are not retained in raw form.',
+							'Kara operational logs are retained for no more than 30 days. They may include the request ID, media type and size, page count, status, latency, and token counts, but never the media, extracted fields, keyId, IP address, or their HMAC pseudonyms.'
 						]
 					},
 					{
@@ -218,56 +218,56 @@ export const supportContent = {
 					{
 						question: 'Will market-price requests reveal my inventory?',
 						answer: [
-							'No. Reference-price requests are intended to include no items, purchase prices, or storage locations. A value will also be manually adjustable.'
+							'No. Reference-price requests include no items, purchase prices, or storage locations. A value can also be adjusted manually.'
 						]
 					}
 				]
 			},
 			{
 				kind: 'faq',
-				id: 'announced-features',
-				title: 'Announced features',
+				id: 'features',
+				title: 'Features',
 				items: [
 					{
-						question: 'What will I be able to track in Kara?',
+						question: 'What can I track in Kara?',
 						answer: [
-							'The product is intended to inventory bars, coins, jewellery, and other precious-metal objects, then consolidate their estimated value, acquisition cost, allocation, and gain.'
+							'Kara inventories bars, coins, jewellery, and other precious-metal objects, then consolidates their estimated value, acquisition cost, allocation, and gain.'
 						]
 					},
 					{
-						question: 'Will simulations be sale advice?',
+						question: 'Are simulations sale advice?',
 						answer: [
-							'No. Scenarios will be estimates excluding fees and taxes. Kara will not provide financial or tax advice.'
+							'No. Scenarios are estimates excluding fees and taxes. Kara does not provide financial or tax advice.'
 						]
 					},
 					{
-						question: 'Will reports and PDFs be sent to Kara?',
+						question: 'Are reports and PDFs sent to Kara?',
 						answer: [
-							'No. They are intended to be generated locally on the device. If you then choose to share a PDF, its destination will depend on your action and the selected service.'
+							'No. They are generated locally on the device. If you then choose to share a PDF, its destination depends on your action and the selected service.'
 						]
 					}
 				]
 			},
 			{
 				kind: 'text',
-				id: 'follow-launch',
-				title: 'Follow the launch',
+				id: 'downloads',
+				title: 'Official downloads',
 				paragraphs: [
-					'We are not adding a waiting-list account or marketing form to this website. Direct links will be enabled as soon as official App Store and Google Play listings exist.',
-					'Until then, be cautious of any download presented as an official Kara release outside the links published here.'
+					'Kara does not offer a waiting-list account or marketing form on this website.',
+					'Use only the App Store and Google Play links displayed on the official website. Do not install any version presented as official from another source.'
 				]
 			},
 			{
 				kind: 'contact',
 				id: 'contact',
-				title: 'A question before launch?',
+				title: 'Need help?',
 				paragraphs: [
 					'Email us directly. Your mail app opens without a server form collecting your request on this website. To report an extraction issue, provide only the request ID if the app gives you one; do not attach media, extracted fields, an App Attest identifier, or any real information about your holdings.'
 				],
 				emailLabel: 'Email support',
-				emailSubject: 'Question before Kara launches',
+				emailSubject: 'Kara support',
 				emailUnavailable:
-					'The support address has not been published yet. It will appear here before the app launches.'
+					'The support address is temporarily unavailable. Please try again later.'
 			}
 		]
 	}

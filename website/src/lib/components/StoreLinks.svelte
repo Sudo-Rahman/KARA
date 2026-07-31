@@ -20,14 +20,14 @@
 			apple: 'Télécharger Kara dans l’App Store',
 			google: 'Télécharger Kara sur Google Play',
 			scan: 'Scanner pour télécharger',
-			unavailable: 'Bientôt disponible'
+			unavailable: 'Lien du store indisponible'
 		},
 		en: {
 			group: 'Download Kara',
 			apple: 'Download Kara on the App Store',
 			google: 'Download Kara on Google Play',
 			scan: 'Scan to download',
-			unavailable: 'Coming soon'
+			unavailable: 'Store link unavailable'
 		}
 	} as const;
 

@@ -8,7 +8,7 @@ export const privacyContent = {
 		eyebrow: 'Confidentialité',
 		title: 'Vos biens restent vos affaires.',
 		intro:
-			'Kara n’est pas encore publiée. Elle est conçue pour gérer un patrimoine physique sans constituer une base d’inventaire en ligne. Cette page distingue votre appareil, votre espace cloud privé, le préremplissage par IA disponible sur option et ce site.',
+			'Kara gère votre patrimoine physique sans constituer une base d’inventaire en ligne. Cette page distingue votre appareil, votre espace cloud privé, le préremplissage par IA disponible sur option et ce site.',
 		updatedLabel: 'Dernière mise à jour',
 		updatedDate: '25 juillet 2026',
 		updatedDateIso: '2026-07-25',
@@ -165,7 +165,7 @@ export const privacyContent = {
 				emailLabel: 'Contacter Kara',
 				emailSubject: 'Question sur la confidentialité de Kara',
 				emailUnavailable:
-					'L’adresse de contact n’est pas encore publiée. Elle sera disponible ici avant le lancement de l’application.'
+					'L’adresse de contact est momentanément indisponible. Réessayez plus tard.'
 			}
 		]
 	},
@@ -176,7 +176,7 @@ export const privacyContent = {
 		eyebrow: 'Privacy',
 		title: 'Your assets remain your business.',
 		intro:
-			'Kara has not been released yet. It is designed to manage physical wealth without creating an online inventory database. This page distinguishes your device, your private cloud space, optional AI-assisted form filling, and this website.',
+			'Kara manages physical wealth without creating an online inventory database. This page distinguishes your device, your private cloud space, optional AI-assisted form filling, and this website.',
 		updatedLabel: 'Last updated',
 		updatedDate: 'July 25, 2026',
 		updatedDateIso: '2026-07-25',
@@ -333,7 +333,7 @@ export const privacyContent = {
 				emailLabel: 'Contact Kara',
 				emailSubject: 'Question about Kara privacy',
 				emailUnavailable:
-					'The contact address has not been published yet. It will appear here before the app launches.'
+					'The contact address is temporarily unavailable. Please try again later.'
 			}
 		]
 	}
