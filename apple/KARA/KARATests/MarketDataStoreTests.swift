@@ -4,6 +4,56 @@ import Testing
 
 @Suite("Market data store", .serialized)
 struct MarketDataStoreTests {
+#if DEBUG
+    @Test("The visual QA market fixture requires all three exact launch flags")
+    func visualQAFixtureRequiresExactLaunchFlags() {
+        let required = [
+            KaraModelContainerFactory.inMemoryLaunchArgument,
+            VisualQAVaultSeeder.launchArgument,
+            MarketDataStore.cachedOnlyLaunchArgument,
+        ]
+
+        #expect(VisualQAMarketDataFixture.isEnabled(arguments: required))
+        #expect(VisualQAMarketDataFixture.isEnabled(arguments: required + ["-AppleLanguages", "(en)"]))
+        for missingIndex in required.indices {
+            var incomplete = required
+            incomplete.remove(at: missingIndex)
+            #expect(!VisualQAMarketDataFixture.isEnabled(arguments: incomplete))
+        }
+        #expect(!VisualQAMarketDataFixture.isEnabled(arguments: required.map { $0 + "-near-miss" }))
+    }
+
+    @Test("The visual QA launch publishes four EUR quotes and twelve months per metal")
+    @MainActor
+    func visualQAFixturePublishesCompleteCoverage() async throws {
+        let store = MarketDataStore.live(arguments: [
+            KaraModelContainerFactory.inMemoryLaunchArgument,
+            VisualQAVaultSeeder.launchArgument,
+            MarketDataStore.cachedOnlyLaunchArgument,
+        ])
+
+        await store.load()
+
+        let quotes = try MarketMetal.allCases.map { metal in
+            try #require(store.quote(for: metal, currency: .eur))
+        }
+        #expect(quotes.map(\.metal) == MarketMetal.allCases)
+        #expect(quotes.allSatisfy { $0.price > 0 && $0.sourceUpdatedAt == VisualQAMarketDataFixture.timestamp })
+
+        let monthly = try #require(store.monthlyDataset)
+        #expect(monthly.series.map(\.metal) == MarketMetal.allCases)
+        #expect(monthly.series.allSatisfy { series in
+            series.observations.count == 12
+                && series.observations.first?.month == "2025-09"
+                && series.observations.last?.month == "2026-08"
+                && series.observations.allSatisfy { $0.price(in: .eur).map { $0 > 0 } == true }
+        })
+        #expect(store.manifest?.dataVersion == VisualQAMarketDataFixture.dataVersion)
+        #expect(try VisualQAMarketDataFixture.bootstrap.validated() == VisualQAMarketDataFixture.bootstrap)
+        #expect(try VisualQAMarketDataFixture.monthlyDataset.validated() == monthly)
+    }
+#endif
+
     @Test("The home always requests all four EUR metal quotes")
     func homeRequestsEveryMetalQuote() {
         #expect(

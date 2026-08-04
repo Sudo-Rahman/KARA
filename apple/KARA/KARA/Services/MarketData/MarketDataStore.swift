@@ -68,8 +68,16 @@ final class MarketDataStore {
         self.now = now
     }
 
-    static func live() -> MarketDataStore {
-        MarketDataStore(
+    static func live(
+        arguments: [String] = ProcessInfo.processInfo.arguments
+    ) -> MarketDataStore {
+#if DEBUG
+        if VisualQAMarketDataFixture.isEnabled(arguments: arguments) {
+            let fixture = VisualQAMarketDataFixture()
+            return MarketDataStore(client: fixture, cache: fixture)
+        }
+#endif
+        return MarketDataStore(
             client: URLSessionMarketDataClient(),
             cache: DiskMarketDataCache.applicationSupport()
         )

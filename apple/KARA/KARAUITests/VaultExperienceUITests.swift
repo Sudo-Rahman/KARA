@@ -64,8 +64,8 @@ final class VaultExperienceUITests: XCTestCase {
 
         XCTAssertTrue(element("documents.header", in: app).waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["vault.privacy-toggle"].exists)
-        XCTAssertTrue(app.buttons["Facture Lingotin 50 g.txt"].exists)
-        XCTAssertTrue(app.buttons["Certificat d’authenticité.txt"].exists)
+        XCTAssertTrue(app.buttons["Facture Lingotin 50 g.pdf"].exists)
+        XCTAssertTrue(app.buttons["Certificat d’authenticité.jpg"].exists)
         capture("vault-05-linked-documents", in: app)
     }
 

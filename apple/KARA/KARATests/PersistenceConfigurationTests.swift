@@ -1,5 +1,7 @@
+import PDFKit
 import SwiftData
 import Testing
+import UIKit
 @testable import KARA
 
 @Suite("Persistence configuration")
@@ -62,6 +64,19 @@ struct PersistenceConfigurationTests {
         #expect(attachments.allSatisfy { attachment in
             assets.contains { $0.id == attachment.assetID }
         })
+
+        let invoice = try #require(attachments.first { $0.kind == .invoice })
+        let invoicePDF = try #require(PDFDocument(data: invoice.data))
+        #expect(invoice.filename.lowercased().hasSuffix(".pdf"))
+        #expect(invoice.mimeType == "application/pdf")
+        #expect(invoice.pageCount == invoicePDF.pageCount)
+        #expect(invoicePDF.pageCount == 1)
+
+        let certificate = try #require(attachments.first { $0.kind == .certificate })
+        #expect(certificate.filename.lowercased().hasSuffix(".jpg"))
+        #expect(certificate.mimeType == "image/jpeg")
+        #expect(certificate.pageCount == 1)
+        #expect(UIImage(data: certificate.data) != nil)
     }
 
     @Test("Visual QA seed requires both explicit DEBUG launch arguments")

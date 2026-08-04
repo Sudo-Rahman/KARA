@@ -1,6 +1,7 @@
 import BackgroundTasks
 import Foundation
 import SwiftData
+import WidgetKit
 
 nonisolated enum PriceAlertBackgroundRefreshScheduleDecision:
     Equatable,
@@ -60,9 +61,12 @@ enum PriceAlertBestEffortBackgroundRefresh {
         "com.karaprivate.KARA.price-alerts.best-effort-refresh"
 
     private static let schedulePolicy =
-        PriceAlertBackgroundRefreshSchedulePolicy(
-            refreshInterval: 60 * 60
+        KaraAppBackgroundRefreshSchedulePolicy(
+            configuredWidgetInterval: 60 * 60,
+            unconfiguredWidgetInterval: 12 * 60 * 60
         )
+    private static let legacyWidgetTaskIdentifier =
+        "com.karaprivate.KARA.widget.best-effort-refresh"
     private static var registrationResult: Bool?
     private static var modelContainer: ModelContainer?
     private static var scheduleTask: Task<Bool, Never>?
@@ -75,6 +79,13 @@ enum PriceAlertBestEffortBackgroundRefresh {
         if let registrationResult {
             return registrationResult
         }
+
+        // Versions that shipped the widget scheduler separately may have a
+        // pending request under this identifier. Migrate it into the single
+        // app-wide refresh slot before registering the unified handler.
+        BGTaskScheduler.shared.cancel(
+            taskRequestWithIdentifier: legacyWidgetTaskIdentifier
+        )
 
         let didRegister = BGTaskScheduler.shared.register(
             forTaskWithIdentifier: taskIdentifier,
@@ -109,21 +120,29 @@ enum PriceAlertBestEffortBackgroundRefresh {
         modelContainer = container
     }
 
-    /// Ensures that one opportunistic check is pending no earlier than one
-    /// hour from now. An existing request is deliberately preserved so calling
-    /// this repeatedly never pushes its deadline into the future.
+    /// Ensures that the one app-wide refresh slot is pending. Price alerts and
+    /// widget discovery share this request because iOS allows one pending
+    /// `BGAppRefreshTaskRequest` per app, not one per identifier.
     ///
     /// A successful submission does not guarantee that iOS will run the
     /// refresh.
     @discardableResult
-    static func schedule(now: Date = Date()) async -> Bool {
+    static func schedule(
+        hasFrequentPriceAlertWork: Bool = true,
+        forceReplaceExisting: Bool = false,
+        now: Date = Date()
+    ) async -> Bool {
         if let scheduleTask {
             return await scheduleTask.value
         }
 
         let token = UUID()
         let task = Task { @MainActor in
-            await performSchedule(now: now)
+            await performSchedule(
+                hasFrequentPriceAlertWork: hasFrequentPriceAlertWork,
+                forceReplaceExisting: forceReplaceExisting,
+                now: now
+            )
         }
         scheduleToken = token
         scheduleTask = task
@@ -136,24 +155,21 @@ enum PriceAlertBestEffortBackgroundRefresh {
         return result
     }
 
-    /// Cancels monitoring only after the caller has established that no active
-    /// price alert remains.
-    static func cancel() {
-        scheduleTask?.cancel()
-        scheduleTask = nil
-        scheduleToken = nil
-        BGTaskScheduler.shared.cancel(
-            taskRequestWithIdentifier: taskIdentifier
-        )
-    }
-
-    private static func performSchedule(now: Date) async -> Bool {
-        let hasPendingRequest = await hasPendingTaskRequest()
+    private static func performSchedule(
+        hasFrequentPriceAlertWork: Bool,
+        forceReplaceExisting: Bool,
+        now: Date
+    ) async -> Bool {
+        let hasConfiguredWidget =
+            await KaraWidgetBestEffortBackgroundRefresh.hasConfiguredWidget()
+        let pendingRequest = await pendingTaskRequest()
         guard !Task.isCancelled else { return false }
 
         switch schedulePolicy.decision(
-            hasPendingRequest: hasPendingRequest,
-            now: now
+            hasFrequentWork: hasFrequentPriceAlertWork || hasConfiguredWidget,
+            pendingEarliestBeginDate: pendingRequest?.earliestBeginDate,
+            now: now,
+            forceReplaceExisting: forceReplaceExisting
         ) {
         case .keepExisting:
             return true
@@ -161,6 +177,9 @@ enum PriceAlertBestEffortBackgroundRefresh {
             let request = BGAppRefreshTaskRequest(identifier: taskIdentifier)
             request.earliestBeginDate = earliestBeginDate
             do {
+                // Resubmitting the same identifier replaces the pending
+                // request atomically. Do not cancel first: a failed submit
+                // must leave the old refresh in place.
                 try BGTaskScheduler.shared.submit(request)
                 return true
             } catch {
@@ -169,12 +188,12 @@ enum PriceAlertBestEffortBackgroundRefresh {
         }
     }
 
-    private static func hasPendingTaskRequest() async -> Bool {
+    private static func pendingTaskRequest() async -> BGTaskRequest? {
         let identifier = taskIdentifier
         return await withCheckedContinuation { continuation in
             BGTaskScheduler.shared.getPendingTaskRequests { requests in
                 continuation.resume(
-                    returning: requests.contains {
+                    returning: requests.first {
                         $0.identifier == identifier
                     }
                 )
@@ -187,8 +206,19 @@ enum PriceAlertBestEffortBackgroundRefresh {
             // The executing request is no longer pending. Schedule its
             // successor before doing network or persistence work so expiration
             // cannot silently stop monitoring.
-            _ = await schedule()
-            return try await refreshActiveAlerts()
+            _ = await schedule(hasFrequentPriceAlertWork: true)
+            let hasActiveAlerts = try await refreshActiveAlerts()
+            try Task.checkCancellation()
+            let hasConfiguredWidget: Bool
+            if let modelContainer {
+                hasConfiguredWidget = try await
+                    KaraWidgetBestEffortBackgroundRefresh.refreshSnapshot(
+                        modelContainer: modelContainer
+                    )
+            } else {
+                hasConfiguredWidget = false
+            }
+            return hasActiveAlerts || hasConfiguredWidget
         }
         backgroundTask.expirationHandler = {
             refresh.cancel()
@@ -196,17 +226,16 @@ enum PriceAlertBestEffortBackgroundRefresh {
 
         Task { @MainActor in
             do {
-                let hasActiveAlerts = try await refresh.value
-                if hasActiveAlerts {
-                    _ = await schedule()
-                } else {
-                    cancel()
-                }
+                let hasFrequentWork = try await refresh.value
+                _ = await schedule(
+                    hasFrequentPriceAlertWork: hasFrequentWork,
+                    forceReplaceExisting: true
+                )
                 backgroundTask.setTaskCompleted(success: true)
             } catch {
                 // Missing persistence access, cancellation, and market failures
                 // are retryable. Keep the successor requested at handler entry.
-                _ = await schedule()
+                _ = await schedule(hasFrequentPriceAlertWork: true)
                 backgroundTask.setTaskCompleted(success: false)
             }
         }

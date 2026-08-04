@@ -3,6 +3,7 @@ import SwiftUI
 
 struct AppShellView: View {
     @Environment(KaraTheme.self) private var theme
+    @Environment(PrivacyPreferences.self) private var privacyPreferences
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(AIFormAutofillPreferences.self) private var analysisPreferences
@@ -41,6 +42,12 @@ struct AppShellView: View {
         let attachments = heldAttachments
         let sales = canonicalSales
         let alerts = canonicalAlerts
+        let widgetSnapshotPublication = KaraWidgetSnapshotPublicationInput(
+            quotes: metalQuotes,
+            valuation: valuation,
+            valuationAsOf: valuationAsOf,
+            hidesSensitiveValues: privacyPreferences.hidesSensitiveValues
+        )
 
         TabView(selection: $router.selectedTab) {
             Tab(value: .vault) {
@@ -151,12 +158,29 @@ struct AppShellView: View {
                 await evaluatePriceAlerts()
             }
         }
-        .task(id: priceAlertBackgroundWorkIDs) {
-            if priceAlertBackgroundWorkIDs.isEmpty {
-                PriceAlertBestEffortBackgroundRefresh.cancel()
-            } else {
-                await PriceAlertBestEffortBackgroundRefresh.schedule()
+        .task(id: widgetSnapshotPublication) {
+            guard !KaraWidgetSnapshotPublisher.publish(widgetSnapshotPublication)
+            else {
+                return
             }
+
+            // A transient App Group write failure must not leave a privacy
+            // toggle stranded. The publisher removes a visible snapshot before
+            // attempting a hidden replacement; retry once after the store has
+            // had a chance to recover.
+            guard privacyPreferences.hidesSensitiveValues else { return }
+            do {
+                try await Task.sleep(for: .seconds(2))
+            } catch {
+                return
+            }
+            guard !Task.isCancelled else { return }
+            _ = KaraWidgetSnapshotPublisher.publish(widgetSnapshotPublication)
+        }
+        .task(id: priceAlertBackgroundWorkIDs) {
+            await PriceAlertBestEffortBackgroundRefresh.schedule(
+                hasFrequentPriceAlertWork: !priceAlertBackgroundWorkIDs.isEmpty
+            )
         }
         .task(id: priceAlertNotificationNavigationInbox.pendingRequest) {
             guard let request =

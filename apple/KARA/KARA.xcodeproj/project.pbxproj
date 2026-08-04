@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B20000000000000000000001 /* KARAWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* KARAWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B20000000000000000000011 /* KARA/Resources/Fonts/Geologica-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* KARA/Resources/Fonts/Geologica-Variable.ttf */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A1000000000000000000000D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,15 +26,43 @@
 			remoteGlobalIDString = F3DEEEA8300C02680082E143;
 			remoteInfo = KARA;
 		};
+		B20000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3DEEEA1300C02680082E143 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B2000000000000000000000B;
+			remoteInfo = KARAWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B2000000000000000000000A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				B20000000000000000000001 /* KARAWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A10000000000000000000001 /* KARATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KARATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000002 /* KARAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KARAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000003 /* KARAWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KARAWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000010 /* KARA/Resources/Fonts/Geologica-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KARA/Resources/Fonts/Geologica-Variable.ttf"; sourceTree = "<group>"; };
 		F3DEEEA9300C02680082E143 /* KARA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KARA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B20000000000000000000004 /* Exceptions for "KARAWidget" folder in "KARAWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B2000000000000000000000B /* KARAWidget */;
+		};
 		F3DEEEB6300C026A0082E143 /* Exceptions for "KARA" folder in "KARA" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -48,6 +81,19 @@
 		A10000000000000000000004 /* KARAUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KARAUITests;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000005 /* KARAWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B20000000000000000000004 /* Exceptions for "KARAWidget" folder in "KARAWidget" target */,
+			);
+			path = KARAWidget;
+			sourceTree = "<group>";
+		};
+		B20000000000000000000006 /* KARAWidgetShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KARAWidgetShared;
 			sourceTree = "<group>";
 		};
 		F3DEEEAB300C02680082E143 /* KARA */ = {
@@ -71,6 +117,11 @@
 			files = (
 			);
 		};
+		B20000000000000000000007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 		F3DEEEA6300C02680082E143 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -79,10 +130,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B20000000000000000000012 /* Widget Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000010 /* KARA/Resources/Fonts/Geologica-Variable.ttf */,
+			);
+			name = "Widget Resources";
+			sourceTree = "<group>";
+		};
 		F3DEEEA0300C02680082E143 = {
 			isa = PBXGroup;
 			children = (
 				F3DEEEAB300C02680082E143 /* KARA */,
+				B20000000000000000000005 /* KARAWidget */,
+				B20000000000000000000006 /* KARAWidgetShared */,
+				B20000000000000000000012 /* Widget Resources */,
 				A10000000000000000000003 /* KARATests */,
 				A10000000000000000000004 /* KARAUITests */,
 				F3DEEEAA300C02680082E143 /* Products */,
@@ -93,6 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				F3DEEEA9300C02680082E143 /* KARA.app */,
+				B20000000000000000000003 /* KARAWidget.appex */,
 				A10000000000000000000001 /* KARATests.xctest */,
 				A10000000000000000000002 /* KARAUITests.xctest */,
 			);
@@ -144,6 +207,25 @@
 			productReference = A10000000000000000000002 /* KARAUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		B2000000000000000000000B /* KARAWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2000000000000000000000F /* Build configuration list for PBXNativeTarget "KARAWidget" */;
+			buildPhases = (
+				B20000000000000000000008 /* Sources */,
+				B20000000000000000000007 /* Frameworks */,
+				B20000000000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				B20000000000000000000005 /* KARAWidget */,
+				B20000000000000000000006 /* KARAWidgetShared */,
+			);
+			name = KARAWidget;
+			productName = KARAWidget;
+			productReference = B20000000000000000000003 /* KARAWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		F3DEEEA8300C02680082E143 /* KARA */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F3DEEEB7300C026A0082E143 /* Build configuration list for PBXNativeTarget "KARA" */;
@@ -151,10 +233,15 @@
 				F3DEEEA5300C02680082E143 /* Sources */,
 				F3DEEEA6300C02680082E143 /* Frameworks */,
 				F3DEEEA7300C02680082E143 /* Resources */,
+				B2000000000000000000000A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
+			dependencies = (
+				B2000000000000000000000C /* PBXTargetDependency */,
+			);
 			fileSystemSynchronizedGroups = (
+				B20000000000000000000006 /* KARAWidgetShared */,
 				F3DEEEAB300C02680082E143 /* KARA */,
 			);
 			name = KARA;
@@ -180,6 +267,9 @@
 						CreatedOnToolsVersion = 26.0;
 						TestTargetID = F3DEEEA8300C02680082E143;
 					};
+					B2000000000000000000000B = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					F3DEEEA8300C02680082E143 = {
 						CreatedOnToolsVersion = 26.0;
 					};
@@ -201,6 +291,7 @@
 			projectRoot = "";
 			targets = (
 				F3DEEEA8300C02680082E143 /* KARA */,
+				B2000000000000000000000B /* KARAWidget */,
 				A1000000000000000000000B /* KARATests */,
 				A1000000000000000000000C /* KARAUITests */,
 			);
@@ -218,6 +309,12 @@
 			files = (
 			);
 		};
+		B20000000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				B20000000000000000000011 /* KARA/Resources/Fonts/Geologica-Variable.ttf in Resources */,
+			);
+		};
 		F3DEEEA7300C02680082E143 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
@@ -232,6 +329,11 @@
 			);
 		};
 		A10000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		B20000000000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
 			);
@@ -253,6 +355,11 @@
 			isa = PBXTargetDependency;
 			target = F3DEEEA8300C02680082E143 /* KARA */;
 			targetProxy = A1000000000000000000000E /* PBXContainerItemProxy */;
+		};
+		B2000000000000000000000C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B2000000000000000000000B /* KARAWidget */;
+			targetProxy = B20000000000000000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -359,6 +466,79 @@
 			};
 			name = Release;
 		};
+		B2000000000000000000000D /* Debug configuration for PBXNativeTarget "KARAWidget" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = KARAWidget/KARAWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = LBPZB5S37F;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KARAWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.karaprivate.KARA.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B2000000000000000000000E /* Release configuration for PBXNativeTarget "KARAWidget" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = KARAWidget/KARAWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = LBPZB5S37F;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KARAWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.karaprivate.KARA.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		F3DEEEB8300C026A0082E143 /* Debug configuration for PBXNativeTarget "KARA" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -402,6 +582,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -455,6 +636,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -603,6 +785,14 @@
 			buildConfigurations = (
 				A10000000000000000000014 /* Debug configuration for PBXNativeTarget "KARAUITests" */,
 				A10000000000000000000015 /* Release configuration for PBXNativeTarget "KARAUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		B2000000000000000000000F /* Build configuration list for PBXNativeTarget "KARAWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B2000000000000000000000D /* Debug configuration for PBXNativeTarget "KARAWidget" */,
+				B2000000000000000000000E /* Release configuration for PBXNativeTarget "KARAWidget" */,
 			);
 			defaultConfigurationName = Release;
 		};

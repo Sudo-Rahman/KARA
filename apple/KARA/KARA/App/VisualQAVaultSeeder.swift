@@ -4,7 +4,7 @@ import SwiftData
 import UIKit
 
 enum VisualQAVaultSeeder {
-    static let launchArgument = "-KARASeedVault"
+    nonisolated static let launchArgument = "-KARASeedVault"
 
     static func seedIfRequested(
         in container: ModelContainer,
@@ -27,6 +27,17 @@ enum VisualQAVaultSeeder {
         do {
             assets.forEach(context.insert)
 
+            let invoice = try MediaDocumentFactory.invoicePDF(
+                from: [documentImage(text: invoiceText)],
+                filename: localized(
+                    french: "Facture Lingotin 50 g.pdf",
+                    english: "50 g Gold Bar Invoice.pdf"
+                )
+            )
+            let certificateData = try MediaDocumentFactory.normalizedObjectJPEG(
+                from: documentImage(text: certificateText)
+            )
+
             let featuredAssetID = assets[0].id
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
@@ -42,25 +53,22 @@ enum VisualQAVaultSeeder {
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
                 kind: .invoice,
-                filename: localized(
-                    french: "Facture Lingotin 50 g.txt",
-                    english: "50 g Gold Bar Invoice.txt"
-                ),
-                mimeType: "text/plain",
-                pageCount: 1,
-                data: Data(Self.invoiceText.utf8),
+                filename: invoice.filename,
+                mimeType: invoice.mimeType,
+                pageCount: invoice.pageCount,
+                data: invoice.data,
                 createdAt: date(daysAgo: 22, relativeTo: timestamp)
             ))
             context.insert(AssetAttachment(
                 assetID: featuredAssetID,
                 kind: .certificate,
                 filename: localized(
-                    french: "Certificat d’authenticité.txt",
-                    english: "Certificate of Authenticity.txt"
+                    french: "Certificat d’authenticité.jpg",
+                    english: "Certificate of Authenticity.jpg"
                 ),
-                mimeType: "text/plain",
+                mimeType: "image/jpeg",
                 pageCount: 1,
-                data: Data(Self.certificateText.utf8),
+                data: certificateData,
                 createdAt: date(daysAgo: 21, relativeTo: timestamp)
             ))
 
@@ -281,6 +289,45 @@ enum VisualQAVaultSeeder {
             : english
     }
 
+    private static func documentImage(text: String) -> UIImage {
+        let bounds = CGRect(x: 0, y: 0, width: 1_240, height: 1_754)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        format.preferredRange = .standard
+
+        return UIGraphicsImageRenderer(bounds: bounds, format: format).image { context in
+            UIColor(red: 0.98, green: 0.97, blue: 0.93, alpha: 1).setFill()
+            context.fill(bounds)
+
+            UIColor(red: 0.06, green: 0.16, blue: 0.33, alpha: 1).setFill()
+            context.fill(CGRect(x: 0, y: 0, width: bounds.width, height: 170))
+
+            let paragraphs = text.components(separatedBy: "\n\n")
+            let title = paragraphs.first ?? "KARA"
+            let body = paragraphs.dropFirst().joined(separator: "\n\n")
+            (title as NSString).draw(
+                in: CGRect(x: 88, y: 54, width: bounds.width - 176, height: 80),
+                withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 42, weight: .bold),
+                    .foregroundColor: UIColor.white,
+                ]
+            )
+            (body as NSString).draw(
+                in: CGRect(x: 88, y: 260, width: bounds.width - 176, height: bounds.height - 348),
+                withAttributes: [
+                    .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .regular),
+                    .foregroundColor: UIColor(red: 0.06, green: 0.16, blue: 0.33, alpha: 1),
+                    .paragraphStyle: {
+                        let style = NSMutableParagraphStyle()
+                        style.lineSpacing = 14
+                        return style
+                    }(),
+                ]
+            )
+        }
+    }
+
     private static var invoiceText: String {
         localized(
             french: """
@@ -322,5 +369,159 @@ enum VisualQAVaultSeeder {
             """
         )
     }
+}
+
+/// A deterministic, process-local market-data source used only by the explicit
+/// visual-QA launch. Keeping both protocols in one value guarantees that this
+/// path neither opens the disk cache nor constructs the attested network client.
+nonisolated struct VisualQAMarketDataFixture: MarketDataCaching, MarketDataClient, Sendable {
+    static let requiredLaunchArguments: Set<String> = [
+        KaraModelContainerFactory.inMemoryLaunchArgument,
+        VisualQAVaultSeeder.launchArgument,
+        MarketDataStore.cachedOnlyLaunchArgument,
+    ]
+
+    static func isEnabled(arguments: [String]) -> Bool {
+        requiredLaunchArguments.isSubset(of: Set(arguments))
+    }
+
+    static let timestamp = Date(timeIntervalSince1970: 1_785_844_800) // 2026-08-04 12:00 UTC
+    static let dataVersion = "kara-visual-qa-2026-08"
+    static let unit = MarketUnit(
+        code: .troyOunce,
+        grams: Decimal(string: "31.1034768")!
+    )
+
+    static let manifest = MarketManifest(
+        schemaVersion: 1,
+        datasetId: "precious-metals-monthly",
+        dataVersion: dataVersion,
+        publishedAt: timestamp,
+        metals: MarketMetal.allCases,
+        coverage: .init(from: "2025-09", through: "2026-08"),
+        currencies: [
+            MarketCurrency.eur.rawValue: .init(from: "2025-09", through: "2026-08"),
+        ],
+        file: .init(
+            url: "/visual-qa/metals-monthly.json",
+            sha256: String(repeating: "a", count: 64),
+            bytes: 4_096
+        )
+    )
+
+    static let bootstrap = MarketBootstrap(
+        manifest: manifest,
+        spots: [
+            quote(metal: .gold, price: 3_050),
+            quote(metal: .silver, price: Decimal(string: "35.10")!),
+            quote(metal: .platinum, price: 1_180),
+            quote(metal: .palladium, price: 1_140),
+        ]
+    )
+
+    static let monthlyDataset = MonthlyDataset(
+        unit: unit,
+        series: [
+            series(metal: .gold, prices: [
+                2_450, 2_510, 2_485, 2_560, 2_620, 2_675,
+                2_720, 2_790, 2_845, 2_910, 2_965, 3_020,
+            ]),
+            series(metal: .silver, prices: [
+                28, 28.6, 29.1, 28.8, 29.7, 30.4,
+                30.9, 31.6, 32.1, 32.8, 33.5, 34.4,
+            ]),
+            series(metal: .platinum, prices: [
+                930, 945, 960, 975, 990, 1_015,
+                1_035, 1_060, 1_085, 1_105, 1_130, 1_155,
+            ]),
+            series(metal: .palladium, prices: [
+                900, 915, 940, 925, 955, 980,
+                1_000, 1_025, 1_045, 1_070, 1_095, 1_120,
+            ]),
+        ]
+    )
+
+    func cachedBootstrap() async throws -> CachedMarketResource<MarketBootstrap>? {
+        CachedMarketResource(value: Self.bootstrap, etag: Self.dataVersion, savedAt: Self.timestamp)
+    }
+
+    func saveBootstrap(_ entry: CachedMarketResource<MarketBootstrap>) async throws {}
+
+    func cachedSpot(for pair: SpotPair) async throws -> CachedMarketResource<SpotQuote>? {
+        guard let quote = Self.bootstrap.spots.first(where: { $0.id == pair }) else { return nil }
+        return CachedMarketResource(value: quote, etag: Self.dataVersion, savedAt: Self.timestamp)
+    }
+
+    func saveSpot(
+        _ entry: CachedMarketResource<SpotQuote>,
+        for pair: SpotPair
+    ) async throws {}
+
+    func cachedMonthly() async throws -> CachedMonthlyResource? {
+        CachedMonthlyResource(
+            value: Self.monthlyDataset,
+            etag: Self.dataVersion,
+            dataVersion: Self.dataVersion,
+            savedAt: Self.timestamp
+        )
+    }
+
+    func saveMonthly(_ entry: CachedMonthlyResource) async throws {}
+
+    func cachedManifest() async throws -> CachedMarketResource<MarketManifest>? {
+        CachedMarketResource(value: Self.manifest, etag: Self.dataVersion, savedAt: Self.timestamp)
+    }
+
+    func saveManifest(_ entry: CachedMarketResource<MarketManifest>) async throws {}
+
+    func bootstrap(etag: String?) async throws -> MarketFetchResult<MarketBootstrap> {
+        .modified(Self.bootstrap, etag: Self.dataVersion)
+    }
+
+    func spot(
+        for pair: SpotPair,
+        etag: String?
+    ) async throws -> MarketFetchResult<SpotQuote> {
+        guard let quote = Self.bootstrap.spots.first(where: { $0.id == pair }) else {
+            throw VisualQAMarketDataFixtureError.unsupportedPair(pair)
+        }
+        return .modified(quote, etag: Self.dataVersion)
+    }
+
+    func monthly(etag: String?) async throws -> MarketFetchResult<MonthlyDataset> {
+        .modified(Self.monthlyDataset, etag: Self.dataVersion)
+    }
+
+    func manifest(etag: String?) async throws -> MarketFetchResult<MarketManifest> {
+        .modified(Self.manifest, etag: Self.dataVersion)
+    }
+
+    private static func quote(metal: MarketMetal, price: Decimal) -> SpotQuote {
+        SpotQuote(
+            metal: metal,
+            currency: .eur,
+            price: price,
+            unit: unit,
+            sourceUpdatedAt: timestamp
+        )
+    }
+
+    private static func series(metal: MarketMetal, prices: [Decimal]) -> MonthlySeries {
+        let months = [
+            "2025-09", "2025-10", "2025-11", "2025-12",
+            "2026-01", "2026-02", "2026-03", "2026-04",
+            "2026-05", "2026-06", "2026-07", "2026-08",
+        ]
+        return MonthlySeries(
+            metal: metal,
+            observations: zip(months, prices).map { month, price in
+                MonthlyObservation(month: month, prices: [MarketCurrency.eur.rawValue: price])
+            }
+        )
+    }
+}
+
+nonisolated enum VisualQAMarketDataFixtureError: Error, Equatable, Sendable {
+    case unsupportedPair(SpotPair)
 }
 #endif

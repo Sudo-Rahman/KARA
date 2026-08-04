@@ -3,7 +3,7 @@ import SwiftData
 
 enum KaraModelContainerFactory {
     static let cloudKitContainerIdentifier = "iCloud.kara"
-    static let inMemoryLaunchArgument = "-KARAUseInMemoryStore"
+    nonisolated static let inMemoryLaunchArgument = "-KARAUseInMemoryStore"
 
     static var schema: Schema {
         Schema([
