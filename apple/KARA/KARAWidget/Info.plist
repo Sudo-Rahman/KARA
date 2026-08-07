@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>KARA</string>
+	<string>$(KARA_DISPLAY_NAME)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Geologica-Variable.ttf</string>

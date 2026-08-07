@@ -1,7 +1,11 @@
 import Foundation
 
 nonisolated struct KaraWidgetSnapshotStore: Sendable {
+    #if DEBUG
+    static let defaultAppGroupIdentifier = "group.karaprivate.kara.dev"
+    #else
     static let defaultAppGroupIdentifier = "group.karaprivate.kara"
+    #endif
     static let relativePath = "Widget/v1/snapshot.json"
 
     let baseURL: URL

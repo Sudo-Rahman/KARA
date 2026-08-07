@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 enum KaraModelContainerFactory {
-    static let cloudKitContainerIdentifier = "iCloud.kara"
+    static let productionCloudKitContainerIdentifier = "iCloud.kara"
     nonisolated static let inMemoryLaunchArgument = "-KARAUseInMemoryStore"
 
     static var schema: Schema {
@@ -35,11 +35,20 @@ enum KaraModelContainerFactory {
         }
         #endif
 
+        #if DEBUG
+        return ModelConfiguration(
+            "KARA-Development",
+            schema: schema,
+            groupContainer: .none,
+            cloudKitDatabase: .none
+        )
+        #else
         return ModelConfiguration(
             "KARA",
             schema: schema,
-            cloudKitDatabase: .private(cloudKitContainerIdentifier)
+            cloudKitDatabase: .private(productionCloudKitContainerIdentifier)
         )
+        #endif
     }
 
     static func make(

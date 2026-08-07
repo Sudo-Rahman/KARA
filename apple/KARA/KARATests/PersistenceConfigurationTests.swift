@@ -7,15 +7,16 @@ import UIKit
 @Suite("Persistence configuration")
 @MainActor
 struct PersistenceConfigurationTests {
-    @Test("Production always uses the private KARA CloudKit database")
-    func productionConfigurationUsesPrivateCloudKit() {
+    @Test("Debug uses a persistent local store without CloudKit")
+    func debugConfigurationUsesIsolatedLocalStore() {
         let configuration = KaraModelContainerFactory.configuration(
             arguments: [],
             environment: [:]
         )
 
         #expect(!configuration.isStoredInMemoryOnly)
-        #expect(configuration.cloudKitContainerIdentifier == "iCloud.kara")
+        #expect(configuration.cloudKitContainerIdentifier == nil)
+        #expect(KaraWidgetSnapshotStore.defaultAppGroupIdentifier == "group.karaprivate.kara.dev")
     }
 
     #if DEBUG

@@ -1,6 +1,8 @@
 # CloudKit production setup
 
-KARA uses SwiftData with the private CloudKit database in `iCloud.kara`. The app does not expose a switch that disables synchronization.
+KARA Release uses SwiftData with the private CloudKit database in `iCloud.kara`. The app does not expose a switch that disables synchronization.
+
+Debug builds use a persistent local SwiftData store without CloudKit and the dedicated app group `group.karaprivate.kara.dev`. This keeps development data and widget snapshots fully separate from the App Store app.
 
 Before running on a signed device or shipping:
 
