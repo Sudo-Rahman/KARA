@@ -157,19 +157,25 @@ nonisolated struct KaraWidgetSnapshot: Codable, Equatable, Sendable {
     let quotes: [KaraWidgetQuote]
     let portfolio: KaraWidgetPortfolio?
     let disclosure: KaraWidgetDisclosure
+    let holdings: [KaraWidgetHolding]?
+    let refreshCoverage: KaraWidgetRefreshCoverage?
 
     init(
         schemaVersion: Int = KaraWidgetSnapshot.currentSchemaVersion,
         generatedAt: Date,
         quotes: [KaraWidgetQuote],
         portfolio: KaraWidgetPortfolio?,
-        disclosure: KaraWidgetDisclosure
+        disclosure: KaraWidgetDisclosure,
+        holdings: [KaraWidgetHolding]? = nil,
+        refreshCoverage: KaraWidgetRefreshCoverage? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
         self.quotes = quotes
         self.portfolio = portfolio
         self.disclosure = disclosure
+        self.holdings = disclosure != .hidden ? holdings : nil
+        self.refreshCoverage = disclosure != .hidden ? refreshCoverage : nil
     }
 
     func quote(for metal: KaraWidgetMetal) -> KaraWidgetQuote? {
@@ -181,6 +187,8 @@ nonisolated struct KaraWidgetSnapshot: Codable, Equatable, Sendable {
             && quotes.sortedByMetal == other.quotes.sortedByMetal
             && portfolio == other.portfolio
             && disclosure == other.disclosure
+            && holdings == other.holdings
+            && refreshCoverage == other.refreshCoverage
     }
 
     @discardableResult
@@ -208,6 +216,9 @@ nonisolated struct KaraWidgetSnapshot: Codable, Equatable, Sendable {
             }
         }
 
+        if disclosure == .hidden && (holdings != nil || refreshCoverage != nil) {
+            throw KaraWidgetSnapshotValidationError.inconsistentDisclosure(disclosure)
+        }
         switch (disclosure, portfolio) {
         case let (.visible, portfolio?):
             try validate(portfolio)

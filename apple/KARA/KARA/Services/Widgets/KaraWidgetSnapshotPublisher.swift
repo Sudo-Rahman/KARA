@@ -6,6 +6,8 @@ nonisolated struct KaraWidgetSnapshotPublicationInput: Equatable, Sendable {
     let quotes: [KaraWidgetQuote]
     let portfolio: KaraWidgetPortfolio?
     let disclosure: KaraWidgetDisclosure
+    let holdings: [KaraWidgetHolding]?
+    let refreshCoverage: KaraWidgetRefreshCoverage?
     let preservesExistingQuotes: Bool
 
     init(
@@ -34,6 +36,17 @@ nonisolated struct KaraWidgetSnapshotPublicationInput: Equatable, Sendable {
         generatedAt = widgetQuotes.map(\.sourceUpdatedAt).min() ?? valuationAsOf
         self.preservesExistingQuotes = preservesExistingQuotes
 
+        holdings = hidesSensitiveValues ? nil : valuation.assetValuations.compactMap { item in
+            guard let metal = item.metal, let weight = item.fineWeightGrams,
+                  weight.isFinite, weight > 0 else { return nil }
+            return KaraWidgetHolding(metal: metal.widgetMetal, fineWeightGrams: weight,
+                purchaseCost: item.purchaseCost.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil },
+                purchaseCurrency: item.purchaseCurrency?.rawValue)
+        }
+
+        refreshCoverage = hidesSensitiveValues ? nil : KaraWidgetRefreshCoverage(
+            totalRecordCount: valuation.coverage.totalRecordCount,
+            objectCount: valuation.coverage.totalObjectCount)
         if hidesSensitiveValues {
             portfolio = nil
             disclosure = .hidden
@@ -73,7 +86,9 @@ nonisolated struct KaraWidgetSnapshotPublicationInput: Equatable, Sendable {
                 ? existingSnapshot?.quotes ?? []
                 : quotes,
             portfolio: portfolio,
-            disclosure: disclosure
+            disclosure: disclosure,
+            holdings: holdings,
+            refreshCoverage: refreshCoverage
         )
     }
 

@@ -31,20 +31,26 @@ nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked
 
     private let baseURL: URL
     private let transport: any APIDataTransport
+    private let widgetRefreshStore: KaraWidgetRefreshStore?
 
     init() {
         let baseURL = Self.configuredBaseURL
         self.baseURL = baseURL
+        self.widgetRefreshStore = (try? KaraWidgetSnapshotStore()).map {
+            KaraWidgetRefreshStore(baseURL: $0.baseURL)
+        }
         self.transport = AttestedAPITransport(baseURL: baseURL)
     }
 
-    init(baseURL: URL, session: URLSession) {
+    init(baseURL: URL, session: URLSession, widgetRefreshStore: KaraWidgetRefreshStore? = nil) {
         self.baseURL = baseURL
+        self.widgetRefreshStore = widgetRefreshStore
         self.transport = URLSessionAPIDataTransport(session: session)
     }
 
     init(baseURL: URL, transport: any APIDataTransport) {
         self.baseURL = baseURL
+        self.widgetRefreshStore = nil
         self.transport = transport
     }
 
@@ -123,7 +129,16 @@ nonisolated final class URLSessionMarketDataClient: MarketDataClient, @unchecked
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
 
+        let isBootstrap = url.path.hasSuffix("/market-data/bootstrap.json")
+        if isBootstrap, let access = try? widgetRefreshStore?.readAccess(), access.baseURL == baseURL {
+            request.setValue(access.token, forHTTPHeaderField: "X-Kara-Widget-Token")
+        }
         let (data, httpResponse) = try await transport.data(for: request)
+        if isBootstrap, [200, 304].contains(httpResponse.statusCode),
+           let token = httpResponse.value(forHTTPHeaderField: "X-Kara-Widget-Token"),
+           token.count == 43 {
+            try? widgetRefreshStore?.writeAccess(KaraWidgetAccess(baseURL: baseURL, token: token))
+        }
         let responseETag = httpResponse.value(forHTTPHeaderField: "ETag")
         switch httpResponse.statusCode {
         case 200:

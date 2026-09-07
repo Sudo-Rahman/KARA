@@ -30,6 +30,25 @@ struct MarketDataClientTests {
         #expect(etag == "fresh-bootstrap-tag")
     }
 
+    @Test("Successful host bootstraps provision shared widget access, including 304", arguments: [200, 304])
+    func provisionsWidgetAccess(status: Int) async throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = KaraWidgetRefreshStore(baseURL: directory)
+        let base = URL(string: "https://example.test")!
+        let token = String(repeating: "a", count: 43)
+        try store.writeAccess(KaraWidgetAccess(baseURL: base, token: token))
+        let session = URLSession.stubbed { request in
+            #expect(request.value(forHTTPHeaderField: "X-Kara-Widget-Token") == token)
+            return try HTTPStubResponse(status: status, headers: ["X-Kara-Widget-Token": String(repeating: "b", count: 43)],
+                body: status == 200 ? bootstrapPayload() : Data())
+        }
+        let client = URLSessionMarketDataClient(baseURL: base, session: session, widgetRefreshStore: store)
+        _ = try await client.bootstrap(etag: "tag")
+        #expect(try store.readAccess().token == String(repeating: "b", count: 43))
+        #expect(try store.readAccess().baseURL == base)
+    }
+
     @Test("Spot requests send only metal and currency and decode a validated quote")
     func fetchesSpotQuote() async throws {
         let session = URLSession.stubbed { request in

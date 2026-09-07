@@ -68,7 +68,18 @@ nonisolated struct KaraWidgetTimelineProvider: AppIntentTimelineProvider {
         for configuration: KaraWidgetConfigurationIntent,
         in context: Context
     ) async -> Timeline<KaraWidgetEntry> {
-        let entry = makeEntry(configuration: configuration, galleryFallback: false)
+        let refreshed: KaraWidgetSnapshot?
+        if let store {
+            let client = KaraWidgetMarketClient(store: KaraWidgetRefreshStore(baseURL: store.baseURL))
+            refreshed = await KaraWidgetTimelineLoader(store: store) { currencies in
+                try await client.quotes(currencies: currencies)
+            }.load()
+        } else {
+            refreshed = nil
+        }
+        let entry = KaraWidgetEntry(date: .now, snapshot: refreshed,
+            viewMode: configuration.viewMode, favoriteMetal: configuration.favoriteMetal,
+            isPlaceholder: false)
         let nextRead = Calendar.current.date(
             byAdding: .minute,
             value: 30,
